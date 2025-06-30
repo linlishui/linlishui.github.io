@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>Charles on 缥缈夏鸢</title>
+    <link>/tags/charles/</link>
+    <description>Recent content in Charles on 缥缈夏鸢</description>
+    <generator>Hugo -- 0.138.0</generator>
+    <language>en-us</language>
+    <lastBuildDate>Wed, 22 Jan 2025 17:27:21 +0800</lastBuildDate>
+    <atom:link href="/tags/charles/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Charles网络抓包</title>
+      <link>/posts/tools/charles/</link>
+      <pubDate>Wed, 22 Jan 2025 17:27:21 +0800</pubDate>
+      <guid>/posts/tools/charles/</guid>
+      <description>&lt;h3 id=&#34;下载与安装&#34;&gt;下载与安装&lt;/h3&gt;
+&lt;p&gt;Charles官网下载安装包，下载成功后根据指示安装即可&lt;/p&gt;
+&lt;p&gt;官网地址： &lt;a href=&#34;https://www.charlesproxy.com/&#34;&gt;www.charlesproxy.com&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;Charles激活码：&lt;/p&gt;
+&lt;p&gt;Registered Name: &lt;code&gt;https://zhile.io&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;License Key: &lt;code&gt;48891cf209c6d32bf4&lt;/code&gt;&lt;/p&gt;
+&lt;h3 id=&#34;http代理设置&#34;&gt;HTTP代理设置&lt;/h3&gt;
+&lt;h4 id=&#34;1-设置pc端代理端口号&#34;&gt;1. 设置PC端代理端口号&lt;/h4&gt;
+&lt;p&gt;在&lt;code&gt;Proxy -&amp;gt; Proxy settings&lt;/code&gt;可设置HTTP Proxy的端口号。&lt;/p&gt;
+&lt;h4 id=&#34;2-设置手机端代理端口号&#34;&gt;2. 设置手机端代理端口号&lt;/h4&gt;
+&lt;p&gt;在应用内的&lt;code&gt;Help -&amp;gt; Local IP Address&lt;/code&gt;上查看本机的IP地址（en0等标识）&lt;/p&gt;
+&lt;h4 id=&#34;3-android手机代理设置&#34;&gt;3. Android手机代理设置&lt;/h4&gt;
+&lt;p&gt;设置-WLAN，进入已连接WiFi手动设置（端口需与PC端设置端口号一致）&lt;/p&gt;
+&lt;p&gt;编辑网络，选择手动代理，输入PC端的IP地址 + Charles配置的端口号。&lt;/p&gt;
+&lt;p&gt;当手机进行数据请求时，Charles 将弹出是否允许连接此代理(选择允许 allow)，之后便可进行HTTP抓包。&lt;/p&gt;
+&lt;h3 id=&#34;https代理设置&#34;&gt;HTTPS代理设置&lt;/h3&gt;
+&lt;p&gt;HTTP的代理设置是抓取不了HTTPS，故需要进行HTTPS代理设置。&lt;/p&gt;
+&lt;p&gt;手机上需要安装Charles SSL证书认证，证书下载地址：&lt;code&gt;http://charlesproxy.com/getssl&lt;/code&gt;&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;建议使用Chrome浏览器，其它浏览器有可能报错。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;其它下载地址推荐：https://www.charlesproxy.com/assets/legacy-ssl/charles.crt&lt;/p&gt;
+&lt;h4 id=&#34;1-charles配置ssl&#34;&gt;1. Charles配置SSL&lt;/h4&gt;
+&lt;p&gt;选中&lt;code&gt;Proxy -&amp;gt; SSL Proxying Setting&lt;/code&gt;选项，开启SSL代理，并添加或移除信任地址（默认端口号443）。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;如果拦截所有，则配置主机&lt;code&gt;*&lt;/code&gt;，端口号 &lt;strong&gt;443&lt;/strong&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h4 id=&#34;2-android手机安装证书&#34;&gt;2. Android手机安装证书&lt;/h4&gt;
+&lt;p&gt;在手机浏览器输入上面的证书下载地址，证书下载成功后，进入&lt;code&gt;设置-安全-加密与凭据-安装证书-CA证书&lt;/code&gt;，选择已下载的证书进行安装。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;不同安卓手机设置里面选择不同，可自行查找系统安全进入证书安装&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h4 id=&#34;3-android系统证书配置&#34;&gt;3. Android系统证书配置&lt;/h4&gt;
+&lt;p&gt;上面的方式配置出来的证书是用户类型，如果需要抓取应用release类型的网络日志，则需要配置成系统证书。&lt;/p&gt;
+&lt;p&gt;具体步骤如下：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;选中&lt;code&gt;Help -&amp;gt; SSL Proxying -&amp;gt; Save Charles Root Certificate...&lt;/code&gt;选项&lt;/li&gt;
+&lt;li&gt;保存&lt;code&gt;charles-ssl-proxying-certificate.pem&lt;/code&gt;到指定目录&lt;/li&gt;
+&lt;li&gt;执行&lt;code&gt;openssl x509 -inform PEM -subject_hash_old -in [pem文件路径]&lt;/code&gt;，这里最上方一行输出的是“91b45736”&lt;/li&gt;
+&lt;li&gt;重命名pem文件，系统的证书名称格式一般为：&lt;code&gt;[pem的hash值].0&lt;/code&gt;名称。故笔者这里需要将pem文件命名为&lt;code&gt;91b45736.0&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;将重命名后的文件push到如下路径：&lt;strong&gt;/system/etc/security/cacerts/&lt;/strong&gt;&lt;/li&gt;
+&lt;li&gt;重启手机，在设置应用上找到&lt;code&gt;信任的凭据&lt;/code&gt;,查看系统的CA证书列表，确认是否有Charles Proxy CA存在&lt;/li&gt;
+&lt;/ol&gt;
+&lt;blockquote&gt;
+&lt;p&gt;附上cer转换成pem的命令：&lt;code&gt;openssl x509 -inform DER -in [cer文件] -out [pem文件]&lt;/code&gt;&lt;/p&gt;</description>
+    </item>
+  </channel>
+</rss>

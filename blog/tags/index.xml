@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>Tags on 缥缈夏鸢</title>
+    <link>/tags/</link>
+    <description>Recent content in Tags on 缥缈夏鸢</description>
+    <generator>Hugo -- 0.138.0</generator>
+    <language>en-us</language>
+    <lastBuildDate>Fri, 30 May 2025 14:41:49 +0800</lastBuildDate>
+    <atom:link href="/tags/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Vim</title>
+      <link>/tags/vim/</link>
+      <pubDate>Fri, 30 May 2025 14:41:49 +0800</pubDate>
+      <guid>/tags/vim/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>View事件体系</title>
+      <link>/tags/view%E4%BA%8B%E4%BB%B6%E4%BD%93%E7%B3%BB/</link>
+      <pubDate>Wed, 14 May 2025 14:30:22 +0800</pubDate>
+      <guid>/tags/view%E4%BA%8B%E4%BB%B6%E4%BD%93%E7%B3%BB/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Charles</title>
+      <link>/tags/charles/</link>
+      <pubDate>Wed, 22 Jan 2025 17:27:21 +0800</pubDate>
+      <guid>/tags/charles/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Nginx</title>
+      <link>/tags/nginx/</link>
+      <pubDate>Mon, 23 Dec 2024 17:09:22 +0800</pubDate>
+      <guid>/tags/nginx/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Vpn</title>
+      <link>/tags/vpn/</link>
+      <pubDate>Mon, 23 Dec 2024 17:09:22 +0800</pubDate>
+      <guid>/tags/vpn/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Linux</title>
+      <link>/tags/linux/</link>
+      <pubDate>Fri, 15 Nov 2024 14:38:57 +0800</pubDate>
+      <guid>/tags/linux/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Git</title>
+      <link>/tags/git/</link>
+      <pubDate>Fri, 15 Nov 2024 14:30:04 +0800</pubDate>
+      <guid>/tags/git/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Adb</title>
+      <link>/tags/adb/</link>
+      <pubDate>Fri, 15 Nov 2024 14:20:18 +0800</pubDate>
+      <guid>/tags/adb/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Hugo</title>
+      <link>/tags/hugo/</link>
+      <pubDate>Thu, 14 Nov 2024 10:43:59 +0800</pubDate>
+      <guid>/tags/hugo/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>静态网站</title>
+      <link>/tags/%E9%9D%99%E6%80%81%E7%BD%91%E7%AB%99/</link>
+      <pubDate>Thu, 14 Nov 2024 10:43:59 +0800</pubDate>
+      <guid>/tags/%E9%9D%99%E6%80%81%E7%BD%91%E7%AB%99/</guid>
+      <description></description>
+    </item>
+  </channel>
+</rss>

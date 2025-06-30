@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>Nginx on 缥缈夏鸢</title>
+    <link>/tags/nginx/</link>
+    <description>Recent content in Nginx on 缥缈夏鸢</description>
+    <generator>Hugo -- 0.138.0</generator>
+    <language>en-us</language>
+    <lastBuildDate>Mon, 23 Dec 2024 17:09:22 +0800</lastBuildDate>
+    <atom:link href="/tags/nginx/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>openVPN</title>
+      <link>/posts/tools/openvpn/</link>
+      <pubDate>Mon, 23 Dec 2024 17:09:22 +0800</pubDate>
+      <guid>/posts/tools/openvpn/</guid>
+      <description>&lt;p&gt;本文将基于Ubuntu系统环境快速搭建OpenVPN用于端对端的安全传输通道访问。&lt;/p&gt;
+&lt;h3 id=&#34;1-安装软件&#34;&gt;1. 安装软件&lt;/h3&gt;
+&lt;p&gt;安装相关的软件(openvpn与easy-rsa)，执行命令：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;sudo apt update
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;sudo apt install openvpn easy-rsa
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;查看安装后的 openvpn与 easy-rsa 版本，如下：&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;openvpn/focal-updates,focal-security,now 2.4.12-0ubuntu0.20.04.2 amd64 [installed]
+  virtual private network daemon
+
+easy-rsa/focal,focal,now 3.0.6-1 all [installed]
+  Simple shell based CA utility
+&lt;/code&gt;&lt;/pre&gt;&lt;h3 id=&#34;2-制作证书&#34;&gt;2. 制作证书&lt;/h3&gt;
+&lt;p&gt;OpenVPN 的证书分为三部分：CA证书、Server端证书、Client端证书。下面我们通过easy-rsa分别对其进行制作。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;制作证书&lt;/strong&gt;：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;进入 &lt;strong&gt;/usr/share/easy-rsa&lt;/strong&gt; 目录&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;拷贝 vars.example 文件，并将新的文件命名为 &lt;strong&gt;vars&lt;/strong&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;编辑 vars 文件，取消注释并按需修改以下内容信息：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;set_var EASYRSA_REQ_COUNTRY    &lt;span class=&#34;s2&#34;&gt;&amp;#34;US&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;set_var EASYRSA_REQ_PROVINCE   &lt;span class=&#34;s2&#34;&gt;&amp;#34;California&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;set_var EASYRSA_REQ_CITY       &lt;span class=&#34;s2&#34;&gt;&amp;#34;San Francisco&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;set_var EASYRSA_REQ_ORG        &lt;span class=&#34;s2&#34;&gt;&amp;#34;Copyleft Certificate Co&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;set_var EASYRSA_REQ_EMAIL      &lt;span class=&#34;s2&#34;&gt;&amp;#34;me@example.net&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;set_var EASYRSA_REQ_OU         &lt;span class=&#34;s2&#34;&gt;&amp;#34;My Organizational Unit&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;在该目录里执行以下命令用于初始化与生成CA证书：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;sudo ./easyrsa init-pki
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;sudo ./easyrsa build-ca nopass
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;生成服务端证书：&lt;/p&gt;</description>
+    </item>
+  </channel>
+</rss>

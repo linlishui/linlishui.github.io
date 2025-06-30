@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>Vim on 缥缈夏鸢</title>
+    <link>/tags/vim/</link>
+    <description>Recent content in Vim on 缥缈夏鸢</description>
+    <generator>Hugo -- 0.138.0</generator>
+    <language>en-us</language>
+    <lastBuildDate>Fri, 30 May 2025 14:41:49 +0800</lastBuildDate>
+    <atom:link href="/tags/vim/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Vim基础使用</title>
+      <link>/posts/tools/vim/</link>
+      <pubDate>Fri, 30 May 2025 14:41:49 +0800</pubDate>
+      <guid>/posts/tools/vim/</guid>
+      <description>&lt;h3 id=&#34;vim基本操作&#34;&gt;Vim基本操作&lt;/h3&gt;
+&lt;h4 id=&#34;1-移动光标&#34;&gt;1. 移动光标&lt;/h4&gt;
+&lt;table&gt;
+  &lt;thead&gt;
+      &lt;tr&gt;
+          &lt;th style=&#34;text-align: center&#34;&gt;键位&lt;/th&gt;
+          &lt;th&gt;含义&lt;/th&gt;
+      &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+      &lt;tr&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;hjkl，方向键&lt;/td&gt;
+          &lt;td&gt;移动一位，hjkl代表左、下、上、右&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;数字0&lt;/td&gt;
+          &lt;td&gt;移至本行开头&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;^&lt;/td&gt;
+          &lt;td&gt;移至本行第一个非空字符，匹配开头&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;$&lt;/td&gt;
+          &lt;td&gt;移至本行结尾，可以包含空格&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;w&lt;/td&gt;
+          &lt;td&gt;移至下一单词或标点的开头&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;b&lt;/td&gt;
+          &lt;td&gt;移至上一单词或标点开头&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;ctrl-f/PgDn&lt;/td&gt;
+          &lt;td&gt;下翻一页&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;ctrl-b/PgUp&lt;/td&gt;
+          &lt;td&gt;上翻一页&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;nG&lt;/td&gt;
+          &lt;td&gt;移至第n行（n为数字）&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;gg&lt;/td&gt;
+          &lt;td&gt;光标移至第一行&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;G&lt;/td&gt;
+          &lt;td&gt;光标移至最后一行&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;:n  enter键&lt;/td&gt;
+          &lt;td&gt;移至第n行&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;n+&lt;/td&gt;
+          &lt;td&gt;向下跳n行&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;n-&lt;/td&gt;
+          &lt;td&gt;向上跳n行&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;H&lt;/td&gt;
+          &lt;td&gt;移至当前屏幕的第一行&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;L&lt;/td&gt;
+          &lt;td&gt;移至当前屏幕的最后一行&lt;/td&gt;
+      &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;blockquote&gt;
+&lt;p&gt;注意：许多vi的命令前面都可以缀上数字，前缀数字可以控制该命令执行的次数，比如5j可以使得光标向下移动5行&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h4 id=&#34;2-基本编辑&#34;&gt;2. 基本编辑&lt;/h4&gt;
+&lt;table&gt;
+  &lt;thead&gt;
+      &lt;tr&gt;
+          &lt;th style=&#34;text-align: center&#34;&gt;键位&lt;/th&gt;
+          &lt;th&gt;含义&lt;/th&gt;
+      &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+      &lt;tr&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;a&lt;/td&gt;
+          &lt;td&gt;在当前字符后插入文本&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;A&lt;/td&gt;
+          &lt;td&gt;在行尾插入文本&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;i&lt;/td&gt;
+          &lt;td&gt;在当前字符前插入文本&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;I&lt;/td&gt;
+          &lt;td&gt;在行首插入文本&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;o&lt;/td&gt;
+          &lt;td&gt;当前行下方插入新行并进入插入模式&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;O&lt;/td&gt;
+          &lt;td&gt;当前行上方插入新行并进入插入模式&lt;/td&gt;
+      &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;h4 id=&#34;3-删除和撤销&#34;&gt;3. 删除和撤销&lt;/h4&gt;
+&lt;table&gt;
+  &lt;thead&gt;
+      &lt;tr&gt;
+          &lt;th style=&#34;text-align: center&#34;&gt;键位&lt;/th&gt;
+          &lt;th&gt;含义&lt;/th&gt;
+      &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+      &lt;tr&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;x&lt;/td&gt;
+          &lt;td&gt;删除当前字符（剪切）&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;nx&lt;/td&gt;
+          &lt;td&gt;向后删除当前行在内的n个字符（剪切）&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;dd&lt;/td&gt;
+          &lt;td&gt;删除（剪切）当前行&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;ndd&lt;/td&gt;
+          &lt;td&gt;向下删除当前行在内的n行（剪切）&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;u&lt;/td&gt;
+          &lt;td&gt;撤销上一次操作&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;nu&lt;/td&gt;
+          &lt;td&gt;撤销n次操作&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;U&lt;/td&gt;
+          &lt;td&gt;撤销对当前行的所有操作&lt;/td&gt;
+      &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;blockquote&gt;
+&lt;p&gt;结合光标移动以及这里的删除和撤销，可以组合命令。如：dG，代表删除当前行到文件末尾（剪切）&lt;/p&gt;</description>
+    </item>
+  </channel>
+</rss>

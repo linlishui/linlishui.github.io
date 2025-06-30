@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>Android View基础知识 | 缥缈夏鸢</title>
+<meta name="keywords" content="View事件体系">
+<meta name="description" content="View是Android所有控件的基类，是一种界面层控件的抽象角色。在Android的设计中，ViewGroup也继承了View，这就意味着View本身就可以是单个控件也可以是由多个控件组成的一组控件，通过这种关系就形成了View树的结构。
+View位置参数
+View的位置主要由它的四个顶点来决定，分别对应于View的四个属性：top、left、right、bottom，其中top是左上角纵坐标，left是左上角横坐标，right是右下角横坐标，bottom是右下角纵坐标。注意，这些坐标是相对于View的父容器来说的，它是一种相对坐标。
+View的宽高和坐标的关系：width = right -left; height = bottom - top;
+从Android3.0开始，View增加参数：x、y、translationX、translationY，其中x和y是View左上角的坐标，而translationX和translationY是View左上角相对于父容器的偏移量。这几个参数也是相对于父容器的坐标，并且translationX和translationY的默认值是0。
+这几个参数的换算关系如下：x = left &#43; translationX; y = top &#43; translationY;
+
+在View在平移的过程中，top和left是原始左上角的位置信息，不会发生改变。发生改变的是x、y、translationX和translationY这四个参数。
+
+MotionEvent和TouchSlop
+在手指接触屏幕后产生的一系列事件，该事件对象是MotionEvent。
+下面是常用的事件类型：
+public final class MotionEvent extends InputEvent implements Parcelable {
+    public static final int ACTION_MASK             = 0xff;
+    public static final int ACTION_DOWN             = 0;
+    public static final int ACTION_UP               = 1;
+    public static final int ACTION_MOVE             = 2;
+    public static final int ACTION_CANCEL           = 3;
+    public static final int ACTION_OUTSIDE          = 4;
+    public static final int ACTION_POINTER_DOWN     = 5;
+    public static final int ACTION_POINTER_UP       = 6;
+    ...
+}
+TouchSlop是系统所能识别出的被认为是滑动的最小距离。可以通过如下代码获取：ViewConfiguration. get(getContext()).getScaledTouchSlop()。当我们在处理滑动时，可以利用这个常量来做一些过滤，比如当两次滑动事件的滑动距离小于这个值，我们就可以认为未达到滑动距离的临界值，因此就可以认为它们不是滑动，这样做可以有更好的用户体验">
+<meta name="author" content="夏天的小西瓜">
+<link rel="canonical" href="/posts/android/view_basic/">
+<meta name="google-site-verification" content="XYZabc">
+<meta name="msvalidate.01" content="XYZabc">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.44278f16c6e7e77192a15a0565fb5b0f220c56128442fcfa6937b4d84456ecf0.css" integrity="sha256-RCePFsbn53GSoVoFZftbDyIMVhKEQvz6aTe02ERW7PA=" rel="preload stylesheet" as="style">
+<link rel="icon" href="/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="mask-icon" href="/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="en" href="/posts/android/view_basic/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-track {
+                background: 0 0;
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-thumb {
+                border-color: var(--theme);
+            }
+        }
+
+    </style>
+</noscript><script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+<script>
+
+const config = {
+    startOnLoad:true,
+    
+    themeVariables: {
+        lineColor: "#ffffff"    
+    },
+    flowchart: {
+        useMaxWidth:false,
+        htmlLabels:true
+    }
+};
+mermaid.initialize(config);
+
+
+window.onload = () => {
+    window.mermaid.init(undefined, document.querySelectorAll('.language-mermaid'));
+}
+</script><meta property="og:url" content="/posts/android/view_basic/">
+  <meta property="og:site_name" content="缥缈夏鸢">
+  <meta property="og:title" content="Android View基础知识">
+  <meta property="og:description" content="View是Android所有控件的基类，是一种界面层控件的抽象角色。在Android的设计中，ViewGroup也继承了View，这就意味着View本身就可以是单个控件也可以是由多个控件组成的一组控件，通过这种关系就形成了View树的结构。
+View位置参数 View的位置主要由它的四个顶点来决定，分别对应于View的四个属性：top、left、right、bottom，其中top是左上角纵坐标，left是左上角横坐标，right是右下角横坐标，bottom是右下角纵坐标。注意，这些坐标是相对于View的父容器来说的，它是一种相对坐标。
+View的宽高和坐标的关系：width = right -left; height = bottom - top;
+从Android3.0开始，View增加参数：x、y、translationX、translationY，其中x和y是View左上角的坐标，而translationX和translationY是View左上角相对于父容器的偏移量。这几个参数也是相对于父容器的坐标，并且translationX和translationY的默认值是0。
+这几个参数的换算关系如下：x = left &#43; translationX; y = top &#43; translationY;
+在View在平移的过程中，top和left是原始左上角的位置信息，不会发生改变。发生改变的是x、y、translationX和translationY这四个参数。
+MotionEvent和TouchSlop 在手指接触屏幕后产生的一系列事件，该事件对象是MotionEvent。
+下面是常用的事件类型：
+public final class MotionEvent extends InputEvent implements Parcelable { public static final int ACTION_MASK = 0xff; public static final int ACTION_DOWN = 0; public static final int ACTION_UP = 1; public static final int ACTION_MOVE = 2; public static final int ACTION_CANCEL = 3; public static final int ACTION_OUTSIDE = 4; public static final int ACTION_POINTER_DOWN = 5; public static final int ACTION_POINTER_UP = 6; ... } TouchSlop是系统所能识别出的被认为是滑动的最小距离。可以通过如下代码获取：ViewConfiguration. get(getContext()).getScaledTouchSlop()。当我们在处理滑动时，可以利用这个常量来做一些过滤，比如当两次滑动事件的滑动距离小于这个值，我们就可以认为未达到滑动距离的临界值，因此就可以认为它们不是滑动，这样做可以有更好的用户体验">
+  <meta property="og:locale" content="en-us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2025-05-13T15:11:46+08:00">
+    <meta property="article:modified_time" content="2025-05-13T15:11:46+08:00">
+    <meta property="article:tag" content="View事件体系">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Android View基础知识">
+<meta name="twitter:description" content="View是Android所有控件的基类，是一种界面层控件的抽象角色。在Android的设计中，ViewGroup也继承了View，这就意味着View本身就可以是单个控件也可以是由多个控件组成的一组控件，通过这种关系就形成了View树的结构。
+View位置参数
+View的位置主要由它的四个顶点来决定，分别对应于View的四个属性：top、left、right、bottom，其中top是左上角纵坐标，left是左上角横坐标，right是右下角横坐标，bottom是右下角纵坐标。注意，这些坐标是相对于View的父容器来说的，它是一种相对坐标。
+View的宽高和坐标的关系：width = right -left; height = bottom - top;
+从Android3.0开始，View增加参数：x、y、translationX、translationY，其中x和y是View左上角的坐标，而translationX和translationY是View左上角相对于父容器的偏移量。这几个参数也是相对于父容器的坐标，并且translationX和translationY的默认值是0。
+这几个参数的换算关系如下：x = left &#43; translationX; y = top &#43; translationY;
+
+在View在平移的过程中，top和left是原始左上角的位置信息，不会发生改变。发生改变的是x、y、translationX和translationY这四个参数。
+
+MotionEvent和TouchSlop
+在手指接触屏幕后产生的一系列事件，该事件对象是MotionEvent。
+下面是常用的事件类型：
+public final class MotionEvent extends InputEvent implements Parcelable {
+    public static final int ACTION_MASK             = 0xff;
+    public static final int ACTION_DOWN             = 0;
+    public static final int ACTION_UP               = 1;
+    public static final int ACTION_MOVE             = 2;
+    public static final int ACTION_CANCEL           = 3;
+    public static final int ACTION_OUTSIDE          = 4;
+    public static final int ACTION_POINTER_DOWN     = 5;
+    public static final int ACTION_POINTER_UP       = 6;
+    ...
+}
+TouchSlop是系统所能识别出的被认为是滑动的最小距离。可以通过如下代码获取：ViewConfiguration. get(getContext()).getScaledTouchSlop()。当我们在处理滑动时，可以利用这个常量来做一些过滤，比如当两次滑动事件的滑动距离小于这个值，我们就可以认为未达到滑动距离的临界值，因此就可以认为它们不是滑动，这样做可以有更好的用户体验">
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Posts",
+      "item": "/posts/"
+    }
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Android View基础知识",
+      "item": "/posts/android/view_basic/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Android View基础知识",
+  "name": "Android View基础知识",
+  "description": "View是Android所有控件的基类，是一种界面层控件的抽象角色。在Android的设计中，ViewGroup也继承了View，这就意味着View本身就可以是单个控件也可以是由多个控件组成的一组控件，通过这种关系就形成了View树的结构。\nView位置参数 View的位置主要由它的四个顶点来决定，分别对应于View的四个属性：top、left、right、bottom，其中top是左上角纵坐标，left是左上角横坐标，right是右下角横坐标，bottom是右下角纵坐标。注意，这些坐标是相对于View的父容器来说的，它是一种相对坐标。\nView的宽高和坐标的关系：width = right -left; height = bottom - top;\n从Android3.0开始，View增加参数：x、y、translationX、translationY，其中x和y是View左上角的坐标，而translationX和translationY是View左上角相对于父容器的偏移量。这几个参数也是相对于父容器的坐标，并且translationX和translationY的默认值是0。\n这几个参数的换算关系如下：x = left + translationX; y = top + translationY;\n在View在平移的过程中，top和left是原始左上角的位置信息，不会发生改变。发生改变的是x、y、translationX和translationY这四个参数。\nMotionEvent和TouchSlop 在手指接触屏幕后产生的一系列事件，该事件对象是MotionEvent。\n下面是常用的事件类型：\npublic final class MotionEvent extends InputEvent implements Parcelable { public static final int ACTION_MASK = 0xff; public static final int ACTION_DOWN = 0; public static final int ACTION_UP = 1; public static final int ACTION_MOVE = 2; public static final int ACTION_CANCEL = 3; public static final int ACTION_OUTSIDE = 4; public static final int ACTION_POINTER_DOWN = 5; public static final int ACTION_POINTER_UP = 6; ... } TouchSlop是系统所能识别出的被认为是滑动的最小距离。可以通过如下代码获取：ViewConfiguration. get(getContext()).getScaledTouchSlop()。当我们在处理滑动时，可以利用这个常量来做一些过滤，比如当两次滑动事件的滑动距离小于这个值，我们就可以认为未达到滑动距离的临界值，因此就可以认为它们不是滑动，这样做可以有更好的用户体验\n",
+  "keywords": [
+    "View事件体系"
+  ],
+  "articleBody": "View是Android所有控件的基类，是一种界面层控件的抽象角色。在Android的设计中，ViewGroup也继承了View，这就意味着View本身就可以是单个控件也可以是由多个控件组成的一组控件，通过这种关系就形成了View树的结构。\nView位置参数 View的位置主要由它的四个顶点来决定，分别对应于View的四个属性：top、left、right、bottom，其中top是左上角纵坐标，left是左上角横坐标，right是右下角横坐标，bottom是右下角纵坐标。注意，这些坐标是相对于View的父容器来说的，它是一种相对坐标。\nView的宽高和坐标的关系：width = right -left; height = bottom - top;\n从Android3.0开始，View增加参数：x、y、translationX、translationY，其中x和y是View左上角的坐标，而translationX和translationY是View左上角相对于父容器的偏移量。这几个参数也是相对于父容器的坐标，并且translationX和translationY的默认值是0。\n这几个参数的换算关系如下：x = left + translationX; y = top + translationY;\n在View在平移的过程中，top和left是原始左上角的位置信息，不会发生改变。发生改变的是x、y、translationX和translationY这四个参数。\nMotionEvent和TouchSlop 在手指接触屏幕后产生的一系列事件，该事件对象是MotionEvent。\n下面是常用的事件类型：\npublic final class MotionEvent extends InputEvent implements Parcelable { public static final int ACTION_MASK = 0xff; public static final int ACTION_DOWN = 0; public static final int ACTION_UP = 1; public static final int ACTION_MOVE = 2; public static final int ACTION_CANCEL = 3; public static final int ACTION_OUTSIDE = 4; public static final int ACTION_POINTER_DOWN = 5; public static final int ACTION_POINTER_UP = 6; ... } TouchSlop是系统所能识别出的被认为是滑动的最小距离。可以通过如下代码获取：ViewConfiguration. get(getContext()).getScaledTouchSlop()。当我们在处理滑动时，可以利用这个常量来做一些过滤，比如当两次滑动事件的滑动距离小于这个值，我们就可以认为未达到滑动距离的临界值，因此就可以认为它们不是滑动，这样做可以有更好的用户体验\nView滑动方向 Android坐标系可分为屏幕坐标系与视图坐标系：\n屏幕坐标系：屏幕左上角为坐标原点，向右为x轴增大方向，向下为y轴增大方向 视图坐标系：相对于父控件而言，以父控件的左上角为坐标原点 滑动的两种类型及方向对应关系：\n滑动类型 方向定义 典型场景 值范围 手指滑动 用户手指在屏幕上的物理移动方向 MotionEvent 的坐标变化 以像素为单位 页面内容滑动 视图内容相对于屏幕的移动方向 scrollTo()、translationY 以像素为单位 以页面垂直滚动为例，定义上一次点击为mLastTouchY，当前点击为y，此时可计算出：\n// 滚动值 int dy = mLastTouchY - y; // 通过translationY实现页面内容滑动 // translationY初始值为0，加上正数值，页面内容向下滑动；加上负数值，页面内容向上滑动 float translationY = view.getTranslationY(); if(dy \u003e 0) { // 手指向上滑动，页面内容向上滑动（dy正数，-dy则负数，此时translationY相加视图向上滑动） view.setTranslationY(translationY - dy) } else { // 手指向下滑动，页面内容向下滑动（dy为负数，-dy则正数，此时translationY相加视图向下滑动） view.setTranslationY(translationY - dy) } View滑动常用方法 以下是View滑动的常用方法：\nscrollTo：实现传递坐标点的绝对滑动 scrollBy：基于当前位置的相关滑动 canScrollVertically：是否可在垂直方向滑动。传入负数检查是否可向上滑动，传入正数检查是否可向下滑动 canScrollHorizontally：是否可在水平方向滑动。传入负数检查是否可向左滑动，传入正数检查是否可向右滑动 computeVerticalScrollOffset：返回当前滚动的偏移量，即已经滚动的距离。 computeVerticalScrollExtent：返回当前可见区域的高度（屏幕显示内容的高度）。 computeVerticalScrollRange：返回可滚动内容的总高度（包括不可见部分） View滑动速度、手势与滑动 1. VelocityTracker VelocityTracker，速度追踪，用于追踪手指在滑动过程中的速度，包括水平和竖直方向的速度。\npublic boolean onTouchEvent(MotionEvent event) { ... // 追踪当前单击事件的速度 VelocityTracker velocityTracker = VelocityTracker.obtian(); velocityTracker.addMovement(event); ... } // 计算当前事件的速度。这里计算的是事件在1s内滑动的像素值 velocityTracker.computeCurrentVelocity(1000); int xVelocity = velocityTracker.getXVelocity(); int yVelocity = velocityTracker.getYVelocity(); // 回收计算事件速度的资源 velocityTracker.clear(); velocityTracker.recycle(); Android的坐标体系是以左上角(0,0)作为坐标原点，当手指从水平方向从左向右滑动，速度值为正数；当手指从水平方向从右向左，速度值为负数。\n2. GestureDetector GestureDetector，手势检测，用于辅助检测用户的单击、滑动、长按、双击等行为。大致的流程是创建一个GestureDetector对象，并实现需要监听的接口，接管View的onTouchEvent方法及返回值即可。ScaleGestureDetector的使用流程与之类似。\n3. Scroller弹性滑动 Scroller，弹性滑动对象，用于实现View的弹性滑动。Scroller本身无法让View弹性滑动，需要和View的computeScroll方法搭配使用。\nScroller mScroller; public XXXView(...){ // 初始化Scroller对象 mScroller = new Scroller(mContext); } private void smoothScrollToX(int destX, int destY) { int scrollX = mScroller.getScrollX(); int delta = destX - scrollX; // 在1s的时间内滑动delta距离，注意第三和四个参数是在X和Y轴滑动的距离值 mScroller.startScroll(scrollX, 0, delta, 0, 1000); // 更新操作其中一个触发的方法时computeScroll() invalidate(); } @Override public void computeScroll() { if(mScroller.computeScrollOffset()){ // 计算是否有滑动偏移值 scrollTo(mScroller.getCurrX(), mScroller.getCurrY()); // 执行刷新后会继续回调此方法，直至不再有滑动偏移值 invalidate(); } } 实现原理：调用View的invalidate方法会在draw方法触发调用computeScroll方法，而Scroller的computeScrollOffset方法内部会根据时间流逝的百分比来算出当前的mCurrX与mCurrY值，当未完成弹性滑动的时候，会不断触发View的scrollTo方法进行滑动。\n",
+  "wordCount" : "254",
+  "inLanguage": "en",
+  "datePublished": "2025-05-13T15:11:46+08:00",
+  "dateModified": "2025-05-13T15:11:46+08:00",
+  "author":[{
+    "@type": "Person",
+    "name": "夏天的小西瓜"
+  }],
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "/posts/android/view_basic/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "缥缈夏鸢",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "/favicon.ico"
+    }
+  }
+}
+</script>
+</head>
+
+<body class="" id="top">
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.body.classList.add('dark');
+    } else if (localStorage.getItem("pref-theme") === "light") {
+        document.body.classList.remove('dark')
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.body.classList.add('dark');
+    }
+
+</script>
+
+<header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="/" accesskey="h" title="缥缈夏鸢 (Alt + H)">缥缈夏鸢</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" accesskey="t" title="(Alt + T)">
+                    <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu">
+            <li>
+                <a href="/" title="首页">
+                    <span>首页</span>
+                </a>
+            </li>
+            <li>
+                <a href="/posts/" title="文章">
+                    <span>文章</span>
+                </a>
+            </li>
+            <li>
+                <a href="/categories/" title="分类">
+                    <span>分类</span>
+                </a>
+            </li>
+            <li>
+                <a href="/tags/" title="标签">
+                    <span>标签</span>
+                </a>
+            </li>
+            <li>
+                <a href="/archives/" title="归档">
+                    <span>归档</span>
+                </a>
+            </li>
+            <li>
+                <a href="/about/" title="关于">
+                    <span>关于</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <div class="breadcrumbs"><a href="/">Home</a>&nbsp;»&nbsp;<a href="/posts/">Posts</a></div>
+    <h1 class="post-title entry-hint-parent">
+      Android View基础知识
+    </h1>
+    <div class="post-meta"><span title='2025-05-13 15:11:46 +0800 CST'>May 13, 2025</span>&nbsp;·&nbsp;2 min&nbsp;·&nbsp;254 words&nbsp;·&nbsp;夏天的小西瓜
+
+</div>
+  </header> <aside id="toc-container" class="toc-container wide">
+    <div class="toc">
+        <details  open>
+            <summary accesskey="c" title="(Alt + C)">
+                <span class="details">Table of Contents</span>
+            </summary>
+
+            <div class="inner"><ul>
+                    <li>
+                        <a href="#view%e4%bd%8d%e7%bd%ae%e5%8f%82%e6%95%b0" aria-label="View位置参数">View位置参数</a></li>
+                    <li>
+                        <a href="#motionevent%e5%92%8ctouchslop" aria-label="MotionEvent和TouchSlop">MotionEvent和TouchSlop</a></li>
+                    <li>
+                        <a href="#view%e6%bb%91%e5%8a%a8%e6%96%b9%e5%90%91" aria-label="View滑动方向">View滑动方向</a></li>
+                    <li>
+                        <a href="#view%e6%bb%91%e5%8a%a8%e5%b8%b8%e7%94%a8%e6%96%b9%e6%b3%95" aria-label="View滑动常用方法">View滑动常用方法</a></li>
+                    <li>
+                        <a href="#view%e6%bb%91%e5%8a%a8%e9%80%9f%e5%ba%a6%e6%89%8b%e5%8a%bf%e4%b8%8e%e6%bb%91%e5%8a%a8" aria-label="View滑动速度、手势与滑动">View滑动速度、手势与滑动</a><ul>
+                            
+                    <li>
+                        <a href="#1-velocitytracker" aria-label="1. VelocityTracker">1. VelocityTracker</a></li>
+                    <li>
+                        <a href="#2-gesturedetector" aria-label="2. GestureDetector">2. GestureDetector</a></li>
+                    <li>
+                        <a href="#3-scroller%e5%bc%b9%e6%80%a7%e6%bb%91%e5%8a%a8" aria-label="3. Scroller弹性滑动">3. Scroller弹性滑动</a>
+                    </li>
+                </ul>
+                </li>
+                </ul>
+            </div>
+        </details>
+    </div>
+</aside>
+<script>
+    let activeElement;
+    let elements;
+    window.addEventListener('DOMContentLoaded', function (event) {
+        checkTocPosition();
+
+        elements = document.querySelectorAll('h1[id],h2[id],h3[id],h4[id],h5[id],h6[id]');
+         
+         activeElement = elements[0];
+         const id = encodeURI(activeElement.getAttribute('id')).toLowerCase();
+         document.querySelector(`.inner ul li a[href="#${id}"]`).classList.add('active');
+     }, false);
+
+    window.addEventListener('resize', function(event) {
+        checkTocPosition();
+    }, false);
+
+    window.addEventListener('scroll', () => {
+        
+        activeElement = Array.from(elements).find((element) => {
+            if ((getOffsetTop(element) - window.pageYOffset) > 0 && 
+                (getOffsetTop(element) - window.pageYOffset) < window.innerHeight/2) {
+                return element;
+            }
+        }) || activeElement
+
+        elements.forEach(element => {
+             const id = encodeURI(element.getAttribute('id')).toLowerCase();
+             if (element === activeElement){
+                 document.querySelector(`.inner ul li a[href="#${id}"]`).classList.add('active');
+             } else {
+                 document.querySelector(`.inner ul li a[href="#${id}"]`).classList.remove('active');
+             }
+         })
+     }, false);
+
+    const main = parseInt(getComputedStyle(document.body).getPropertyValue('--article-width'), 10);
+    const toc = parseInt(getComputedStyle(document.body).getPropertyValue('--toc-width'), 10);
+    const gap = parseInt(getComputedStyle(document.body).getPropertyValue('--gap'), 10);
+
+    function checkTocPosition() {
+        const width = document.body.scrollWidth;
+
+        if (width - main - (toc * 2) - (gap * 4) > 0) {
+            document.getElementById("toc-container").classList.add("wide");
+        } else {
+            document.getElementById("toc-container").classList.remove("wide");
+        }
+    }
+
+    function getOffsetTop(element) {
+        if (!element.getClientRects().length) {
+            return 0;
+        }
+        let rect = element.getBoundingClientRect();
+        let win = element.ownerDocument.defaultView;
+        return rect.top + win.pageYOffset;   
+    }
+</script>
+
+  <div class="post-content"><p>View是Android所有控件的基类，是一种界面层控件的抽象角色。在Android的设计中，ViewGroup也继承了View，这就意味着View本身就可以是单个控件也可以是由多个控件组成的一组控件，通过这种关系就形成了View树的结构。</p>
+<h3 id="view位置参数">View位置参数<a hidden class="anchor" aria-hidden="true" href="#view位置参数">#</a></h3>
+<p>View的位置主要由它的四个顶点来决定，分别对应于View的四个属性：<strong>top、left、right、bottom</strong>，其中top是左上角纵坐标，left是左上角横坐标，right是右下角横坐标，bottom是右下角纵坐标。注意，这些坐标是相对于View的父容器来说的，它是一种相对坐标。</p>
+<p>View的宽高和坐标的关系：<code>width = right -left; height = bottom - top;</code></p>
+<p>从Android3.0开始，View增加参数：<strong>x、y、translationX、translationY</strong>，其中x和y是View左上角的坐标，而translationX和translationY是View左上角相对于父容器的偏移量。这几个参数也是相对于父容器的坐标，并且<strong>translationX和translationY的默认值是0</strong>。</p>
+<p>这几个参数的换算关系如下：<code>x = left + translationX; y = top + translationY;</code></p>
+<blockquote>
+<p>在View在平移的过程中，top和left是原始左上角的位置信息，不会发生改变。发生改变的是x、y、translationX和translationY这四个参数。</p>
+</blockquote>
+<h3 id="motionevent和touchslop">MotionEvent和TouchSlop<a hidden class="anchor" aria-hidden="true" href="#motionevent和touchslop">#</a></h3>
+<p>在手指接触屏幕后产生的一系列事件，该事件对象是<strong>MotionEvent</strong>。</p>
+<p>下面是常用的事件类型：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">public</span><span class="w"> </span><span class="kd">final</span><span class="w"> </span><span class="kd">class</span> <span class="nc">MotionEvent</span><span class="w"> </span><span class="kd">extends</span><span class="w"> </span><span class="n">InputEvent</span><span class="w"> </span><span class="kd">implements</span><span class="w"> </span><span class="n">Parcelable</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kd">static</span><span class="w"> </span><span class="kd">final</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">ACTION_MASK</span><span class="w">             </span><span class="o">=</span><span class="w"> </span><span class="n">0xff</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kd">static</span><span class="w"> </span><span class="kd">final</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">ACTION_DOWN</span><span class="w">             </span><span class="o">=</span><span class="w"> </span><span class="n">0</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kd">static</span><span class="w"> </span><span class="kd">final</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">ACTION_UP</span><span class="w">               </span><span class="o">=</span><span class="w"> </span><span class="n">1</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kd">static</span><span class="w"> </span><span class="kd">final</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">ACTION_MOVE</span><span class="w">             </span><span class="o">=</span><span class="w"> </span><span class="n">2</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kd">static</span><span class="w"> </span><span class="kd">final</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">ACTION_CANCEL</span><span class="w">           </span><span class="o">=</span><span class="w"> </span><span class="n">3</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kd">static</span><span class="w"> </span><span class="kd">final</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">ACTION_OUTSIDE</span><span class="w">          </span><span class="o">=</span><span class="w"> </span><span class="n">4</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kd">static</span><span class="w"> </span><span class="kd">final</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">ACTION_POINTER_DOWN</span><span class="w">     </span><span class="o">=</span><span class="w"> </span><span class="n">5</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kd">static</span><span class="w"> </span><span class="kd">final</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">ACTION_POINTER_UP</span><span class="w">       </span><span class="o">=</span><span class="w"> </span><span class="n">6</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">...</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></div><p><strong>TouchSlop</strong>是系统所能识别出的被认为是滑动的最小距离。可以通过如下代码获取：<code>ViewConfiguration. get(getContext()).getScaledTouchSlop()</code>。当我们在处理滑动时，可以利用这个常量来做一些过滤，比如当两次滑动事件的滑动距离小于这个值，我们就可以认为未达到滑动距离的临界值，因此就可以认为它们不是滑动，这样做可以有更好的用户体验</p>
+<h3 id="view滑动方向">View滑动方向<a hidden class="anchor" aria-hidden="true" href="#view滑动方向">#</a></h3>
+<p>Android坐标系可分为屏幕坐标系与视图坐标系：</p>
+<ul>
+<li>屏幕坐标系：屏幕左上角为坐标原点，向右为x轴增大方向，向下为y轴增大方向</li>
+<li>视图坐标系：相对于父控件而言，以父控件的左上角为坐标原点</li>
+</ul>
+<p>滑动的两种类型及方向对应关系：</p>
+<table>
+  <thead>
+      <tr>
+          <th style="text-align: left">滑动类型</th>
+          <th style="text-align: left">方向定义</th>
+          <th style="text-align: left">典型场景</th>
+          <th style="text-align: left">值范围</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td style="text-align: left"><strong>手指滑动</strong></td>
+          <td style="text-align: left">用户手指在屏幕上的物理移动方向</td>
+          <td style="text-align: left"><code>MotionEvent</code> 的坐标变化</td>
+          <td style="text-align: left">以像素为单位</td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><strong>页面内容滑动</strong></td>
+          <td style="text-align: left">视图内容相对于屏幕的移动方向</td>
+          <td style="text-align: left"><code>scrollTo()</code>、<code>translationY</code></td>
+          <td style="text-align: left">以像素为单位</td>
+      </tr>
+  </tbody>
+</table>
+<p>以页面垂直滚动为例，定义上一次点击为<strong>mLastTouchY</strong>，当前点击为<strong>y</strong>，此时可计算出：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="c1">// 滚动值</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kt">int</span><span class="w"> </span><span class="n">dy</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mLastTouchY</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">y</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="c1">// 通过translationY实现页面内容滑动</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="c1">// translationY初始值为0，加上正数值，页面内容向下滑动；加上负数值，页面内容向上滑动</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kt">float</span><span class="w"> </span><span class="n">translationY</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">view</span><span class="p">.</span><span class="na">getTranslationY</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">if</span><span class="p">(</span><span class="n">dy</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="c1">// 手指向上滑动，页面内容向上滑动（dy正数，-dy则负数，此时translationY相加视图向上滑动）</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">view</span><span class="p">.</span><span class="na">setTranslationY</span><span class="p">(</span><span class="n">translationY</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">dy</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">// 手指向下滑动，页面内容向下滑动（dy为负数，-dy则正数，此时translationY相加视图向下滑动）</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">view</span><span class="p">.</span><span class="na">setTranslationY</span><span class="p">(</span><span class="n">translationY</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">dy</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></div><h3 id="view滑动常用方法">View滑动常用方法<a hidden class="anchor" aria-hidden="true" href="#view滑动常用方法">#</a></h3>
+<p>以下是View滑动的常用方法：</p>
+<ul>
+<li><strong>scrollTo</strong>：实现传递坐标点的绝对滑动</li>
+<li><strong>scrollBy</strong>：基于当前位置的相关滑动</li>
+<li><strong>canScrollVertically</strong>：是否可在垂直方向滑动。传入负数检查是否可向上滑动，传入正数检查是否可向下滑动</li>
+<li><strong>canScrollHorizontally</strong>：是否可在水平方向滑动。传入负数检查是否可向左滑动，传入正数检查是否可向右滑动</li>
+<li><strong>computeVerticalScrollOffset</strong>：返回当前滚动的偏移量，即已经滚动的距离。</li>
+<li><strong>computeVerticalScrollExtent</strong>：返回当前可见区域的高度（屏幕显示内容的高度）。</li>
+<li><strong>computeVerticalScrollRange</strong>：返回可滚动内容的总高度（包括不可见部分）</li>
+</ul>
+<h3 id="view滑动速度手势与滑动">View滑动速度、手势与滑动<a hidden class="anchor" aria-hidden="true" href="#view滑动速度手势与滑动">#</a></h3>
+<h4 id="1-velocitytracker">1. VelocityTracker<a hidden class="anchor" aria-hidden="true" href="#1-velocitytracker">#</a></h4>
+<p><strong>VelocityTracker</strong>，速度追踪，用于追踪手指在滑动过程中的速度，包括水平和竖直方向的速度。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">public</span><span class="w"> </span><span class="kt">boolean</span><span class="w"> </span><span class="nf">onTouchEvent</span><span class="p">(</span><span class="n">MotionEvent</span><span class="w"> </span><span class="n">event</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">...</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">// 追踪当前单击事件的速度</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">VelocityTracker</span><span class="w"> </span><span class="n">velocityTracker</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">VelocityTracker</span><span class="p">.</span><span class="na">obtian</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">velocityTracker</span><span class="p">.</span><span class="na">addMovement</span><span class="p">(</span><span class="n">event</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">...</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="c1">// 计算当前事件的速度。这里计算的是事件在1s内滑动的像素值</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">velocityTracker</span><span class="p">.</span><span class="na">computeCurrentVelocity</span><span class="p">(</span><span class="n">1000</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kt">int</span><span class="w"> </span><span class="n">xVelocity</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">velocityTracker</span><span class="p">.</span><span class="na">getXVelocity</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kt">int</span><span class="w"> </span><span class="n">yVelocity</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">velocityTracker</span><span class="p">.</span><span class="na">getYVelocity</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="c1">// 回收计算事件速度的资源</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">velocityTracker</span><span class="p">.</span><span class="na">clear</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">velocityTracker</span><span class="p">.</span><span class="na">recycle</span><span class="p">();</span><span class="w">
+</span></span></span></code></pre></div><p>Android的坐标体系是以左上角(0,0)作为坐标原点，当手指从水平方向从左向右滑动，速度值为正数；当手指从水平方向从右向左，速度值为负数。</p>
+<h4 id="2-gesturedetector">2. GestureDetector<a hidden class="anchor" aria-hidden="true" href="#2-gesturedetector">#</a></h4>
+<p><strong>GestureDetector</strong>，手势检测，用于辅助检测用户的单击、滑动、长按、双击等行为。大致的流程是创建一个GestureDetector对象，并实现需要监听的接口，接管View的onTouchEvent方法及返回值即可。<strong>ScaleGestureDetector</strong>的使用流程与之类似。</p>
+<h4 id="3-scroller弹性滑动">3. Scroller弹性滑动<a hidden class="anchor" aria-hidden="true" href="#3-scroller弹性滑动">#</a></h4>
+<p><strong>Scroller</strong>，弹性滑动对象，用于实现View的弹性滑动。Scroller本身无法让View弹性滑动，需要和View的<strong>computeScroll</strong>方法搭配使用。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">Scroller</span><span class="w"> </span><span class="n">mScroller</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">public</span><span class="w"> </span><span class="nf">XXXView</span><span class="p">(...){</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">// 初始化Scroller对象</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">mScroller</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">Scroller</span><span class="p">(</span><span class="n">mContext</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">private</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">smoothScrollToX</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">destX</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">destY</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">scrollX</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mScroller</span><span class="p">.</span><span class="na">getScrollX</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">delta</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">destX</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">scrollX</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">// 在1s的时间内滑动delta距离，注意第三和四个参数是在X和Y轴滑动的距离值</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">mScroller</span><span class="p">.</span><span class="na">startScroll</span><span class="p">(</span><span class="n">scrollX</span><span class="p">,</span><span class="w"> </span><span class="n">0</span><span class="p">,</span><span class="w"> </span><span class="n">delta</span><span class="p">,</span><span class="w"> </span><span class="n">0</span><span class="p">,</span><span class="w"> </span><span class="n">1000</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">// 更新操作其中一个触发的方法时computeScroll()</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">invalidate</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="nd">@Override</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">computeScroll</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">if</span><span class="p">(</span><span class="n">mScroller</span><span class="p">.</span><span class="na">computeScrollOffset</span><span class="p">()){</span><span class="w"> </span><span class="c1">// 计算是否有滑动偏移值</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">scrollTo</span><span class="p">(</span><span class="n">mScroller</span><span class="p">.</span><span class="na">getCurrX</span><span class="p">(),</span><span class="w"> </span><span class="n">mScroller</span><span class="p">.</span><span class="na">getCurrY</span><span class="p">());</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="c1">// 执行刷新后会继续回调此方法，直至不再有滑动偏移值</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">invalidate</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></div><p>实现原理：调用View的invalidate方法会在draw方法触发调用computeScroll方法，而Scroller的computeScrollOffset方法内部会根据时间流逝的百分比来算出当前的mCurrX与mCurrY值，当未完成弹性滑动的时候，会不断触发View的scrollTo方法进行滑动。</p>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="/tags/view%E4%BA%8B%E4%BB%B6%E4%BD%93%E7%B3%BB/">View事件体系</a></li>
+    </ul>
+<nav class="paginav">
+  <a class="prev" href="/posts/android/view_traversals/">
+    <span class="title">« Prev</span>
+    <br>
+    <span>Android View工作流程</span>
+  </a>
+  <a class="next" href="/posts/tools/charles/">
+    <span class="title">Next »</span>
+    <br>
+    <span>Charles网络抓包</span>
+  </a>
+</nav>
+
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2025 <a href="/">缥缈夏鸢</a></span> · 
+
+    <span>
+        Powered by
+        <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+        <path d="M12 6H0l6-6z" />
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu')
+    if (menu) {
+        menu.scrollLeft = localStorage.getItem("menu-scroll-position");
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        if (document.body.className.includes("dark")) {
+            document.body.classList.remove('dark');
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            document.body.classList.add('dark');
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerHTML = 'copy';
+
+        function copyingDone() {
+            copybutton.innerHTML = 'copied!';
+            setTimeout(() => {
+                copybutton.innerHTML = 'copy';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+</body>
+
+</html>

@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>adb日常使用 | 缥缈夏鸢</title>
+<meta name="keywords" content="adb">
+<meta name="description" content="简述
+adb日志操作
+adb logcat日志可分为：main、system、events、radio、crash、kernel类型的log，常用日志过滤命令如下：
+
+adb logcat -b main
+adb logcat -b system
+adb logcat -b events
+adb logcat -b radio
+adb logcat -b crash
+adb logcat -b kernel
+
+logcat其它命令补充：
+
+adb logcat -b events：输出指定buffer的log
+adb logcat -s &ldquo;ActivityManager&rdquo;：输出指定tag的log
+adb logcat -L：上次重启时的log
+adb logcat -f [file_path]：将log保存到指定文件
+adb logcat -g：缓冲区大小
+adb logcat -S：log统计信息
+adb shell setprop log.tag.[Tag] {VDIWE}：设置log标签的过滤级别
+dmesg或者cat /proc/kmsg：adb shell进入手机后打印内核日志
+adb logcat -b events | egrep -i resume_activity：查看执行到resume状态的activity
+
+
+从Android O开始引入Log的chatty机制，会把中间的重复内容不再打印，而是输出类似 “uid=1000(system) Binder:1453_1D identical 7 lines” ，告知有多少行的日志是一样的，这不是错误，只是减少了重复打印的次数。">
+<meta name="author" content="夏天的小西瓜">
+<link rel="canonical" href="/posts/tools/adb/">
+<meta name="google-site-verification" content="XYZabc">
+<meta name="msvalidate.01" content="XYZabc">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.44278f16c6e7e77192a15a0565fb5b0f220c56128442fcfa6937b4d84456ecf0.css" integrity="sha256-RCePFsbn53GSoVoFZftbDyIMVhKEQvz6aTe02ERW7PA=" rel="preload stylesheet" as="style">
+<link rel="icon" href="/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="mask-icon" href="/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="en" href="/posts/tools/adb/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-track {
+                background: 0 0;
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-thumb {
+                border-color: var(--theme);
+            }
+        }
+
+    </style>
+</noscript><script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+<script>
+
+const config = {
+    startOnLoad:true,
+    
+    themeVariables: {
+        lineColor: "#ffffff"    
+    },
+    flowchart: {
+        useMaxWidth:false,
+        htmlLabels:true
+    }
+};
+mermaid.initialize(config);
+
+
+window.onload = () => {
+    window.mermaid.init(undefined, document.querySelectorAll('.language-mermaid'));
+}
+</script><meta property="og:url" content="/posts/tools/adb/">
+  <meta property="og:site_name" content="缥缈夏鸢">
+  <meta property="og:title" content="adb日常使用">
+  <meta property="og:description" content="简述 adb日志操作 adb logcat日志可分为：main、system、events、radio、crash、kernel类型的log，常用日志过滤命令如下：
+adb logcat -b main adb logcat -b system adb logcat -b events adb logcat -b radio adb logcat -b crash adb logcat -b kernel logcat其它命令补充：
+adb logcat -b events：输出指定buffer的log adb logcat -s “ActivityManager”：输出指定tag的log adb logcat -L：上次重启时的log adb logcat -f [file_path]：将log保存到指定文件 adb logcat -g：缓冲区大小 adb logcat -S：log统计信息 adb shell setprop log.tag.[Tag] {VDIWE}：设置log标签的过滤级别 dmesg或者cat /proc/kmsg：adb shell进入手机后打印内核日志 adb logcat -b events | egrep -i resume_activity：查看执行到resume状态的activity 从Android O开始引入Log的chatty机制，会把中间的重复内容不再打印，而是输出类似 “uid=1000(system) Binder:1453_1D identical 7 lines” ，告知有多少行的日志是一样的，这不是错误，只是减少了重复打印的次数。">
+  <meta property="og:locale" content="en-us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2024-11-15T14:20:18+08:00">
+    <meta property="article:modified_time" content="2024-11-15T14:20:18+08:00">
+    <meta property="article:tag" content="Adb">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="adb日常使用">
+<meta name="twitter:description" content="简述
+adb日志操作
+adb logcat日志可分为：main、system、events、radio、crash、kernel类型的log，常用日志过滤命令如下：
+
+adb logcat -b main
+adb logcat -b system
+adb logcat -b events
+adb logcat -b radio
+adb logcat -b crash
+adb logcat -b kernel
+
+logcat其它命令补充：
+
+adb logcat -b events：输出指定buffer的log
+adb logcat -s &ldquo;ActivityManager&rdquo;：输出指定tag的log
+adb logcat -L：上次重启时的log
+adb logcat -f [file_path]：将log保存到指定文件
+adb logcat -g：缓冲区大小
+adb logcat -S：log统计信息
+adb shell setprop log.tag.[Tag] {VDIWE}：设置log标签的过滤级别
+dmesg或者cat /proc/kmsg：adb shell进入手机后打印内核日志
+adb logcat -b events | egrep -i resume_activity：查看执行到resume状态的activity
+
+
+从Android O开始引入Log的chatty机制，会把中间的重复内容不再打印，而是输出类似 “uid=1000(system) Binder:1453_1D identical 7 lines” ，告知有多少行的日志是一样的，这不是错误，只是减少了重复打印的次数。">
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Posts",
+      "item": "/posts/"
+    }
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "adb日常使用",
+      "item": "/posts/tools/adb/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "adb日常使用",
+  "name": "adb日常使用",
+  "description": "简述 adb日志操作 adb logcat日志可分为：main、system、events、radio、crash、kernel类型的log，常用日志过滤命令如下：\nadb logcat -b main adb logcat -b system adb logcat -b events adb logcat -b radio adb logcat -b crash adb logcat -b kernel logcat其它命令补充：\nadb logcat -b events：输出指定buffer的log adb logcat -s \u0026ldquo;ActivityManager\u0026rdquo;：输出指定tag的log adb logcat -L：上次重启时的log adb logcat -f [file_path]：将log保存到指定文件 adb logcat -g：缓冲区大小 adb logcat -S：log统计信息 adb shell setprop log.tag.[Tag] {VDIWE}：设置log标签的过滤级别 dmesg或者cat /proc/kmsg：adb shell进入手机后打印内核日志 adb logcat -b events | egrep -i resume_activity：查看执行到resume状态的activity 从Android O开始引入Log的chatty机制，会把中间的重复内容不再打印，而是输出类似 “uid=1000(system) Binder:1453_1D identical 7 lines” ，告知有多少行的日志是一样的，这不是错误，只是减少了重复打印的次数。\n",
+  "keywords": [
+    "adb"
+  ],
+  "articleBody": "简述 adb日志操作 adb logcat日志可分为：main、system、events、radio、crash、kernel类型的log，常用日志过滤命令如下：\nadb logcat -b main adb logcat -b system adb logcat -b events adb logcat -b radio adb logcat -b crash adb logcat -b kernel logcat其它命令补充：\nadb logcat -b events：输出指定buffer的log adb logcat -s “ActivityManager”：输出指定tag的log adb logcat -L：上次重启时的log adb logcat -f [file_path]：将log保存到指定文件 adb logcat -g：缓冲区大小 adb logcat -S：log统计信息 adb shell setprop log.tag.[Tag] {VDIWE}：设置log标签的过滤级别 dmesg或者cat /proc/kmsg：adb shell进入手机后打印内核日志 adb logcat -b events | egrep -i resume_activity：查看执行到resume状态的activity 从Android O开始引入Log的chatty机制，会把中间的重复内容不再打印，而是输出类似 “uid=1000(system) Binder:1453_1D identical 7 lines” ，告知有多少行的日志是一样的，这不是错误，只是减少了重复打印的次数。\n1. event log EventLog.java通过writeEvent方法写入Android事件的log。对应的文件为EventLogTags.logtag，并且这个文件有多个。具体可在framework源码中搜索。\nam下的EventLogTags.logtag：\noption java_package com.android.server.am # 启动一个组件，包含Activity、Service、Broadcast、ContentProvide等，可看Type类型 30014 am_proc_start (User|1|5),(PID|1|5),(UID|1|5),(Process Name|3),(Type|3),(Component|3) # 启动的进程 30010 am_proc_bound (User|1|5),(PID|1|5),(Process Name|3) # 完全退出或者击杀掉一个应用 30023 am_kill (User|1|5),(PID|1|5),(Process Name|3),(OomAdj|1|5),(Reason|3) # 当某个服务因其应用程序空闲而被强行停止时 30056 am_stop_idle_service (UID|1|5),(Component Name|3) # ActivityManagerService.systemReady() 表征AMS已经就绪 3040 boot_progress_ams_ready (time|2|3) # ActivityManagerService calls enableScreenAfterBoot()，这个阶段说明用户可以使用手机 3050 boot_progress_enable_screen (time|2|3) # 配置发生变化，如横竖屏切换、语言切换等 2719 configuration_changed (config mask|1|5) # 应用发生未响应 30008 am_anr (User|1|5),(pid|1|5),(Package Name|3),(Flags|1|5),(reason|3) # 应用发生异常，导致crash了 30039 am_crash (User|1|5),(PID|1|5),(Process Name|3),(Flags|1|5),(Exception|3),(Message|3),(File|3),(Line|1|5) # 汇报系统的GC的信息 30046 am_meminfo (Cached|2|2),(Free|2|2),(Zram|2|2),(Kernel|2|2),(Native|2|2) # 汇报该进程的GC信息 30047 am_pss (Pid|1|5),(UID|1|5),(Process Name|3),(Pss|2|2),(Uss|2|2),(SwapPss|2|2) # 当uid的任何进程开始运行时 30052 am_uid_running (UID|1|5) # uid的运行状态为active 30054 am_uid_active (UID|1|5) # uid的运行状态为stopped 30053 am_uid_stopped (UID|1|5) # 当uid的状态变为空闲时（强制执行后台检查）。 30055 am_uid_idle (UID|1|5) 位置：frameworks/base/services/core/java/com/android/server/EventLogTags.logtags server包中的EventLogTags.logtag：\noption java_package com.android.server # --------------------------- # NotificationManagerService.java # --------------------------- # 当调用NotificationManager.notify方法时打印此log。 status: 0=post, 1=update, 2=ignored 2750 notification_enqueue (uid|1|5),(pid|1|5),(pkg|3),(id|1|5),(tag|3),(userid|1|5),(notification|3),(status|1) # 当有人试图取消通知时，通知管理器有时也会使用标志来调用它 2751 notification_cancel (uid|1|5),(pid|1|5),(pkg|3),(id|1|5),(tag|3),(userid|1|5),(required_flags|1),(forbidden_flags|1),(reason|1|5),(listener|3) # 当有人试图取消特定包的所有通知时 2752 notification_cancel_all (uid|1|5),(pid|1|5),(pkg|3),(userid|1|5),(required_flags|1),(forbidden_flags|1),(reason|1|5),(listener|3) # 显示通知面板时，items代表的是通知面板里通知的数量 27500 notification_panel_revealed (items|1) # 当通知面板被隐藏时，会打印此log 27501 notification_panel_hidden # 当通知展开状态或者签约改变时 27511 notification_expansion (key|3),(user_action|1),(expanded|1),(lifespan|1),(freshness|1),(exposure|1) # 当通知被点击时 27520 notification_clicked (key|3),(lifespan|1),(freshness|1),(exposure|1) # 当通知的action类button被点击时 27521 notification_action_clicked (key|3),(action_index|1),(lifespan|1),(freshness|1),(exposure|1) # 当通知已经被取消时 27530 notification_canceled (key|3),(reason|1),(lifespan|1),(freshness|1),(exposure|1),(listener|3) # 当通知新显示在屏幕上或从屏幕上消失时 27531 notification_visibility (key|3),(visibile|1),(lifespan|1),(freshness|1),(exposure|1),(rank|1) # 通知发出声音，振动或闪烁 27532 notification_alert (key|3),(buzz|1),(beep|1),(blink|1) 上面暂时收录了NotificationManagerService相关的event log\nlogging的EventLogTags.logtag：\noption java_package com.android.internal.logging; # 交互事件的log 524287 sysui_view_visibility (category|1|5),(visible|1|6) 524288 sysui_action (category|1|5),(pkg|3) 524292 sysui_multi_action (content|4) 524290 sysui_count (name|3),(increment|1) 524291 sysui_histogram (name|3),(bucket|1) # 系统文件时记录的通用事件 525000 commit_sys_config_file (name|3),(time|2|3) tags格式定位位置：system/core/logcat/event.logtags\n我们注意到，括号内有很多数字，这里需要数据单位和数据值进行简要说明。\n一般格式：(|data type[|data unit])\n数据类型有：\n1: int 2: long 3: string 4: list 数据单位有：\n1: Number of objects（对象个数） 2: Number of bytes（字节数） 3: Number of milliseconds（毫秒数） 4: Number of allocations（分配个数） 5: Id 6: Percent（百分比）s 写入Event日志：EventLog.writeEvent()\n2. system log system log的一般由Slog.java打印出来，其常用的打印实现是调用Log.println_native方法。Slog基本由系统服务使用。\nadb常用操作 1. 常用命令 屏幕截图：adb shell screencap -p /sdcard/filename.png\n录制屏幕（默认录制时间180s）：adb shell screenrecord /sdcard/filename.mp4\n查看输入事件：adb shell getevent -l\n查看应用中运行的服务：adb shell dumpsys activity services [package_name]\n清除数据和缓存：adb shell pm clear [package_name]\n查看应用详细信息：adb shell dumpsys package [package_name]\n查看前台应用：adb shell dumpsys activity activities | grep mResumedActivity\n查看内存占用信息：adb shell dumpsys meminfo [package]\n查看CPU信息：adb shell dumpsys cpuinfo [package]\n生成hprof文件：adb shell am dumpheap [package] [mobile_path/hprof_name.hprof]\n生成Bugreport报告：adb bugreport \u003e [pc_path/bugreport.txt]\n查看系统输入信息：adb shell dumpsys input\n监听操作事件：adb shell uiautomator events\nmonkey命令：adb shell monkey -s 10 --pct-touch 30 --throttle 300 -p [包名] -v [次数] --monitor-native-crashes\n通知指定位置媒体刷新：adb shell am broadcast -a android.intent.action.MEDIA_SCANNER_SCAN_FILE -d file:///sdcard/Pictures\n无线调试：\n无线调试配对：adb pair [ip]:[port] 无线调试连接：adb connect [ip]:[port] Binder调用堆栈打印\n打开IPC打印：adb shell am trace-ipc start 执行应用操作或者等待 停止IPC打印并输出成文件：adb shell am trace-ipc stop --dump-file /data/local/tmp/ipc-trace.txt 拉取IPC的trace文件到当前文件夹：adb pull /data/local/tmp/ipc-trace.txt 2. 读写系统配置 adb可以读取或者写入Settings和SystemProperties值。其中系统属性存在于system/build.prop 文件。\nSettings配置值相关操作有：\nadb shell settings list {system, secure, global}：查看settings属性值列表\nadb shell settings：查看settings的帮助，此时控制台打印内容如下：\nSettings provider (settings) commands: help Print this help text. get [--user | current] NAMESPACE KEY Retrieve the current value of KEY. put [--user | current] NAMESPACE KEY VALUE [TAG] [default] Change the contents of KEY to VALUE. TAG to associate with the setting. {default} to set as the default, case-insensitive only for global/secure namespace delete [--user | current] NAMESPACE KEY Delete the entry for KEY. reset [--user | current] NAMESPACE {PACKAGE_NAME | RESET_MODE} Reset the global/secure table for a package with mode. RESET_MODE is one of {untrusted_defaults, untrusted_clear, trusted_defaults}, case-insensitive list [--user | current] NAMESPACE Print all defined keys. NAMESPACE is one of {system, secure, global}, case-insensitive SystemProperties配置值的操作格式：\nadb shell getprop：查看SystemProperties属性值列表 adb shell getprop [key]：查看系统某个属性值的方法 adb shell setprop [key] [value]：设置某个系统属性 查看设备信息：\n设备型号：adb shell getprop ro.product.model\n设备品牌：adb shell getprop ro.product.brand\n设备处理器型号：adb shell getprop ro.product.board\n设备安卓版本号：adb shell getprop ro.build.version.release\n设备引擎渲染模式：adb shell dumpsys SurfaceFlinger|grep -i “GLES”\n3. dumpsys操作集合 通过dumpsys命令查询系统服务的运行状态(对象的成员变量属性值)\n一般格式：adb shell dumpsys [...]\n查询当前系统所支持的dump服务：adb shell dumpsys -l 查询dump的服务及对应类名：adb shell service list 1. dumpsys activity 查询AMS服务相关信息，可跟不同的参数\n使用activity的帮助命令： adb shell dumpsys activity -h\n可知其格式为： adb shell dumpsys activity [-a] [-c] [-p PACKAGE] [-h] [WHAT] ...\n下面是对相关参数的解析:\n-a: include all available server state. -c: include client state. -p: limit output to given package. WHAT may be one of: a[ctivities]: activity stack state r[recents]: recent activities state b[roadcasts] [PACKAGE_NAME] [history [-s]]: broadcast state broadcast-stats [PACKAGE_NAME]: aggregated broadcast statistics i[ntents] [PACKAGE_NAME]: pending intent state p[rocesses] [PACKAGE_NAME]: process state o[om]: out of memory management perm[issions]: URI permission grant state prov[iders] [COMP_SPEC ...]: content provider state provider [COMP_SPEC]: provider client-side state s[ervices] [COMP_SPEC ...]: service state as[sociations]: tracked app associations settings: currently applied config settings service [COMP_SPEC]: service client-side state package [PACKAGE_NAME]: all state related to given package all: dump all activities top: dump the top activity WHAT may also be a COMP_SPEC to dump activities. COMP_SPEC may be a component name (com.foo/.myApp), a partial substring in a component name, a hex object identifier. 2. dumpsys package 查询PMS服务相关信息，可跟不同的参数\n使用package的帮助命令：adb shell dumpsys package -h\n可知其使用格式如下：adb shell dumpsys package [-h] [-f] [--checkin] [cmd] ...\n下面是对相关参数的解析：\n[-h] [-f] [--checkin] [cmd] ... --checkin: dump for a checkin -f: print details of intent filters -h: print this help [cmd] may be one of: l[ibraries]: list known shared libraries f[eatures]: list device features k[eysets]: print known keysets r[esolvers] [activity|service|receiver|content]: dump intent resolvers perm[issions]: dump permissions permission [name ...]: dump declaration and use of given permission pref[erred]: print preferred package settings preferred-xml [--full]: print preferred package settings as xml prov[iders]: dump content providers p[ackages]: dump installed packages s[hared-users]: dump shared user IDs m[essages]: print collected runtime messages v[erifiers]: print package verifier info d[omain-preferred-apps]: print domains preferred apps i[ntent-filter-verifiers]|ifv: print intent filter verifier info version: print database version info write: write current settings now installs: details about install sessions check-permission []: does pkg hold perm? dexopt: dump dexopt state compiler-stats: dump compiler statistics enabled-overlays: dump list of enabled overlay packages : info about given package 3. dumpsys window 查询WMS服务相关信息，可跟不同的参数\n使用window的帮助命令：adb shell dumpsys window -h\n可知其使用格式如下：adb shell dumpsys window [-a] [-h] [cmd] ...\n下面是对相关参数的解析：\n[-a] [-h] [cmd] ... [cmd] may be one of: l[astanr]: last ANR information p[policy]: policy state a[animator]: animator state s[essions]: active sessions surfaces: active surfaces (debugging enabled only) d[isplays]: active display contents t[okens]: token list w[indows]: window list [cmd] may also be a NAME to dump windows. NAME may be a partial substring in a window name, a Window hex object identifier, or \"all\" for all windows, or \"visible\" for the visible windows. \"visible-apps\" for the visible app windows. -a: include all available server state. 4. dumpsys battery 查询BatteryService相关信息，可跟不同的参数\n使用battery的帮助命令：adb shell dumpsys battery -h\n可知其使用格式如下：adb shell dumpsys battery [cmd]\n下面是对相关参数的解析：\n[cmd] may be one of: help Print this help text. set [-f] [ac|usb|wireless|status|level|temp|present|invalid] Force a battery property value, freezing battery state. -f: force a battery change broadcast be sent, prints new sequence. unplug [-f] Force battery unplugged, freezing battery state. -f: force a battery change broadcast be sent, prints new sequence. reset [-f] Unfreeze battery state, returning to current hardware values. -f: force a battery change broadcast be sent, prints new sequence. adb问题集锦 在手机充电模式下使用adb命令\n解决adb运行遇到的insufficient permissions for device的错误，使其在充电状态运行adb命令\n新建android.rules文本文件，加入以下内容：\nSUBSYSTEM==\"usb\", ENV{DEVTYPE}==\"usb_device\", MODE=\"0666\" 将该文件移动到 /etc/udev/rules.d 目录（Ubuntu系统）\n设置adb的TCP端口号\n解决adb connect无法连接Android设备，通过排查发现，这可能是adbd后台进程没监听相关端口引起的，解决方案如下：\n在有root权限基础上，检查adbd进程是否存在，执行命令 ps | grep adbd 如果输出里没有发现adbd进程，则执行 start adbd 手动启动监听进程，然后重试看看能不能连接 如果有该进程或者依然无法连接，则先执行 stop adbd 关闭监听进程 执行 setprop service.adb.tcp.port [port] 重置监听端口 执行 start adbd 重启监听进程，这时候执行 netstat –apn 查看监听的端口 回到PC进行连接，adb connect IP地址[:端口号] 如果依然不能连接，需要排除PC端的问题，在PC上执行 adb kill-server 然后重试 ",
+  "wordCount" : "1158",
+  "inLanguage": "en",
+  "datePublished": "2024-11-15T14:20:18+08:00",
+  "dateModified": "2024-11-15T14:20:18+08:00",
+  "author":[{
+    "@type": "Person",
+    "name": "夏天的小西瓜"
+  }],
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "/posts/tools/adb/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "缥缈夏鸢",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "/favicon.ico"
+    }
+  }
+}
+</script>
+</head>
+
+<body class="" id="top">
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.body.classList.add('dark');
+    } else if (localStorage.getItem("pref-theme") === "light") {
+        document.body.classList.remove('dark')
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.body.classList.add('dark');
+    }
+
+</script>
+
+<header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="/" accesskey="h" title="缥缈夏鸢 (Alt + H)">缥缈夏鸢</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" accesskey="t" title="(Alt + T)">
+                    <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu">
+            <li>
+                <a href="/" title="首页">
+                    <span>首页</span>
+                </a>
+            </li>
+            <li>
+                <a href="/posts/" title="文章">
+                    <span>文章</span>
+                </a>
+            </li>
+            <li>
+                <a href="/categories/" title="分类">
+                    <span>分类</span>
+                </a>
+            </li>
+            <li>
+                <a href="/tags/" title="标签">
+                    <span>标签</span>
+                </a>
+            </li>
+            <li>
+                <a href="/archives/" title="归档">
+                    <span>归档</span>
+                </a>
+            </li>
+            <li>
+                <a href="/about/" title="关于">
+                    <span>关于</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <div class="breadcrumbs"><a href="/">Home</a>&nbsp;»&nbsp;<a href="/posts/">Posts</a></div>
+    <h1 class="post-title entry-hint-parent">
+      adb日常使用
+    </h1>
+    <div class="post-meta"><span title='2024-11-15 14:20:18 +0800 CST'>November 15, 2024</span>&nbsp;·&nbsp;6 min&nbsp;·&nbsp;1158 words&nbsp;·&nbsp;夏天的小西瓜
+
+</div>
+  </header> <aside id="toc-container" class="toc-container wide">
+    <div class="toc">
+        <details  open>
+            <summary accesskey="c" title="(Alt + C)">
+                <span class="details">Table of Contents</span>
+            </summary>
+
+            <div class="inner"><ul>
+                    <li>
+                        <a href="#%e7%ae%80%e8%bf%b0" aria-label="简述">简述</a></li>
+                    <li>
+                        <a href="#adb%e6%97%a5%e5%bf%97%e6%93%8d%e4%bd%9c" aria-label="adb日志操作">adb日志操作</a><ul>
+                            
+                    <li>
+                        <a href="#1-event-log" aria-label="1. event log">1. event log</a></li>
+                    <li>
+                        <a href="#2-system-log" aria-label="2. system log">2. system log</a></li></ul>
+                    </li>
+                    <li>
+                        <a href="#adb%e5%b8%b8%e7%94%a8%e6%93%8d%e4%bd%9c" aria-label="adb常用操作">adb常用操作</a><ul>
+                            
+                    <li>
+                        <a href="#1-%e5%b8%b8%e7%94%a8%e5%91%bd%e4%bb%a4" aria-label="1. 常用命令">1. 常用命令</a></li>
+                    <li>
+                        <a href="#2-%e8%af%bb%e5%86%99%e7%b3%bb%e7%bb%9f%e9%85%8d%e7%bd%ae" aria-label="2. 读写系统配置">2. 读写系统配置</a></li>
+                    <li>
+                        <a href="#3-dumpsys%e6%93%8d%e4%bd%9c%e9%9b%86%e5%90%88" aria-label="3. dumpsys操作集合">3. dumpsys操作集合</a><ul>
+                            
+                    <li>
+                        <a href="#1-dumpsys-activity" aria-label="1. dumpsys activity">1. dumpsys activity</a></li>
+                    <li>
+                        <a href="#2-dumpsys-package" aria-label="2. dumpsys package">2. dumpsys package</a></li>
+                    <li>
+                        <a href="#3-dumpsys-window" aria-label="3. dumpsys window">3. dumpsys window</a></li>
+                    <li>
+                        <a href="#4-dumpsys-battery" aria-label="4. dumpsys battery">4. dumpsys battery</a></li></ul>
+                    </li></ul>
+                    </li>
+                    <li>
+                        <a href="#adb%e9%97%ae%e9%a2%98%e9%9b%86%e9%94%a6" aria-label="adb问题集锦">adb问题集锦</a>
+                    </li>
+                </ul>
+            </div>
+        </details>
+    </div>
+</aside>
+<script>
+    let activeElement;
+    let elements;
+    window.addEventListener('DOMContentLoaded', function (event) {
+        checkTocPosition();
+
+        elements = document.querySelectorAll('h1[id],h2[id],h3[id],h4[id],h5[id],h6[id]');
+         
+         activeElement = elements[0];
+         const id = encodeURI(activeElement.getAttribute('id')).toLowerCase();
+         document.querySelector(`.inner ul li a[href="#${id}"]`).classList.add('active');
+     }, false);
+
+    window.addEventListener('resize', function(event) {
+        checkTocPosition();
+    }, false);
+
+    window.addEventListener('scroll', () => {
+        
+        activeElement = Array.from(elements).find((element) => {
+            if ((getOffsetTop(element) - window.pageYOffset) > 0 && 
+                (getOffsetTop(element) - window.pageYOffset) < window.innerHeight/2) {
+                return element;
+            }
+        }) || activeElement
+
+        elements.forEach(element => {
+             const id = encodeURI(element.getAttribute('id')).toLowerCase();
+             if (element === activeElement){
+                 document.querySelector(`.inner ul li a[href="#${id}"]`).classList.add('active');
+             } else {
+                 document.querySelector(`.inner ul li a[href="#${id}"]`).classList.remove('active');
+             }
+         })
+     }, false);
+
+    const main = parseInt(getComputedStyle(document.body).getPropertyValue('--article-width'), 10);
+    const toc = parseInt(getComputedStyle(document.body).getPropertyValue('--toc-width'), 10);
+    const gap = parseInt(getComputedStyle(document.body).getPropertyValue('--gap'), 10);
+
+    function checkTocPosition() {
+        const width = document.body.scrollWidth;
+
+        if (width - main - (toc * 2) - (gap * 4) > 0) {
+            document.getElementById("toc-container").classList.add("wide");
+        } else {
+            document.getElementById("toc-container").classList.remove("wide");
+        }
+    }
+
+    function getOffsetTop(element) {
+        if (!element.getClientRects().length) {
+            return 0;
+        }
+        let rect = element.getBoundingClientRect();
+        let win = element.ownerDocument.defaultView;
+        return rect.top + win.pageYOffset;   
+    }
+</script>
+
+  <div class="post-content"><h2 id="简述">简述<a hidden class="anchor" aria-hidden="true" href="#简述">#</a></h2>
+<h2 id="adb日志操作">adb日志操作<a hidden class="anchor" aria-hidden="true" href="#adb日志操作">#</a></h2>
+<p>adb logcat日志可分为：main、system、events、radio、crash、kernel类型的log，常用日志过滤命令如下：</p>
+<ul>
+<li>adb logcat -b main</li>
+<li>adb logcat -b system</li>
+<li>adb logcat -b events</li>
+<li>adb logcat -b radio</li>
+<li>adb logcat -b crash</li>
+<li>adb logcat -b kernel</li>
+</ul>
+<p>logcat其它命令补充：</p>
+<ul>
+<li>adb logcat -b events：输出指定buffer的log</li>
+<li>adb logcat -s &ldquo;ActivityManager&rdquo;：输出指定tag的log</li>
+<li>adb logcat -L：上次重启时的log</li>
+<li>adb logcat -f [file_path]：将log保存到指定文件</li>
+<li>adb logcat -g：缓冲区大小</li>
+<li>adb logcat -S：log统计信息</li>
+<li>adb shell setprop log.tag.[Tag] {VDIWE}：设置log标签的过滤级别</li>
+<li><code>dmesg</code>或者<code>cat /proc/kmsg</code>：adb shell进入手机后打印内核日志</li>
+<li><code>adb logcat -b events | egrep -i resume_activity</code>：查看执行到resume状态的activity</li>
+</ul>
+<blockquote>
+<p>从Android O开始引入Log的chatty机制，会把中间的重复内容不再打印，而是输出类似 “uid=1000(system) Binder:1453_1D identical 7 lines” ，告知有多少行的日志是一样的，这不是错误，只是减少了重复打印的次数。</p>
+</blockquote>
+<h3 id="1-event-log">1. event log<a hidden class="anchor" aria-hidden="true" href="#1-event-log">#</a></h3>
+<p><strong>EventLog.java</strong>通过<strong>writeEvent</strong>方法写入Android事件的log。对应的文件为<strong>EventLogTags.logtag</strong>，并且这个文件有多个。具体可在framework源码中搜索。</p>
+<p>am下的EventLogTags.logtag：</p>
+<pre tabindex="0"><code>option java_package com.android.server.am
+
+# 启动一个组件，包含Activity、Service、Broadcast、ContentProvide等，可看Type类型
+30014 am_proc_start (User|1|5),(PID|1|5),(UID|1|5),(Process Name|3),(Type|3),(Component|3)
+# 启动的进程
+30010 am_proc_bound (User|1|5),(PID|1|5),(Process Name|3)
+# 完全退出或者击杀掉一个应用
+30023 am_kill (User|1|5),(PID|1|5),(Process Name|3),(OomAdj|1|5),(Reason|3)
+# 当某个服务因其应用程序空闲而被强行停止时
+30056 am_stop_idle_service (UID|1|5),(Component Name|3)
+
+# ActivityManagerService.systemReady() 表征AMS已经就绪
+3040 boot_progress_ams_ready (time|2|3)
+# ActivityManagerService calls enableScreenAfterBoot()，这个阶段说明用户可以使用手机
+3050 boot_progress_enable_screen (time|2|3)
+
+# 配置发生变化，如横竖屏切换、语言切换等
+2719 configuration_changed (config mask|1|5)
+# 应用发生未响应
+30008 am_anr (User|1|5),(pid|1|5),(Package Name|3),(Flags|1|5),(reason|3)
+# 应用发生异常，导致crash了
+30039 am_crash (User|1|5),(PID|1|5),(Process Name|3),(Flags|1|5),(Exception|3),(Message|3),(File|3),(Line|1|5)
+
+# 汇报系统的GC的信息
+30046 am_meminfo (Cached|2|2),(Free|2|2),(Zram|2|2),(Kernel|2|2),(Native|2|2)
+# 汇报该进程的GC信息
+30047 am_pss (Pid|1|5),(UID|1|5),(Process Name|3),(Pss|2|2),(Uss|2|2),(SwapPss|2|2)
+
+# 当uid的任何进程开始运行时
+30052 am_uid_running (UID|1|5)
+# uid的运行状态为active
+30054 am_uid_active (UID|1|5)
+# uid的运行状态为stopped
+30053 am_uid_stopped (UID|1|5)
+# 当uid的状态变为空闲时（强制执行后台检查）。
+30055 am_uid_idle (UID|1|5)
+</code></pre><blockquote>
+<p>位置：frameworks/base/services/core/java/com/android/server/EventLogTags.logtags    <br>
+server包中的EventLogTags.logtag：</p>
+</blockquote>
+<pre tabindex="0"><code>option java_package com.android.server
+
+# ---------------------------
+# NotificationManagerService.java
+# ---------------------------
+# 当调用NotificationManager.notify方法时打印此log。 status: 0=post, 1=update, 2=ignored
+2750 notification_enqueue (uid|1|5),(pid|1|5),(pkg|3),(id|1|5),(tag|3),(userid|1|5),(notification|3),(status|1)
+# 当有人试图取消通知时，通知管理器有时也会使用标志来调用它
+2751 notification_cancel (uid|1|5),(pid|1|5),(pkg|3),(id|1|5),(tag|3),(userid|1|5),(required_flags|1),(forbidden_flags|1),(reason|1|5),(listener|3)
+# 当有人试图取消特定包的所有通知时
+2752 notification_cancel_all (uid|1|5),(pid|1|5),(pkg|3),(userid|1|5),(required_flags|1),(forbidden_flags|1),(reason|1|5),(listener|3)
+# 显示通知面板时，items代表的是通知面板里通知的数量
+27500 notification_panel_revealed (items|1)
+# 当通知面板被隐藏时，会打印此log
+27501 notification_panel_hidden
+# 当通知展开状态或者签约改变时
+27511 notification_expansion (key|3),(user_action|1),(expanded|1),(lifespan|1),(freshness|1),(exposure|1)
+# 当通知被点击时
+27520 notification_clicked (key|3),(lifespan|1),(freshness|1),(exposure|1)
+# 当通知的action类button被点击时
+27521 notification_action_clicked (key|3),(action_index|1),(lifespan|1),(freshness|1),(exposure|1)
+# 当通知已经被取消时
+27530 notification_canceled (key|3),(reason|1),(lifespan|1),(freshness|1),(exposure|1),(listener|3)
+# 当通知新显示在屏幕上或从屏幕上消失时
+27531 notification_visibility (key|3),(visibile|1),(lifespan|1),(freshness|1),(exposure|1),(rank|1)
+# 通知发出声音，振动或闪烁
+27532 notification_alert (key|3),(buzz|1),(beep|1),(blink|1)
+</code></pre><blockquote>
+<p>上面暂时收录了NotificationManagerService相关的event log</p>
+</blockquote>
+<p>logging的EventLogTags.logtag：</p>
+<pre tabindex="0"><code>option java_package com.android.internal.logging;
+
+# 交互事件的log
+524287 sysui_view_visibility (category|1|5),(visible|1|6)
+524288 sysui_action (category|1|5),(pkg|3)
+524292 sysui_multi_action (content|4)
+524290 sysui_count (name|3),(increment|1)
+524291 sysui_histogram (name|3),(bucket|1)
+
+# 系统文件时记录的通用事件
+525000 commit_sys_config_file (name|3),(time|2|3)
+</code></pre><p>tags格式定位位置：<code>system/core/logcat/event.logtags</code></p>
+<p>我们注意到，括号内有很多数字，这里需要数据单位和数据值进行简要说明。</p>
+<blockquote>
+<p>一般格式：(<name>|data type[|data unit])</p>
+</blockquote>
+<p>数据类型有：</p>
+<ul>
+<li>1: int</li>
+<li>2: long</li>
+<li>3: string</li>
+<li>4: list</li>
+</ul>
+<p>数据单位有：</p>
+<ul>
+<li>1: Number of objects（对象个数）</li>
+<li>2: Number of bytes（字节数）</li>
+<li>3: Number of milliseconds（毫秒数）</li>
+<li>4: Number of allocations（分配个数）</li>
+<li>5: Id</li>
+<li>6: Percent（百分比）s</li>
+</ul>
+<p>写入Event日志：<code>EventLog.writeEvent()</code></p>
+<h3 id="2-system-log">2. system log<a hidden class="anchor" aria-hidden="true" href="#2-system-log">#</a></h3>
+<p>system log的一般由<strong>Slog.java</strong>打印出来，其常用的打印实现是调用<code>Log.println_native</code>方法。Slog基本由系统服务使用。</p>
+<h2 id="adb常用操作">adb常用操作<a hidden class="anchor" aria-hidden="true" href="#adb常用操作">#</a></h2>
+<h3 id="1-常用命令">1. 常用命令<a hidden class="anchor" aria-hidden="true" href="#1-常用命令">#</a></h3>
+<ul>
+<li>
+<p>屏幕截图：<code>adb shell screencap -p /sdcard/filename.png</code></p>
+</li>
+<li>
+<p>录制屏幕（默认录制时间180s）：<code>adb shell screenrecord /sdcard/filename.mp4</code></p>
+</li>
+<li>
+<p>查看输入事件：<code>adb shell getevent -l</code></p>
+</li>
+<li>
+<p>查看应用中运行的服务：<code>adb shell dumpsys activity services [package_name]</code></p>
+</li>
+<li>
+<p>清除数据和缓存：<code>adb shell pm clear [package_name]</code></p>
+</li>
+<li>
+<p>查看应用详细信息：<code>adb shell dumpsys package [package_name]</code></p>
+</li>
+<li>
+<p>查看前台应用：<code>adb shell dumpsys activity activities | grep mResumedActivity</code></p>
+</li>
+<li>
+<p>查看内存占用信息：<code>adb shell dumpsys meminfo [package]</code></p>
+</li>
+<li>
+<p>查看CPU信息：<code>adb shell dumpsys cpuinfo [package]</code></p>
+</li>
+<li>
+<p>生成hprof文件：<code>adb shell am dumpheap [package] [mobile_path/hprof_name.hprof]</code></p>
+</li>
+<li>
+<p>生成Bugreport报告：<code>adb bugreport &gt; [pc_path/bugreport.txt]</code></p>
+</li>
+<li>
+<p>查看系统输入信息：<code>adb shell dumpsys input</code></p>
+</li>
+<li>
+<p>监听操作事件：<code>adb shell uiautomator events</code></p>
+</li>
+<li>
+<p>monkey命令：<code>adb shell monkey -s 10 --pct-touch 30 --throttle 300 -p [包名] -v [次数] --monitor-native-crashes</code></p>
+</li>
+<li>
+<p>通知指定位置媒体刷新：<code>adb shell am broadcast -a android.intent.action.MEDIA_SCANNER_SCAN_FILE -d file:///sdcard/Pictures</code></p>
+</li>
+<li>
+<p>无线调试：</p>
+<ul>
+<li>无线调试配对：<code>adb pair [ip]:[port]</code></li>
+<li>无线调试连接：<code>adb connect [ip]:[port]</code></li>
+</ul>
+</li>
+<li>
+<p>Binder调用堆栈打印</p>
+<ol>
+<li>打开IPC打印：<code>adb shell am trace-ipc start</code></li>
+<li>执行应用操作或者等待</li>
+<li>停止IPC打印并输出成文件：<code>adb shell am trace-ipc stop --dump-file /data/local/tmp/ipc-trace.txt</code></li>
+<li>拉取IPC的trace文件到当前文件夹：<code>adb pull /data/local/tmp/ipc-trace.txt</code></li>
+</ol>
+</li>
+</ul>
+<h3 id="2-读写系统配置">2. 读写系统配置<a hidden class="anchor" aria-hidden="true" href="#2-读写系统配置">#</a></h3>
+<p>adb可以读取或者写入Settings和SystemProperties值。其中系统属性存在于<code>system/build.prop</code> 文件。</p>
+<p>Settings配置值相关操作有：</p>
+<ul>
+<li>
+<p><code>adb shell settings list {system, secure, global}</code>：查看settings属性值列表</p>
+</li>
+<li>
+<p><code>adb shell settings</code>：查看settings的帮助，此时控制台打印内容如下：</p>
+<pre tabindex="0"><code>Settings provider (settings) commands:
+  help
+      Print this help text.
+  get [--user &lt;USER_ID&gt; | current] NAMESPACE KEY
+      Retrieve the current value of KEY.
+  put [--user &lt;USER_ID&gt; | current] NAMESPACE KEY VALUE [TAG] [default]
+      Change the contents of KEY to VALUE.
+      TAG to associate with the setting.
+      {default} to set as the default, case-insensitive only for global/secure namespace
+  delete [--user &lt;USER_ID&gt; | current] NAMESPACE KEY
+      Delete the entry for KEY.
+  reset [--user &lt;USER_ID&gt; | current] NAMESPACE {PACKAGE_NAME | RESET_MODE}
+      Reset the global/secure table for a package with mode.
+      RESET_MODE is one of {untrusted_defaults, untrusted_clear, trusted_defaults}, case-insensitive
+  list [--user &lt;USER_ID&gt; | current] NAMESPACE
+      Print all defined keys.
+      NAMESPACE is one of {system, secure, global}, case-insensitive
+</code></pre></li>
+</ul>
+<p>SystemProperties配置值的操作格式：</p>
+<ul>
+<li><code>adb shell getprop</code>：查看SystemProperties属性值列表</li>
+<li><code>adb shell getprop [key]</code>：查看系统某个属性值的方法</li>
+<li><code>adb shell setprop [key] [value]</code>：设置某个系统属性</li>
+</ul>
+<p>查看设备信息：</p>
+<ul>
+<li>
+<p>设备型号：adb shell getprop ro.product.model</p>
+</li>
+<li>
+<p>设备品牌：adb shell getprop ro.product.brand</p>
+</li>
+<li>
+<p>设备处理器型号：adb shell getprop ro.product.board</p>
+</li>
+<li>
+<p>设备安卓版本号：adb shell getprop ro.build.version.release</p>
+</li>
+<li>
+<p>设备引擎渲染模式：adb shell dumpsys SurfaceFlinger|grep -i  &ldquo;GLES&rdquo;</p>
+</li>
+</ul>
+<h3 id="3-dumpsys操作集合">3. dumpsys操作集合<a hidden class="anchor" aria-hidden="true" href="#3-dumpsys操作集合">#</a></h3>
+<p>通过dumpsys命令查询系统服务的运行状态(对象的成员变量属性值)</p>
+<p>一般格式：<code>adb shell dumpsys [...]</code></p>
+<ol>
+<li>查询当前系统所支持的dump服务：<code>adb shell dumpsys -l</code></li>
+<li>查询dump的服务及对应类名：<code>adb shell service list</code></li>
+</ol>
+<h4 id="1-dumpsys-activity">1. dumpsys activity<a hidden class="anchor" aria-hidden="true" href="#1-dumpsys-activity">#</a></h4>
+<p>查询AMS服务相关信息，可跟不同的参数</p>
+<p>使用activity的帮助命令： <code>adb shell dumpsys activity -h</code></p>
+<p>可知其格式为： <code>adb shell dumpsys activity [-a] [-c] [-p PACKAGE] [-h] [WHAT] ...</code></p>
+<p>下面是对相关参数的解析:</p>
+<pre tabindex="0"><code>  -a: include all available server state.
+  -c: include client state.
+  -p: limit output to given package.
+
+WHAT may be one of:
+    a[ctivities]: activity stack state
+    r[recents]: recent activities state
+    b[roadcasts] [PACKAGE_NAME] [history [-s]]: broadcast state
+    broadcast-stats [PACKAGE_NAME]: aggregated broadcast statistics
+    i[ntents] [PACKAGE_NAME]: pending intent state
+    p[rocesses] [PACKAGE_NAME]: process state
+    o[om]: out of memory management
+    perm[issions]: URI permission grant state
+    prov[iders] [COMP_SPEC ...]: content provider state
+    provider [COMP_SPEC]: provider client-side state
+    s[ervices] [COMP_SPEC ...]: service state
+    as[sociations]: tracked app associations
+    settings: currently applied config settings
+    service [COMP_SPEC]: service client-side state
+    package [PACKAGE_NAME]: all state related to given package
+    all: dump all activities
+    top: dump the top activity
+    
+WHAT may also be a COMP_SPEC to dump activities.
+COMP_SPEC may be a component name (com.foo/.myApp),
+    a partial substring in a component name, a hex object identifier.
+</code></pre><h4 id="2-dumpsys-package">2. dumpsys package<a hidden class="anchor" aria-hidden="true" href="#2-dumpsys-package">#</a></h4>
+<p>查询PMS服务相关信息，可跟不同的参数</p>
+<p>使用package的帮助命令：<code>adb shell dumpsys package -h</code></p>
+<p>可知其使用格式如下：<code>adb shell dumpsys package [-h] [-f] [--checkin] [cmd] ...</code></p>
+<p>下面是对相关参数的解析：</p>
+<pre tabindex="0"><code>[-h] [-f] [--checkin] [cmd] ...
+    --checkin: dump for a checkin
+    -f: print details of intent filters
+    -h: print this help
+    
+  [cmd] may be one of:
+    l[ibraries]: list known shared libraries
+    f[eatures]: list device features
+    k[eysets]: print known keysets
+    r[esolvers] [activity|service|receiver|content]: dump intent resolvers
+    perm[issions]: dump permissions
+    permission [name ...]: dump declaration and use of given permission
+    pref[erred]: print preferred package settings
+    preferred-xml [--full]: print preferred package settings as xml
+    prov[iders]: dump content providers
+    p[ackages]: dump installed packages
+    s[hared-users]: dump shared user IDs
+    m[essages]: print collected runtime messages
+    v[erifiers]: print package verifier info
+    d[omain-preferred-apps]: print domains preferred apps
+    i[ntent-filter-verifiers]|ifv: print intent filter verifier info
+    version: print database version info
+    write: write current settings now
+    installs: details about install sessions
+    check-permission &lt;permission&gt; &lt;package&gt; [&lt;user&gt;]: does pkg hold perm?
+    dexopt: dump dexopt state
+    compiler-stats: dump compiler statistics
+    enabled-overlays: dump list of enabled overlay packages
+    &lt;package.name&gt;: info about given package
+</code></pre><h4 id="3-dumpsys-window">3. dumpsys window<a hidden class="anchor" aria-hidden="true" href="#3-dumpsys-window">#</a></h4>
+<p>查询WMS服务相关信息，可跟不同的参数</p>
+<p>使用window的帮助命令：<code>adb shell dumpsys window -h</code></p>
+<p>可知其使用格式如下：<code>adb shell dumpsys window [-a] [-h] [cmd] ...</code></p>
+<p>下面是对相关参数的解析：</p>
+<pre tabindex="0"><code>[-a] [-h] [cmd] ...
+  
+[cmd] may be one of:
+    l[astanr]: last ANR information
+    p[policy]: policy state
+    a[animator]: animator state
+    s[essions]: active sessions
+    surfaces: active surfaces (debugging enabled only)
+    d[isplays]: active display contents
+    t[okens]: token list
+    w[indows]: window list
+    
+[cmd] may also be a NAME to dump windows.  NAME may
+    be a partial substring in a window name, a
+    Window hex object identifier, or
+    &#34;all&#34; for all windows, or
+    &#34;visible&#34; for the visible windows.
+    &#34;visible-apps&#34; for the visible app windows.
+    
+  -a: include all available server state.
+</code></pre><h4 id="4-dumpsys-battery">4. dumpsys battery<a hidden class="anchor" aria-hidden="true" href="#4-dumpsys-battery">#</a></h4>
+<p>查询BatteryService相关信息，可跟不同的参数</p>
+<p>使用battery的帮助命令：<code>adb shell dumpsys battery -h</code></p>
+<p>可知其使用格式如下：<code>adb shell dumpsys battery [cmd]</code></p>
+<p>下面是对相关参数的解析：</p>
+<pre tabindex="0"><code>[cmd] may be one of:
+
+ help
+    Print this help text.
+ set [-f] [ac|usb|wireless|status|level|temp|present|invalid] &lt;value&gt;
+    Force a battery property value, freezing battery state.
+    -f: force a battery change broadcast be sent, prints new sequence.
+ unplug [-f]
+    Force battery unplugged, freezing battery state.
+    -f: force a battery change broadcast be sent, prints new sequence.
+ reset [-f]
+    Unfreeze battery state, returning to current hardware values.
+    -f: force a battery change broadcast be sent, prints new sequence.
+</code></pre><h2 id="adb问题集锦">adb问题集锦<a hidden class="anchor" aria-hidden="true" href="#adb问题集锦">#</a></h2>
+<ul>
+<li>
+<p><strong>在手机充电模式下使用adb命令</strong></p>
+<p>解决adb运行遇到的insufficient permissions for device的错误，使其在充电状态运行adb命令</p>
+<ul>
+<li>
+<p>新建<code>android.rules</code>文本文件，加入以下内容：</p>
+<pre tabindex="0"><code>SUBSYSTEM==&#34;usb&#34;, ENV{DEVTYPE}==&#34;usb_device&#34;, MODE=&#34;0666&#34;
+</code></pre></li>
+<li>
+<p>将该文件移动到 <code>/etc/udev/rules.d</code> 目录（Ubuntu系统）</p>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>设置adb的TCP端口号</strong></p>
+<p>解决adb connect无法连接Android设备，通过排查发现，这可能是adbd后台进程没监听相关端口引起的，解决方案如下：</p>
+<ul>
+<li>在有root权限基础上，检查adbd进程是否存在，执行命令 <strong>ps | grep adbd</strong></li>
+<li>如果输出里没有发现adbd进程，则执行 <strong>start adbd</strong> 手动启动监听进程，然后重试看看能不能连接</li>
+<li>如果有该进程或者依然无法连接，则先执行 <strong>stop adbd</strong> 关闭监听进程</li>
+<li>执行 <strong>setprop service.adb.tcp.port [port]</strong> 重置监听端口</li>
+<li>执行 <strong>start adbd</strong> 重启监听进程，这时候执行 <strong>netstat –apn</strong> 查看监听的端口</li>
+<li>回到PC进行连接，<strong>adb connect IP地址[:端口号]</strong></li>
+<li>如果依然不能连接，需要排除PC端的问题，在PC上执行 <strong>adb kill-server</strong> 然后重试</li>
+</ul>
+</li>
+</ul>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="/tags/adb/">Adb</a></li>
+    </ul>
+<nav class="paginav">
+  <a class="prev" href="/posts/tools/git/">
+    <span class="title">« Prev</span>
+    <br>
+    <span>Git入门介绍</span>
+  </a>
+  <a class="next" href="/posts/hugo_intro/">
+    <span class="title">Next »</span>
+    <br>
+    <span>Hugo入门使用</span>
+  </a>
+</nav>
+
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2025 <a href="/">缥缈夏鸢</a></span> · 
+
+    <span>
+        Powered by
+        <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+        <path d="M12 6H0l6-6z" />
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu')
+    if (menu) {
+        menu.scrollLeft = localStorage.getItem("menu-scroll-position");
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        if (document.body.className.includes("dark")) {
+            document.body.classList.remove('dark');
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            document.body.classList.add('dark');
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerHTML = 'copy';
+
+        function copyingDone() {
+            copybutton.innerHTML = 'copied!';
+            setTimeout(() => {
+                copybutton.innerHTML = 'copy';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+</body>
+
+</html>

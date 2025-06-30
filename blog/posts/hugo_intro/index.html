@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>Hugo入门使用 | 缥缈夏鸢</title>
+<meta name="keywords" content="Hugo, 静态网站">
+<meta name="description" content="安装Hugo
+不同系统环境安装命令：
+# Ubuntu 环境
+## apt方式。下载版本可能会旧一些
+sudo apt update
+sudo apt install hugo
+## deb包方式
+uname -i  # 64位：x86_64；32位：i686
+sudo dpkg -i hugo*.deb
+
+
+# Mac 环境
+brew install hugo
+查看HUGO版本确认安装成功：
+hugo version
+快速开始
+可参考文档：Hugo快速入门
+
+hugo 创建站点：
+
+# 说明：my-site 是站点的名称
+hugo new site my-site
+创建完成后，站点目录 包含以下文件：
+.
+├── archetypes/
+│   └── default.md    &lt;-- default.md是默认的博文模版
+├── assets/           &lt;-- 存放被 Hugo Pipes 处理的文件
+├── content/          &lt;-- 存放markdown文件作为博文内容
+├── data/             &lt;-- 存放 Hugo 处理的数据
+├── i18n/
+├── layouts/     
+├── static/           &lt;-- 存放静态文件,例如 图片 CSS JS文件
+├── themes/           &lt;-- 存放不同的主题
+└── config.yaml         &lt;-- site configuration
+
+创建文章
+
+hugo new content/posts/hugo_intro.md
+
+# 指定模板创建内容
+hugo new --kind &lt;template&gt; &lt;name&gt;
+
+设置主题（子模块形式）
+
+git submodule add --depth=1 https://github.com/adityatelange/hugo-PaperMod.git themes/PaperMod
+git submodule update --init --recursive # needed when you reclone your repo (submodules may not get cloned automatically)
+
+# 重新clone，需要初始化子模块，等同于上面的复合命令
+git submodule init
+git submodule update
+
+这里使用的主题为：PaperMod">
+<meta name="author" content="夏天的小西瓜">
+<link rel="canonical" href="/posts/hugo_intro/">
+<meta name="google-site-verification" content="XYZabc">
+<meta name="msvalidate.01" content="XYZabc">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.44278f16c6e7e77192a15a0565fb5b0f220c56128442fcfa6937b4d84456ecf0.css" integrity="sha256-RCePFsbn53GSoVoFZftbDyIMVhKEQvz6aTe02ERW7PA=" rel="preload stylesheet" as="style">
+<link rel="icon" href="/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="mask-icon" href="/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="en" href="/posts/hugo_intro/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-track {
+                background: 0 0;
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-thumb {
+                border-color: var(--theme);
+            }
+        }
+
+    </style>
+</noscript><script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+<script>
+
+const config = {
+    startOnLoad:true,
+    
+    themeVariables: {
+        lineColor: "#ffffff"    
+    },
+    flowchart: {
+        useMaxWidth:false,
+        htmlLabels:true
+    }
+};
+mermaid.initialize(config);
+
+
+window.onload = () => {
+    window.mermaid.init(undefined, document.querySelectorAll('.language-mermaid'));
+}
+</script><meta property="og:url" content="/posts/hugo_intro/">
+  <meta property="og:site_name" content="缥缈夏鸢">
+  <meta property="og:title" content="Hugo入门使用">
+  <meta property="og:description" content="安装Hugo 不同系统环境安装命令：
+# Ubuntu 环境 ## apt方式。下载版本可能会旧一些 sudo apt update sudo apt install hugo ## deb包方式 uname -i # 64位：x86_64；32位：i686 sudo dpkg -i hugo*.deb # Mac 环境 brew install hugo 查看HUGO版本确认安装成功：
+hugo version 快速开始 可参考文档：Hugo快速入门
+hugo 创建站点： # 说明：my-site 是站点的名称 hugo new site my-site 创建完成后，站点目录 包含以下文件：
+. ├── archetypes/ │ └── default.md &lt;-- default.md是默认的博文模版 ├── assets/ &lt;-- 存放被 Hugo Pipes 处理的文件 ├── content/ &lt;-- 存放markdown文件作为博文内容 ├── data/ &lt;-- 存放 Hugo 处理的数据 ├── i18n/ ├── layouts/ ├── static/ &lt;-- 存放静态文件,例如 图片 CSS JS文件 ├── themes/ &lt;-- 存放不同的主题 └── config.yaml &lt;-- site configuration 创建文章 hugo new content/posts/hugo_intro.md # 指定模板创建内容 hugo new --kind &lt;template&gt; &lt;name&gt; 设置主题（子模块形式） git submodule add --depth=1 https://github.com/adityatelange/hugo-PaperMod.git themes/PaperMod git submodule update --init --recursive # needed when you reclone your repo (submodules may not get cloned automatically) # 重新clone，需要初始化子模块，等同于上面的复合命令 git submodule init git submodule update 这里使用的主题为：PaperMod">
+  <meta property="og:locale" content="en-us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2024-11-14T10:43:59+08:00">
+    <meta property="article:modified_time" content="2024-11-14T10:43:59+08:00">
+    <meta property="article:tag" content="Hugo">
+    <meta property="article:tag" content="静态网站">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Hugo入门使用">
+<meta name="twitter:description" content="安装Hugo
+不同系统环境安装命令：
+# Ubuntu 环境
+## apt方式。下载版本可能会旧一些
+sudo apt update
+sudo apt install hugo
+## deb包方式
+uname -i  # 64位：x86_64；32位：i686
+sudo dpkg -i hugo*.deb
+
+
+# Mac 环境
+brew install hugo
+查看HUGO版本确认安装成功：
+hugo version
+快速开始
+可参考文档：Hugo快速入门
+
+hugo 创建站点：
+
+# 说明：my-site 是站点的名称
+hugo new site my-site
+创建完成后，站点目录 包含以下文件：
+.
+├── archetypes/
+│   └── default.md    &lt;-- default.md是默认的博文模版
+├── assets/           &lt;-- 存放被 Hugo Pipes 处理的文件
+├── content/          &lt;-- 存放markdown文件作为博文内容
+├── data/             &lt;-- 存放 Hugo 处理的数据
+├── i18n/
+├── layouts/     
+├── static/           &lt;-- 存放静态文件,例如 图片 CSS JS文件
+├── themes/           &lt;-- 存放不同的主题
+└── config.yaml         &lt;-- site configuration
+
+创建文章
+
+hugo new content/posts/hugo_intro.md
+
+# 指定模板创建内容
+hugo new --kind &lt;template&gt; &lt;name&gt;
+
+设置主题（子模块形式）
+
+git submodule add --depth=1 https://github.com/adityatelange/hugo-PaperMod.git themes/PaperMod
+git submodule update --init --recursive # needed when you reclone your repo (submodules may not get cloned automatically)
+
+# 重新clone，需要初始化子模块，等同于上面的复合命令
+git submodule init
+git submodule update
+
+这里使用的主题为：PaperMod">
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Posts",
+      "item": "/posts/"
+    }
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Hugo入门使用",
+      "item": "/posts/hugo_intro/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Hugo入门使用",
+  "name": "Hugo入门使用",
+  "description": "安装Hugo 不同系统环境安装命令：\n# Ubuntu 环境 ## apt方式。下载版本可能会旧一些 sudo apt update sudo apt install hugo ## deb包方式 uname -i # 64位：x86_64；32位：i686 sudo dpkg -i hugo*.deb # Mac 环境 brew install hugo 查看HUGO版本确认安装成功：\nhugo version 快速开始 可参考文档：Hugo快速入门\nhugo 创建站点： # 说明：my-site 是站点的名称 hugo new site my-site 创建完成后，站点目录 包含以下文件：\n. ├── archetypes/ │ └── default.md \u0026lt;-- default.md是默认的博文模版 ├── assets/ \u0026lt;-- 存放被 Hugo Pipes 处理的文件 ├── content/ \u0026lt;-- 存放markdown文件作为博文内容 ├── data/ \u0026lt;-- 存放 Hugo 处理的数据 ├── i18n/ ├── layouts/ ├── static/ \u0026lt;-- 存放静态文件,例如 图片 CSS JS文件 ├── themes/ \u0026lt;-- 存放不同的主题 └── config.yaml \u0026lt;-- site configuration 创建文章 hugo new content/posts/hugo_intro.md # 指定模板创建内容 hugo new --kind \u0026lt;template\u0026gt; \u0026lt;name\u0026gt; 设置主题（子模块形式） git submodule add --depth=1 https://github.com/adityatelange/hugo-PaperMod.git themes/PaperMod git submodule update --init --recursive # needed when you reclone your repo (submodules may not get cloned automatically) # 重新clone，需要初始化子模块，等同于上面的复合命令 git submodule init git submodule update 这里使用的主题为：PaperMod\n",
+  "keywords": [
+    "Hugo", "静态网站"
+  ],
+  "articleBody": "安装Hugo 不同系统环境安装命令：\n# Ubuntu 环境 ## apt方式。下载版本可能会旧一些 sudo apt update sudo apt install hugo ## deb包方式 uname -i # 64位：x86_64；32位：i686 sudo dpkg -i hugo*.deb # Mac 环境 brew install hugo 查看HUGO版本确认安装成功：\nhugo version 快速开始 可参考文档：Hugo快速入门\nhugo 创建站点： # 说明：my-site 是站点的名称 hugo new site my-site 创建完成后，站点目录 包含以下文件：\n. ├── archetypes/ │ └── default.md \u003c-- default.md是默认的博文模版 ├── assets/ \u003c-- 存放被 Hugo Pipes 处理的文件 ├── content/ \u003c-- 存放markdown文件作为博文内容 ├── data/ \u003c-- 存放 Hugo 处理的数据 ├── i18n/ ├── layouts/ ├── static/ \u003c-- 存放静态文件,例如 图片 CSS JS文件 ├── themes/ \u003c-- 存放不同的主题 └── config.yaml \u003c-- site configuration 创建文章 hugo new content/posts/hugo_intro.md # 指定模板创建内容 hugo new --kind 设置主题（子模块形式） git submodule add --depth=1 https://github.com/adityatelange/hugo-PaperMod.git themes/PaperMod git submodule update --init --recursive # needed when you reclone your repo (submodules may not get cloned automatically) # 重新clone，需要初始化子模块，等同于上面的复合命令 git submodule init git submodule update 这里使用的主题为：PaperMod\n本地运行测试 # 支持草稿态展示，默认端口号 1313 hugo server -D 正式发布 当进入到正式发布时，在调整确认config.yaml / config.toml 文件下的 baseURL 字段值后。 执行以下命令即可正式发布：\nhugo 使用入门 当前配置的目录菜单列表如下：\nmenu: main: - name: 首页 url: / weight: 1 - name: 文章 url: /posts/ weight: 2 - name: 分类 url: /categories/ weight: 3 - name: 标签 url: /tags/ weight: 4 - name: 归档 url: /archives/ weight: 5 - name: 关于 url: /about/ weight: 6 1. 分类与标签 在 config.yaml 文件里打开分类与标签功能：\ntaxonomies: tag: tags category: categories 在archetypes/default.md默认博文模版里新增属性定义：\ncategories: - \"未分类\" tags: - \"未知\" 2. 归档 在 content 目录里创建 archive.md文件 此时的目录树如下：\n. ├── config.yaml ├── content/ │ ├── archives.md \u003c--- Create archive.md here │ └── posts/ ├── static/ └── themes/ └── PaperMod/ 接着将以下内容添加到archive.md文件里：\n--- title: \"Archive\" layout: \"archives\" url: \"/archives/\" summary: archives --- 3. 静态资源 Hugo 构建时会自动将 static 目录内容复制到 public 根目录。\n以引用图片为例，在 static 目录下新建子目录（如 images），使用绝对路径直接引用，路径需以 / 开头：\n引用方式：![图片描述](/images/demo.jpg) 部署后的访问地址：https://your-domain.com/images/demo.jpg 4. Mermaid图表 Hugo 目前没有提供 Mermaid 图表的默认模板。可通过以下方法主动配置：\n创建 layouts/_default/_markup/render-codeblock-mermaid.html文件，在该文件添加以下内容：\n{{- .Inner | safeHTML }} {{ .Page.Store.Set \"hasMermaid\" true }} 部署 使用 阿里云服务器配合nginx实现Hugo部署。\n确认 Hugo 的baseURL配置： # 本机IP动态变化，使用相对路径，不指定host baseURL: / 在/etc/nginx/conf.d/目录里新建 hugo-server.conf文件，内容如下： server { listen 9099; server_name 127.0.0.1; # Hugo 生成的静态网站目录 root /home/user/hugo-site/public; index index.html index.htm; # 日志配置 access_log /var/log/nginx/hugo_access.log; error_log /var/log/nginx/hugo_error.log; location / { try_files $uri $uri/ =404; } } 在nginx按需配置访问的端口号与静态网站生成目录。\n注意，添加完成后执行 sudo nginx -s reload 命令刷新配置。\n执行 hugo 进行静态网站打包。完成后外站可使用目标主机地址进行访问 ",
+  "wordCount" : "342",
+  "inLanguage": "en",
+  "datePublished": "2024-11-14T10:43:59+08:00",
+  "dateModified": "2024-11-14T10:43:59+08:00",
+  "author":[{
+    "@type": "Person",
+    "name": "夏天的小西瓜"
+  }],
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "/posts/hugo_intro/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "缥缈夏鸢",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "/favicon.ico"
+    }
+  }
+}
+</script>
+</head>
+
+<body class="" id="top">
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.body.classList.add('dark');
+    } else if (localStorage.getItem("pref-theme") === "light") {
+        document.body.classList.remove('dark')
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.body.classList.add('dark');
+    }
+
+</script>
+
+<header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="/" accesskey="h" title="缥缈夏鸢 (Alt + H)">缥缈夏鸢</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" accesskey="t" title="(Alt + T)">
+                    <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu">
+            <li>
+                <a href="/" title="首页">
+                    <span>首页</span>
+                </a>
+            </li>
+            <li>
+                <a href="/posts/" title="文章">
+                    <span>文章</span>
+                </a>
+            </li>
+            <li>
+                <a href="/categories/" title="分类">
+                    <span>分类</span>
+                </a>
+            </li>
+            <li>
+                <a href="/tags/" title="标签">
+                    <span>标签</span>
+                </a>
+            </li>
+            <li>
+                <a href="/archives/" title="归档">
+                    <span>归档</span>
+                </a>
+            </li>
+            <li>
+                <a href="/about/" title="关于">
+                    <span>关于</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <div class="breadcrumbs"><a href="/">Home</a>&nbsp;»&nbsp;<a href="/posts/">Posts</a></div>
+    <h1 class="post-title entry-hint-parent">
+      Hugo入门使用
+    </h1>
+    <div class="post-meta"><span title='2024-11-14 10:43:59 +0800 CST'>November 14, 2024</span>&nbsp;·&nbsp;2 min&nbsp;·&nbsp;342 words&nbsp;·&nbsp;夏天的小西瓜
+
+</div>
+  </header> <aside id="toc-container" class="toc-container wide">
+    <div class="toc">
+        <details  open>
+            <summary accesskey="c" title="(Alt + C)">
+                <span class="details">Table of Contents</span>
+            </summary>
+
+            <div class="inner"><ul>
+                    <li>
+                        <a href="#%e5%ae%89%e8%a3%85hugo" aria-label="安装Hugo">安装Hugo</a></li>
+                    <li>
+                        <a href="#%e5%bf%ab%e9%80%9f%e5%bc%80%e5%a7%8b" aria-label="快速开始">快速开始</a></li>
+                    <li>
+                        <a href="#%e4%bd%bf%e7%94%a8%e5%85%a5%e9%97%a8" aria-label="使用入门">使用入门</a><ul>
+                            
+                    <li>
+                        <a href="#1-%e5%88%86%e7%b1%bb%e4%b8%8e%e6%a0%87%e7%ad%be" aria-label="1. 分类与标签">1. 分类与标签</a></li>
+                    <li>
+                        <a href="#2-%e5%bd%92%e6%a1%a3" aria-label="2. 归档">2. 归档</a></li>
+                    <li>
+                        <a href="#3-%e9%9d%99%e6%80%81%e8%b5%84%e6%ba%90" aria-label="3. 静态资源">3. 静态资源</a></li>
+                    <li>
+                        <a href="#4-mermaid%e5%9b%be%e8%a1%a8" aria-label="4. Mermaid图表">4. Mermaid图表</a></li></ul>
+                    </li>
+                    <li>
+                        <a href="#%e9%83%a8%e7%bd%b2" aria-label="部署">部署</a>
+                    </li>
+                </ul>
+            </div>
+        </details>
+    </div>
+</aside>
+<script>
+    let activeElement;
+    let elements;
+    window.addEventListener('DOMContentLoaded', function (event) {
+        checkTocPosition();
+
+        elements = document.querySelectorAll('h1[id],h2[id],h3[id],h4[id],h5[id],h6[id]');
+         
+         activeElement = elements[0];
+         const id = encodeURI(activeElement.getAttribute('id')).toLowerCase();
+         document.querySelector(`.inner ul li a[href="#${id}"]`).classList.add('active');
+     }, false);
+
+    window.addEventListener('resize', function(event) {
+        checkTocPosition();
+    }, false);
+
+    window.addEventListener('scroll', () => {
+        
+        activeElement = Array.from(elements).find((element) => {
+            if ((getOffsetTop(element) - window.pageYOffset) > 0 && 
+                (getOffsetTop(element) - window.pageYOffset) < window.innerHeight/2) {
+                return element;
+            }
+        }) || activeElement
+
+        elements.forEach(element => {
+             const id = encodeURI(element.getAttribute('id')).toLowerCase();
+             if (element === activeElement){
+                 document.querySelector(`.inner ul li a[href="#${id}"]`).classList.add('active');
+             } else {
+                 document.querySelector(`.inner ul li a[href="#${id}"]`).classList.remove('active');
+             }
+         })
+     }, false);
+
+    const main = parseInt(getComputedStyle(document.body).getPropertyValue('--article-width'), 10);
+    const toc = parseInt(getComputedStyle(document.body).getPropertyValue('--toc-width'), 10);
+    const gap = parseInt(getComputedStyle(document.body).getPropertyValue('--gap'), 10);
+
+    function checkTocPosition() {
+        const width = document.body.scrollWidth;
+
+        if (width - main - (toc * 2) - (gap * 4) > 0) {
+            document.getElementById("toc-container").classList.add("wide");
+        } else {
+            document.getElementById("toc-container").classList.remove("wide");
+        }
+    }
+
+    function getOffsetTop(element) {
+        if (!element.getClientRects().length) {
+            return 0;
+        }
+        let rect = element.getBoundingClientRect();
+        let win = element.ownerDocument.defaultView;
+        return rect.top + win.pageYOffset;   
+    }
+</script>
+
+  <div class="post-content"><h3 id="安装hugo">安装Hugo<a hidden class="anchor" aria-hidden="true" href="#安装hugo">#</a></h3>
+<p>不同系统环境安装命令：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sh" data-lang="sh"><span class="line"><span class="cl"><span class="c1"># Ubuntu 环境</span>
+</span></span><span class="line"><span class="cl"><span class="c1">## apt方式。下载版本可能会旧一些</span>
+</span></span><span class="line"><span class="cl">sudo apt update
+</span></span><span class="line"><span class="cl">sudo apt install hugo
+</span></span><span class="line"><span class="cl"><span class="c1">## deb包方式</span>
+</span></span><span class="line"><span class="cl">uname -i  <span class="c1"># 64位：x86_64；32位：i686</span>
+</span></span><span class="line"><span class="cl">sudo dpkg -i hugo*.deb
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># Mac 环境</span>
+</span></span><span class="line"><span class="cl">brew install hugo
+</span></span></code></pre></div><p>查看HUGO版本确认安装成功：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sh" data-lang="sh"><span class="line"><span class="cl">hugo version
+</span></span></code></pre></div><h3 id="快速开始">快速开始<a hidden class="anchor" aria-hidden="true" href="#快速开始">#</a></h3>
+<p>可参考文档：<a href="https://hugo.opendocs.io/getting-started/quick-start/">Hugo快速入门</a></p>
+<ol>
+<li>hugo 创建站点：</li>
+</ol>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sh" data-lang="sh"><span class="line"><span class="cl"><span class="c1"># 说明：my-site 是站点的名称</span>
+</span></span><span class="line"><span class="cl">hugo new site my-site
+</span></span></code></pre></div><p>创建完成后，站点目录 包含以下文件：</p>
+<pre tabindex="0"><code>.
+├── archetypes/
+│   └── default.md    &lt;-- default.md是默认的博文模版
+├── assets/           &lt;-- 存放被 Hugo Pipes 处理的文件
+├── content/          &lt;-- 存放markdown文件作为博文内容
+├── data/             &lt;-- 存放 Hugo 处理的数据
+├── i18n/
+├── layouts/     
+├── static/           &lt;-- 存放静态文件,例如 图片 CSS JS文件
+├── themes/           &lt;-- 存放不同的主题
+└── config.yaml         &lt;-- site configuration
+</code></pre><ol start="2">
+<li>创建文章</li>
+</ol>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sh" data-lang="sh"><span class="line"><span class="cl">hugo new content/posts/hugo_intro.md
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 指定模板创建内容</span>
+</span></span><span class="line"><span class="cl">hugo new --kind &lt;template&gt; &lt;name&gt;
+</span></span></code></pre></div><ol start="3">
+<li>设置主题（子模块形式）</li>
+</ol>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sh" data-lang="sh"><span class="line"><span class="cl">git submodule add --depth<span class="o">=</span><span class="m">1</span> https://github.com/adityatelange/hugo-PaperMod.git themes/PaperMod
+</span></span><span class="line"><span class="cl">git submodule update --init --recursive <span class="c1"># needed when you reclone your repo (submodules may not get cloned automatically)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 重新clone，需要初始化子模块，等同于上面的复合命令</span>
+</span></span><span class="line"><span class="cl">git submodule init
+</span></span><span class="line"><span class="cl">git submodule update
+</span></span></code></pre></div><blockquote>
+<p>这里使用的主题为：<a href="https://adityatelange.github.io/hugo-PaperMod/posts/papermod/papermod-features/">PaperMod</a></p>
+</blockquote>
+<ol start="4">
+<li>本地运行测试</li>
+</ol>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sh" data-lang="sh"><span class="line"><span class="cl"><span class="c1"># 支持草稿态展示，默认端口号 1313</span>
+</span></span><span class="line"><span class="cl">hugo server -D
+</span></span></code></pre></div><ol start="5">
+<li>正式发布</li>
+</ol>
+<p>当进入到正式发布时，在调整确认config.yaml / config.toml 文件下的 <strong>baseURL</strong> 字段值后。
+执行以下命令即可正式发布：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sh" data-lang="sh"><span class="line"><span class="cl">hugo
+</span></span></code></pre></div><h3 id="使用入门">使用入门<a hidden class="anchor" aria-hidden="true" href="#使用入门">#</a></h3>
+<p>当前配置的目录菜单列表如下：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl"><span class="nt">menu</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">main</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span>- <span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l">首页</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nt">url</span><span class="p">:</span><span class="w"> </span><span class="l">/</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nt">weight</span><span class="p">:</span><span class="w"> </span><span class="m">1</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span>- <span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l">文章</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nt">url</span><span class="p">:</span><span class="w"> </span><span class="l">/posts/</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nt">weight</span><span class="p">:</span><span class="w"> </span><span class="m">2</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span>- <span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l">分类</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nt">url</span><span class="p">:</span><span class="w"> </span><span class="l">/categories/</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nt">weight</span><span class="p">:</span><span class="w"> </span><span class="m">3</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span>- <span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l">标签</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nt">url</span><span class="p">:</span><span class="w"> </span><span class="l">/tags/</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nt">weight</span><span class="p">:</span><span class="w"> </span><span class="m">4</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span>- <span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l">归档</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nt">url</span><span class="p">:</span><span class="w"> </span><span class="l">/archives/</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nt">weight</span><span class="p">:</span><span class="w"> </span><span class="m">5</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span>- <span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l">关于</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nt">url</span><span class="p">:</span><span class="w"> </span><span class="l">/about/</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nt">weight</span><span class="p">:</span><span class="w"> </span><span class="m">6</span><span class="w">
+</span></span></span></code></pre></div><h4 id="1-分类与标签">1. 分类与标签<a hidden class="anchor" aria-hidden="true" href="#1-分类与标签">#</a></h4>
+<p>在 <code>config.yaml</code> 文件里打开分类与标签功能：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl"><span class="nt">taxonomies</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">tag</span><span class="p">:</span><span class="w"> </span><span class="l">tags</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">category</span><span class="p">:</span><span class="w"> </span><span class="l">categories</span><span class="w">
+</span></span></span></code></pre></div><p>在<code>archetypes/default.md</code>默认博文模版里新增属性定义：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl"><span class="nt">categories</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span>- <span class="s2">&#34;未分类&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="nt">tags</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span>- <span class="s2">&#34;未知&#34;</span><span class="w">
+</span></span></span></code></pre></div><h4 id="2-归档">2. 归档<a hidden class="anchor" aria-hidden="true" href="#2-归档">#</a></h4>
+<p>在 <code>content</code> 目录里创建 <code>archive.md</code>文件
+此时的目录树如下：</p>
+<pre tabindex="0"><code>.
+├── config.yaml
+├── content/
+│   ├── archives.md   &lt;--- Create archive.md here
+│   └── posts/
+├── static/
+└── themes/
+    └── PaperMod/
+</code></pre><p>接着将以下内容添加到<code>archive.md</code>文件里：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl"><span class="nn">---</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="nt">title</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;Archive&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="nt">layout</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;archives&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="nt">url</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;/archives/&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="nt">summary</span><span class="p">:</span><span class="w"> </span><span class="l">archives</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="nn">---</span><span class="w">
+</span></span></span></code></pre></div><h4 id="3-静态资源">3. 静态资源<a hidden class="anchor" aria-hidden="true" href="#3-静态资源">#</a></h4>
+<p>Hugo 构建时会自动将 <strong>static</strong> 目录内容复制到 <strong>public</strong> 根目录。</p>
+<p>以引用图片为例，在 static 目录下新建子目录（如 images），使用绝对路径直接引用，路径需以 <strong>/</strong> 开头：</p>
+<pre tabindex="0"><code>引用方式：![图片描述](/images/demo.jpg)
+部署后的访问地址：https://your-domain.com/images/demo.jpg
+</code></pre><h4 id="4-mermaid图表">4. Mermaid图表<a hidden class="anchor" aria-hidden="true" href="#4-mermaid图表">#</a></h4>
+<p>Hugo 目前没有提供 Mermaid 图表的默认模板。可通过以下方法主动配置：</p>
+<p>创建 <code>layouts/_default/_markup/render-codeblock-mermaid.html</code>文件，在该文件添加以下内容：</p>
+<pre tabindex="0"><code>&lt;pre class=&#34;mermaid&#34;&gt;
+  {{- .Inner | safeHTML }}
+&lt;/pre&gt;
+{{ .Page.Store.Set &#34;hasMermaid&#34; true }}
+</code></pre><h3 id="部署">部署<a hidden class="anchor" aria-hidden="true" href="#部署">#</a></h3>
+<p>使用 <code>阿里云服务器</code>配合<code>nginx</code>实现Hugo部署。</p>
+<ol>
+<li>确认 Hugo 的baseURL配置：</li>
+</ol>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl"><span class="c"># 本机IP动态变化，使用相对路径，不指定host</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="nt">baseURL</span><span class="p">:</span><span class="w"> </span><span class="l">/</span><span class="w">
+</span></span></span></code></pre></div><ol start="2">
+<li>在<code>/etc/nginx/conf.d/</code>目录里新建 <strong>hugo-server.conf</strong>文件，内容如下：</li>
+</ol>
+<pre tabindex="0"><code>server {
+
+    listen 9099;
+    server_name 127.0.0.1;
+
+    # Hugo 生成的静态网站目录
+    root /home/user/hugo-site/public;
+    
+    index index.html index.htm;
+
+    # 日志配置
+    access_log /var/log/nginx/hugo_access.log;
+    error_log /var/log/nginx/hugo_error.log;
+
+    location / {
+        try_files $uri $uri/ =404;
+    }
+}
+</code></pre><p>在nginx按需配置访问的端口号与静态网站生成目录。</p>
+<p>注意，添加完成后执行 <code>sudo nginx -s reload</code> 命令刷新配置。</p>
+<ol start="3">
+<li>执行 <code>hugo</code> 进行静态网站打包。完成后外站可使用目标主机地址进行访问</li>
+</ol>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="/tags/hugo/">Hugo</a></li>
+      <li><a href="/tags/%E9%9D%99%E6%80%81%E7%BD%91%E7%AB%99/">静态网站</a></li>
+    </ul>
+<nav class="paginav">
+  <a class="prev" href="/posts/tools/adb/">
+    <span class="title">« Prev</span>
+    <br>
+    <span>adb日常使用</span>
+  </a>
+</nav>
+
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2025 <a href="/">缥缈夏鸢</a></span> · 
+
+    <span>
+        Powered by
+        <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+        <path d="M12 6H0l6-6z" />
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu')
+    if (menu) {
+        menu.scrollLeft = localStorage.getItem("menu-scroll-position");
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        if (document.body.className.includes("dark")) {
+            document.body.classList.remove('dark');
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            document.body.classList.add('dark');
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerHTML = 'copy';
+
+        function copyingDone() {
+            copybutton.innerHTML = 'copied!';
+            setTimeout(() => {
+                copybutton.innerHTML = 'copy';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+</body>
+
+</html>

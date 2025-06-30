@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>Adb on 缥缈夏鸢</title>
+    <link>/tags/adb/</link>
+    <description>Recent content in Adb on 缥缈夏鸢</description>
+    <generator>Hugo -- 0.138.0</generator>
+    <language>en-us</language>
+    <lastBuildDate>Fri, 15 Nov 2024 14:20:18 +0800</lastBuildDate>
+    <atom:link href="/tags/adb/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>adb日常使用</title>
+      <link>/posts/tools/adb/</link>
+      <pubDate>Fri, 15 Nov 2024 14:20:18 +0800</pubDate>
+      <guid>/posts/tools/adb/</guid>
+      <description>&lt;h2 id=&#34;简述&#34;&gt;简述&lt;/h2&gt;
+&lt;h2 id=&#34;adb日志操作&#34;&gt;adb日志操作&lt;/h2&gt;
+&lt;p&gt;adb logcat日志可分为：main、system、events、radio、crash、kernel类型的log，常用日志过滤命令如下：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;adb logcat -b main&lt;/li&gt;
+&lt;li&gt;adb logcat -b system&lt;/li&gt;
+&lt;li&gt;adb logcat -b events&lt;/li&gt;
+&lt;li&gt;adb logcat -b radio&lt;/li&gt;
+&lt;li&gt;adb logcat -b crash&lt;/li&gt;
+&lt;li&gt;adb logcat -b kernel&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;logcat其它命令补充：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;adb logcat -b events：输出指定buffer的log&lt;/li&gt;
+&lt;li&gt;adb logcat -s &amp;ldquo;ActivityManager&amp;rdquo;：输出指定tag的log&lt;/li&gt;
+&lt;li&gt;adb logcat -L：上次重启时的log&lt;/li&gt;
+&lt;li&gt;adb logcat -f [file_path]：将log保存到指定文件&lt;/li&gt;
+&lt;li&gt;adb logcat -g：缓冲区大小&lt;/li&gt;
+&lt;li&gt;adb logcat -S：log统计信息&lt;/li&gt;
+&lt;li&gt;adb shell setprop log.tag.[Tag] {VDIWE}：设置log标签的过滤级别&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;dmesg&lt;/code&gt;或者&lt;code&gt;cat /proc/kmsg&lt;/code&gt;：adb shell进入手机后打印内核日志&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;adb logcat -b events | egrep -i resume_activity&lt;/code&gt;：查看执行到resume状态的activity&lt;/li&gt;
+&lt;/ul&gt;
+&lt;blockquote&gt;
+&lt;p&gt;从Android O开始引入Log的chatty机制，会把中间的重复内容不再打印，而是输出类似 “uid=1000(system) Binder:1453_1D identical 7 lines” ，告知有多少行的日志是一样的，这不是错误，只是减少了重复打印的次数。&lt;/p&gt;</description>
+    </item>
+  </channel>
+</rss>

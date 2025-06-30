@@ -1,0 +1,976 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>Android View工作流程 | 缥缈夏鸢</title>
+<meta name="keywords" content="View事件体系">
+<meta name="description" content="概述
+在Android的知识体系中，View扮演着很重要的角色，简单来理解，View是Android里Window的表现形式。
+ViewRootImpl在整个View体系中起着中流砥柱的作用，它是控件树正常运作的动力所在，主要功能有：
+
+连接WindowManager和DecorView的纽带；
+向DecorView分发输入事件；
+完成View的绘制(measure，layout，draw)；
+负责与WMS交互通信，调整窗口大小及布局。
+
+View工作流程
+1. ViewRootImpl.setView
+在WindowManagerGlobal.addView方法中，会创建ViewRootImpl对象，并通过setView方法将DecorView对象和WindowManager.LayoutParams等参数传入。View流程相关的代码如下：
+public void setView(View view, WindowManager.LayoutParams attrs, View panelParentView) {
+    ...
+    mView = view;
+    mWindowAttributes.copyFrom(attrs);
+    ...
+    mAdded = true;
+    requestLayout();
+    ...
+}
+通过内部的requestLayout()方法开启View的工作流程。
+2. ViewRootImpl.requestLayout
+@Override
+public void requestLayout() {
+    if (!mHandlingLayoutInLayoutRequest) {
+        // 检查线程对象，调用方若不在当前ViewRootImpl线程将会出错
+        checkThread();
+        mLayoutRequested = true;
+        // 计划执行遍历任务
+        scheduleTraversals();
+    }
+}
+
+
+void checkThread() {
+    if (mThread != Thread.currentThread()) {
+        throw new CalledFromWrongThreadException(
+            &#34;Only the original thread that created a view hierarchy&#34; &#43;
+            &#34;can touch its views.&#34;);
+    }
+}
+这里需要说明的是，View的工作流程是在创建ViewRootImpl的线程中运行的，而ViewRootImpl是在主线程被创建的！">
+<meta name="author" content="夏天的小西瓜">
+<link rel="canonical" href="/posts/android/view_traversals/">
+<meta name="google-site-verification" content="XYZabc">
+<meta name="msvalidate.01" content="XYZabc">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.44278f16c6e7e77192a15a0565fb5b0f220c56128442fcfa6937b4d84456ecf0.css" integrity="sha256-RCePFsbn53GSoVoFZftbDyIMVhKEQvz6aTe02ERW7PA=" rel="preload stylesheet" as="style">
+<link rel="icon" href="/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="mask-icon" href="/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="en" href="/posts/android/view_traversals/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-track {
+                background: 0 0;
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-thumb {
+                border-color: var(--theme);
+            }
+        }
+
+    </style>
+</noscript><script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+<script>
+
+const config = {
+    startOnLoad:true,
+    
+    themeVariables: {
+        lineColor: "#ffffff"    
+    },
+    flowchart: {
+        useMaxWidth:false,
+        htmlLabels:true
+    }
+};
+mermaid.initialize(config);
+
+
+window.onload = () => {
+    window.mermaid.init(undefined, document.querySelectorAll('.language-mermaid'));
+}
+</script><meta property="og:url" content="/posts/android/view_traversals/">
+  <meta property="og:site_name" content="缥缈夏鸢">
+  <meta property="og:title" content="Android View工作流程">
+  <meta property="og:description" content="概述 在Android的知识体系中，View扮演着很重要的角色，简单来理解，View是Android里Window的表现形式。
+ViewRootImpl在整个View体系中起着中流砥柱的作用，它是控件树正常运作的动力所在，主要功能有：
+连接WindowManager和DecorView的纽带； 向DecorView分发输入事件； 完成View的绘制(measure，layout，draw)； 负责与WMS交互通信，调整窗口大小及布局。 View工作流程 1. ViewRootImpl.setView 在WindowManagerGlobal.addView方法中，会创建ViewRootImpl对象，并通过setView方法将DecorView对象和WindowManager.LayoutParams等参数传入。View流程相关的代码如下：
+public void setView(View view, WindowManager.LayoutParams attrs, View panelParentView) { ... mView = view; mWindowAttributes.copyFrom(attrs); ... mAdded = true; requestLayout(); ... } 通过内部的requestLayout()方法开启View的工作流程。
+2. ViewRootImpl.requestLayout @Override public void requestLayout() { if (!mHandlingLayoutInLayoutRequest) { // 检查线程对象，调用方若不在当前ViewRootImpl线程将会出错 checkThread(); mLayoutRequested = true; // 计划执行遍历任务 scheduleTraversals(); } } void checkThread() { if (mThread != Thread.currentThread()) { throw new CalledFromWrongThreadException( &#34;Only the original thread that created a view hierarchy&#34; &#43; &#34;can touch its views.&#34;); } } 这里需要说明的是，View的工作流程是在创建ViewRootImpl的线程中运行的，而ViewRootImpl是在主线程被创建的！">
+  <meta property="og:locale" content="en-us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2025-05-14T13:10:56+08:00">
+    <meta property="article:modified_time" content="2025-05-14T13:10:56+08:00">
+    <meta property="article:tag" content="View事件体系">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Android View工作流程">
+<meta name="twitter:description" content="概述
+在Android的知识体系中，View扮演着很重要的角色，简单来理解，View是Android里Window的表现形式。
+ViewRootImpl在整个View体系中起着中流砥柱的作用，它是控件树正常运作的动力所在，主要功能有：
+
+连接WindowManager和DecorView的纽带；
+向DecorView分发输入事件；
+完成View的绘制(measure，layout，draw)；
+负责与WMS交互通信，调整窗口大小及布局。
+
+View工作流程
+1. ViewRootImpl.setView
+在WindowManagerGlobal.addView方法中，会创建ViewRootImpl对象，并通过setView方法将DecorView对象和WindowManager.LayoutParams等参数传入。View流程相关的代码如下：
+public void setView(View view, WindowManager.LayoutParams attrs, View panelParentView) {
+    ...
+    mView = view;
+    mWindowAttributes.copyFrom(attrs);
+    ...
+    mAdded = true;
+    requestLayout();
+    ...
+}
+通过内部的requestLayout()方法开启View的工作流程。
+2. ViewRootImpl.requestLayout
+@Override
+public void requestLayout() {
+    if (!mHandlingLayoutInLayoutRequest) {
+        // 检查线程对象，调用方若不在当前ViewRootImpl线程将会出错
+        checkThread();
+        mLayoutRequested = true;
+        // 计划执行遍历任务
+        scheduleTraversals();
+    }
+}
+
+
+void checkThread() {
+    if (mThread != Thread.currentThread()) {
+        throw new CalledFromWrongThreadException(
+            &#34;Only the original thread that created a view hierarchy&#34; &#43;
+            &#34;can touch its views.&#34;);
+    }
+}
+这里需要说明的是，View的工作流程是在创建ViewRootImpl的线程中运行的，而ViewRootImpl是在主线程被创建的！">
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Posts",
+      "item": "/posts/"
+    }
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Android View工作流程",
+      "item": "/posts/android/view_traversals/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Android View工作流程",
+  "name": "Android View工作流程",
+  "description": "概述 在Android的知识体系中，View扮演着很重要的角色，简单来理解，View是Android里Window的表现形式。\nViewRootImpl在整个View体系中起着中流砥柱的作用，它是控件树正常运作的动力所在，主要功能有：\n连接WindowManager和DecorView的纽带； 向DecorView分发输入事件； 完成View的绘制(measure，layout，draw)； 负责与WMS交互通信，调整窗口大小及布局。 View工作流程 1. ViewRootImpl.setView 在WindowManagerGlobal.addView方法中，会创建ViewRootImpl对象，并通过setView方法将DecorView对象和WindowManager.LayoutParams等参数传入。View流程相关的代码如下：\npublic void setView(View view, WindowManager.LayoutParams attrs, View panelParentView) { ... mView = view; mWindowAttributes.copyFrom(attrs); ... mAdded = true; requestLayout(); ... } 通过内部的requestLayout()方法开启View的工作流程。\n2. ViewRootImpl.requestLayout @Override public void requestLayout() { if (!mHandlingLayoutInLayoutRequest) { // 检查线程对象，调用方若不在当前ViewRootImpl线程将会出错 checkThread(); mLayoutRequested = true; // 计划执行遍历任务 scheduleTraversals(); } } void checkThread() { if (mThread != Thread.currentThread()) { throw new CalledFromWrongThreadException( \u0026#34;Only the original thread that created a view hierarchy\u0026#34; + \u0026#34;can touch its views.\u0026#34;); } } 这里需要说明的是，View的工作流程是在创建ViewRootImpl的线程中运行的，而ViewRootImpl是在主线程被创建的！\n",
+  "keywords": [
+    "View事件体系"
+  ],
+  "articleBody": "概述 在Android的知识体系中，View扮演着很重要的角色，简单来理解，View是Android里Window的表现形式。\nViewRootImpl在整个View体系中起着中流砥柱的作用，它是控件树正常运作的动力所在，主要功能有：\n连接WindowManager和DecorView的纽带； 向DecorView分发输入事件； 完成View的绘制(measure，layout，draw)； 负责与WMS交互通信，调整窗口大小及布局。 View工作流程 1. ViewRootImpl.setView 在WindowManagerGlobal.addView方法中，会创建ViewRootImpl对象，并通过setView方法将DecorView对象和WindowManager.LayoutParams等参数传入。View流程相关的代码如下：\npublic void setView(View view, WindowManager.LayoutParams attrs, View panelParentView) { ... mView = view; mWindowAttributes.copyFrom(attrs); ... mAdded = true; requestLayout(); ... } 通过内部的requestLayout()方法开启View的工作流程。\n2. ViewRootImpl.requestLayout @Override public void requestLayout() { if (!mHandlingLayoutInLayoutRequest) { // 检查线程对象，调用方若不在当前ViewRootImpl线程将会出错 checkThread(); mLayoutRequested = true; // 计划执行遍历任务 scheduleTraversals(); } } void checkThread() { if (mThread != Thread.currentThread()) { throw new CalledFromWrongThreadException( \"Only the original thread that created a view hierarchy\" + \"can touch its views.\"); } } 这里需要说明的是，View的工作流程是在创建ViewRootImpl的线程中运行的，而ViewRootImpl是在主线程被创建的！\n3. ViewRootImpl.scheduleTraversals Choreographer mChoreographer; void scheduleTraversals() { if (!mTraversalScheduled) { mTraversalScheduled = true; // 同步屏障，此时同步消息将不被执行，但异步消息照常处理 mTraversalBarrier = mHandler.getLooper().getQueue().postSyncBarrier(); // Choreographer协调显示处理，执行mTraversalRunnable任务 mChoreographer.postCallback( Choreographer.CALLBACK_TRAVERSAL, mTraversalRunnable, null); ... } } 4. TraversalRunnable public final class ViewRootImpl ...{ final class TraversalRunnable implements Runnable { @Override public void run() { doTraversal(); } } final TraversalRunnable mTraversalRunnable = new TraversalRunnable(); } TraversalRunnable这个任务只执行了ViewRootImpl的doTraversal方法\n5. ViewRootImpl.doTraversal void doTraversal() { if (mTraversalScheduled) { mTraversalScheduled = false; // 移除同步屏障 mHandler.getLooper().getQueue().removeSyncBarrier(mTraversalBarrier); // 开始执行遍历操作 performTraversals(); } } 简而言之，通过Choreographer.postCallback方法执行TraversalRunnable任务中的doTraversal方法。\n6. ViewRootImpl.performTraversals private void performTraversals() { final View host = mView; mIsInTraversal = true; mWillDrawSoon = true; boolean windowSizeMayChange = false; boolean newSurface = false; boolean surfaceChanged = false; WindowManager.LayoutParams lp = mWindowAttributes; ... if (!mStopped || mReportNextDraw) { int childWidthMeasureSpec = getRootMeasureSpec(mWidth, lp.width); int childHeightMeasureSpec = getRootMeasureSpec(mHeight, lp.height); // 执行measure操作 performMeasure(childWidthMeasureSpec, childHeightMeasureSpec); ... layoutRequested = true; } final boolean didLayout = layoutRequested \u0026\u0026 (!mStopped || mReportNextDraw); if (didLayout) { // 执行layout操作 performLayout(lp, mWidth, mHeight); ... } // Remember if we must report the next draw. if ((relayoutResult \u0026 WindowManagerGlobal.RELAYOUT_RES_FIRST_TIME) != 0) { reportNextDraw(); } boolean cancelDraw = mAttachInfo.mTreeObserver.dispatchOnPreDraw() || !isViewVisible; if (!cancelDraw \u0026\u0026 !newSurface) { ... // 执行draw操作 performDraw(); } // 遍历结束 mIsInTraversal = false; } View的测量过程 1. ViewRootImpl.performMeasure private void performMeasure(int childWidthMeasureSpec, int childHeightMeasureSpec) { ... mView.measure(childWidthMeasureSpec, childHeightMeasureSpec); ... } 这个方法直接调用了mView.measure方法，mView是DecorView，但是measure是View的final方法，不可继承重写，所以接着调用了View.measure方法。\n2. View.measure public final void measure(int widthMeasureSpec, int heightMeasureSpec) { ... if (forceLayout || needsLayout) { ... onMeasure(widthMeasureSpec, heightMeasureSpec); ... } ... } protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) { setMeasuredDimension( getDefaultSize(getSuggestedMinimumWidth(), widthMeasureSpec), getDefaultSize(getSuggestedMinimumHeight(), heightMeasureSpec)); } // setMeasuredDimension方法里会继续调用setMeasuredDimensionRaw完成赋值 private void setMeasuredDimensionRaw(int measuredWidth, int measuredHeight) { mMeasuredWidth = measuredWidth; mMeasuredHeight = measuredHeight; mPrivateFlags |= PFLAG_MEASURED_DIMENSION_SET; } measure方法中会调用onMeasure方法，onMeasure方法是可以被重写的，默认实现中只是调用了setMeasuredDimension方法设置测量值！\n3. MeasureSpec MeasureSpec代表一个32位的int值，高2位代表SpecMode (EXACTLY, AT_MOST, UNSPECIFIED)，低30位代表SpecSize值。具体关系表如下：\nchildLayoutParams\\parentLayoutParams EXACTLY AT_MOST UNSPECIFIED dp/px EXACTLY (childSize) EXACTLY (childSize) EXACTLY (childSize) match_parent EXACTLY (parentSize) AT_MOST (parentSize) UNSPECIFIED (0) wrap_content AT_MOST (parentSize) AT_MOST (parentSize) UNSPECIFIED (0) MeasureSpec和LayoutParams的对应关系\n对应DecorView，其MeasureSpec由窗口的尺寸和其自身的LayoutParams来共同确定 对应普通的View，其MeasureSpec由父容器的MeasureSpec和自身的LayoutParams共同决定，同时考虑View的margin及padding的因素 获取SpecMode和SpecSize：MeasureSpec.getMode(measureSpec); MeasureSpec.getSize(measureSpec); 组装MeasureSpec: MeasureSpec.makeMeasureSpec(int size, int SpecMode) 测量模式一共有三种， 在 Android 中 View 内定义的一个内部类View.MeasureSpec中：\n模式 二进制数值 描述 UNSPECIFIED 0 « MODE_SHIFT 默认值，父控件没有给子view任何限制，子View可以设置为任意大小。 EXACTLY 1 « MODE_SHIFT 父控件确切地指定子View的大小。match_parent、具体数值对应的都是这个模式。 AT_MOST 2 « MODE_SHIFT 子View具体大小没有限制，但上限一般为父View大小。wrap_content对应这种模式 4. 小结 View的测量过程，主要核心点在于View.measure方法中调用的onMeasure方法，在onMeasure方法中会通过setMeasuredDimension方法完成View的最终测量。\n这里分为两种情况：\n当为ViewGroup时，需要一并考虑各个子View的占用大小和其padding值，算出最终占用大小 当为View时，考虑父容器的测量模式，在onMeasure方法中处理自身占用大小 View的布局过程 1. ViewRootImpl.performLayout private void performLayout(WindowManager.LayoutParams lp, int desiredWindowWidth, int desiredWindowHeight) { final View host = mView; ... host.layout(0, 0, host.getMeasuredWidth(), host.getMeasuredHeight()); ... } 虽然ViewGroup中重写了View的layout方法，并将其标为final，但是实现还在View.layout方法里。\n注意：这里传入的宽高值是measure过程后的测量宽高值。\n2. View.layout public void layout(int l, int t, int r, int b) { boolean changed = isLayoutModeOptical(mParent) ? setOpticalFrame(l, t, r, b) : setFrame(l, t, r, b); if (changed || (mPrivateFlags \u0026 PFLAG_LAYOUT_REQUIRED) == PFLAG_LAYOUT_REQUIRED) { onLayout(changed, l, t, r, b); ... } ... } 在执行onLayout方法回调之前，首先判断布局是否有变化，具体由setFrame方法实现，设置以后，我们调用View的getLeft、getTop、getRight和getBottom等方法才会被赋值。\n3. View.setFrame protected boolean setFrame(int left, int top, int right, int bottom) { boolean changed = false; if (mLeft != left || mRight != right || mTop != top || mBottom != bottom) { changed = true; ... mLeft = left; mTop = top; mRight = right; mBottom = bottom; mRenderNode.setLeftTopRightBottom(mLeft, mTop, mRight, mBottom); mPrivateFlags |= PFLAG_HAS_BOUNDS; ... } return changed; } 通过这个方法设置后，还会调用onSizeChanged方法回调，通知布局大小发生变化！\n4. View.onLayout protected void onLayout(boolean changed, int left, int top, int right, int bottom) { } 可以看到View的onLayout方法是个空的实现，因为对于这个View而言，经过layout后，具体位置相对于父容器已经确定了。这个onLayout方法主要是给继承自ViewGroup的类使用，因为他们还要考虑子View在自身容器下的布局位置，所以一般会遍历所有子View，算出对应的位置，然后调用View.layout方法确认子View的位置。\nView及其直接或间接继承的子View无需关注onLayout，ViewGroup则需要管理子View的布局任务。子View常通过layout方法\nView的绘制过程 1. ViewRootImpl.performDraw private void performDraw() { final boolean fullRedrawNeeded = mFullRedrawNeeded || mReportNextDraw; ... boolean canUseAsync = draw(fullRedrawNeeded); ... } 2. ViewRootImpl.draw private boolean draw(boolean fullRedrawNeeded) { // 需要绘制的内容数据会放到Surface上 Surface surface = mSurface; if (!surface.isValid()) { return false; } ... if (!drawSoftware(surface, mAttachInfo, xOffset, yOffset, scalingRequired, dirty, surfaceInsets)) { return false; } } draw的绘制考虑的情况比较多，这里考虑drawSoftware情况。\n3. ViewRootImpl.drawSoftware /** * @return true if drawing was successful, false if an error occurred */ private boolean drawSoftware(Surface surface, AttachInfo attachInfo, int xoff, int yoff,boolean scalingRequired, Rect dirty, Rect surfaceInsets) { // Draw with software renderer. final Canvas canvas; canvas = mSurface.lockCanvas(dirty); canvas.setDensity(mDensity); ... mView.draw(canvas); surface.unlockCanvasAndPost(canvas); ... return true; } 这一步调用DecorView的draw方法，将需要绘制的数据传给Canvas，之后被Surface组装。\n4. View.draw @CallSuper public void draw(Canvas canvas) { /* * Draw traversal performs several drawing steps which must be executed * in the appropriate order: * * 1. Draw the background * 2. If necessary, save the canvas' layers to prepare for fading * 3. Draw view's content * 4. Draw children * 5. If necessary, draw the fading edges and restore layers * 6. Draw decorations (scrollbars for instance) */ // Step 1, draw the background, if needed int saveCount; if (!dirtyOpaque) { drawBackground(canvas); } // skip step 2 \u0026 5 if possible (common case) final int viewFlags = mViewFlags; boolean horizontalEdges = (viewFlags \u0026 FADING_EDGE_HORIZONTAL) != 0; boolean verticalEdges = (viewFlags \u0026 FADING_EDGE_VERTICAL) != 0; if (!verticalEdges \u0026\u0026 !horizontalEdges) { // Step 3, draw the content if (!dirtyOpaque) onDraw(canvas); // Step 4, draw the children dispatchDraw(canvas); drawAutofilledHighlight(canvas); // Overlay is part of the content and draws beneath Foreground if (mOverlay != null \u0026\u0026 !mOverlay.isEmpty()) { mOverlay.getOverlayView().dispatchDraw(canvas); } // Step 6, draw decorations (foreground, scrollbars) onDrawForeground(canvas); // Step 7, draw the default focus highlight drawDefaultFocusHighlight(canvas); // we're done... return; } } 在View的draw方法中，做的事情大致有：\n绘制背景：drawBackground(canvas) 绘制自身内容：onDraw(canvas) 分发给子View的绘制：dispatchDraw(canvas) 绘制前景：onDrawForeground(canvas) 绘制默认焦点高亮区域：drawDefaultFocusHighlight(canvas) 一般而言，ViewGroup的子类无须管理绘制任务，而View及其直接或者间接继承的子View只需关注onDraw方法绘制自身即可。\nView小结 View的工作流程可以用下图简要表示：\n",
+  "wordCount" : "869",
+  "inLanguage": "en",
+  "datePublished": "2025-05-14T13:10:56+08:00",
+  "dateModified": "2025-05-14T13:10:56+08:00",
+  "author":[{
+    "@type": "Person",
+    "name": "夏天的小西瓜"
+  }],
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "/posts/android/view_traversals/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "缥缈夏鸢",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "/favicon.ico"
+    }
+  }
+}
+</script>
+</head>
+
+<body class="" id="top">
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.body.classList.add('dark');
+    } else if (localStorage.getItem("pref-theme") === "light") {
+        document.body.classList.remove('dark')
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.body.classList.add('dark');
+    }
+
+</script>
+
+<header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="/" accesskey="h" title="缥缈夏鸢 (Alt + H)">缥缈夏鸢</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" accesskey="t" title="(Alt + T)">
+                    <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu">
+            <li>
+                <a href="/" title="首页">
+                    <span>首页</span>
+                </a>
+            </li>
+            <li>
+                <a href="/posts/" title="文章">
+                    <span>文章</span>
+                </a>
+            </li>
+            <li>
+                <a href="/categories/" title="分类">
+                    <span>分类</span>
+                </a>
+            </li>
+            <li>
+                <a href="/tags/" title="标签">
+                    <span>标签</span>
+                </a>
+            </li>
+            <li>
+                <a href="/archives/" title="归档">
+                    <span>归档</span>
+                </a>
+            </li>
+            <li>
+                <a href="/about/" title="关于">
+                    <span>关于</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <div class="breadcrumbs"><a href="/">Home</a>&nbsp;»&nbsp;<a href="/posts/">Posts</a></div>
+    <h1 class="post-title entry-hint-parent">
+      Android View工作流程
+    </h1>
+    <div class="post-meta"><span title='2025-05-14 13:10:56 +0800 CST'>May 14, 2025</span>&nbsp;·&nbsp;5 min&nbsp;·&nbsp;869 words&nbsp;·&nbsp;夏天的小西瓜
+
+</div>
+  </header> <aside id="toc-container" class="toc-container wide">
+    <div class="toc">
+        <details  open>
+            <summary accesskey="c" title="(Alt + C)">
+                <span class="details">Table of Contents</span>
+            </summary>
+
+            <div class="inner"><ul>
+                    <li>
+                        <a href="#%e6%a6%82%e8%bf%b0" aria-label="概述">概述</a></li>
+                    <li>
+                        <a href="#view%e5%b7%a5%e4%bd%9c%e6%b5%81%e7%a8%8b" aria-label="View工作流程">View工作流程</a><ul>
+                            
+                    <li>
+                        <a href="#1-viewrootimplsetview" aria-label="1. ViewRootImpl.setView">1. ViewRootImpl.setView</a></li>
+                    <li>
+                        <a href="#2-viewrootimplrequestlayout" aria-label="2. ViewRootImpl.requestLayout">2. ViewRootImpl.requestLayout</a></li>
+                    <li>
+                        <a href="#3-viewrootimplscheduletraversals" aria-label="3. ViewRootImpl.scheduleTraversals">3. ViewRootImpl.scheduleTraversals</a></li>
+                    <li>
+                        <a href="#4-traversalrunnable" aria-label="4. TraversalRunnable">4. TraversalRunnable</a></li>
+                    <li>
+                        <a href="#5-viewrootimpldotraversal" aria-label="5. ViewRootImpl.doTraversal">5. ViewRootImpl.doTraversal</a></li>
+                    <li>
+                        <a href="#6-viewrootimplperformtraversals" aria-label="6. ViewRootImpl.performTraversals">6. ViewRootImpl.performTraversals</a></li></ul>
+                    </li>
+                    <li>
+                        <a href="#view%e7%9a%84%e6%b5%8b%e9%87%8f%e8%bf%87%e7%a8%8b" aria-label="View的测量过程">View的测量过程</a><ul>
+                            
+                    <li>
+                        <a href="#1-viewrootimplperformmeasure" aria-label="1. ViewRootImpl.performMeasure">1. ViewRootImpl.performMeasure</a></li>
+                    <li>
+                        <a href="#2-viewmeasure" aria-label="2. View.measure">2. View.measure</a></li>
+                    <li>
+                        <a href="#3-measurespec" aria-label="3. MeasureSpec">3. MeasureSpec</a></li>
+                    <li>
+                        <a href="#4-%e5%b0%8f%e7%bb%93" aria-label="4. 小结">4. 小结</a></li></ul>
+                    </li>
+                    <li>
+                        <a href="#view%e7%9a%84%e5%b8%83%e5%b1%80%e8%bf%87%e7%a8%8b" aria-label="View的布局过程">View的布局过程</a><ul>
+                            
+                    <li>
+                        <a href="#1-viewrootimplperformlayout" aria-label="1. ViewRootImpl.performLayout">1. ViewRootImpl.performLayout</a></li>
+                    <li>
+                        <a href="#2-viewlayout" aria-label="2. View.layout">2. View.layout</a></li>
+                    <li>
+                        <a href="#3-viewsetframe" aria-label="3. View.setFrame">3. View.setFrame</a></li>
+                    <li>
+                        <a href="#4-viewonlayout" aria-label="4. View.onLayout">4. View.onLayout</a></li></ul>
+                    </li>
+                    <li>
+                        <a href="#view%e7%9a%84%e7%bb%98%e5%88%b6%e8%bf%87%e7%a8%8b" aria-label="View的绘制过程">View的绘制过程</a><ul>
+                            
+                    <li>
+                        <a href="#1-viewrootimplperformdraw" aria-label="1. ViewRootImpl.performDraw">1. ViewRootImpl.performDraw</a></li>
+                    <li>
+                        <a href="#2-viewrootimpldraw" aria-label="2. ViewRootImpl.draw">2. ViewRootImpl.draw</a></li>
+                    <li>
+                        <a href="#3-viewrootimpldrawsoftware" aria-label="3. ViewRootImpl.drawSoftware">3. ViewRootImpl.drawSoftware</a></li>
+                    <li>
+                        <a href="#4-viewdraw" aria-label="4. View.draw">4. View.draw</a></li></ul>
+                    </li>
+                    <li>
+                        <a href="#view%e5%b0%8f%e7%bb%93" aria-label="View小结">View小结</a>
+                    </li>
+                </ul>
+            </div>
+        </details>
+    </div>
+</aside>
+<script>
+    let activeElement;
+    let elements;
+    window.addEventListener('DOMContentLoaded', function (event) {
+        checkTocPosition();
+
+        elements = document.querySelectorAll('h1[id],h2[id],h3[id],h4[id],h5[id],h6[id]');
+         
+         activeElement = elements[0];
+         const id = encodeURI(activeElement.getAttribute('id')).toLowerCase();
+         document.querySelector(`.inner ul li a[href="#${id}"]`).classList.add('active');
+     }, false);
+
+    window.addEventListener('resize', function(event) {
+        checkTocPosition();
+    }, false);
+
+    window.addEventListener('scroll', () => {
+        
+        activeElement = Array.from(elements).find((element) => {
+            if ((getOffsetTop(element) - window.pageYOffset) > 0 && 
+                (getOffsetTop(element) - window.pageYOffset) < window.innerHeight/2) {
+                return element;
+            }
+        }) || activeElement
+
+        elements.forEach(element => {
+             const id = encodeURI(element.getAttribute('id')).toLowerCase();
+             if (element === activeElement){
+                 document.querySelector(`.inner ul li a[href="#${id}"]`).classList.add('active');
+             } else {
+                 document.querySelector(`.inner ul li a[href="#${id}"]`).classList.remove('active');
+             }
+         })
+     }, false);
+
+    const main = parseInt(getComputedStyle(document.body).getPropertyValue('--article-width'), 10);
+    const toc = parseInt(getComputedStyle(document.body).getPropertyValue('--toc-width'), 10);
+    const gap = parseInt(getComputedStyle(document.body).getPropertyValue('--gap'), 10);
+
+    function checkTocPosition() {
+        const width = document.body.scrollWidth;
+
+        if (width - main - (toc * 2) - (gap * 4) > 0) {
+            document.getElementById("toc-container").classList.add("wide");
+        } else {
+            document.getElementById("toc-container").classList.remove("wide");
+        }
+    }
+
+    function getOffsetTop(element) {
+        if (!element.getClientRects().length) {
+            return 0;
+        }
+        let rect = element.getBoundingClientRect();
+        let win = element.ownerDocument.defaultView;
+        return rect.top + win.pageYOffset;   
+    }
+</script>
+
+  <div class="post-content"><h3 id="概述">概述<a hidden class="anchor" aria-hidden="true" href="#概述">#</a></h3>
+<p>在Android的知识体系中，<strong>View</strong>扮演着很重要的角色，简单来理解，View是Android里Window的表现形式。</p>
+<p>ViewRootImpl在整个View体系中起着中流砥柱的作用，它是控件树正常运作的动力所在，主要功能有：</p>
+<ul>
+<li>连接WindowManager和DecorView的纽带；</li>
+<li>向DecorView分发输入事件；</li>
+<li>完成View的绘制(measure，layout，draw)；</li>
+<li>负责与WMS交互通信，调整窗口大小及布局。</li>
+</ul>
+<h3 id="view工作流程">View工作流程<a hidden class="anchor" aria-hidden="true" href="#view工作流程">#</a></h3>
+<h4 id="1-viewrootimplsetview">1. ViewRootImpl.setView<a hidden class="anchor" aria-hidden="true" href="#1-viewrootimplsetview">#</a></h4>
+<p>在WindowManagerGlobal.addView方法中，会创建ViewRootImpl对象，并通过setView方法将DecorView对象和WindowManager.LayoutParams等参数传入。View流程相关的代码如下：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">setView</span><span class="p">(</span><span class="n">View</span><span class="w"> </span><span class="n">view</span><span class="p">,</span><span class="w"> </span><span class="n">WindowManager</span><span class="p">.</span><span class="na">LayoutParams</span><span class="w"> </span><span class="n">attrs</span><span class="p">,</span><span class="w"> </span><span class="n">View</span><span class="w"> </span><span class="n">panelParentView</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">...</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">mView</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">view</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">mWindowAttributes</span><span class="p">.</span><span class="na">copyFrom</span><span class="p">(</span><span class="n">attrs</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">...</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">mAdded</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">requestLayout</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">...</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></div><p>通过内部的requestLayout()方法开启View的工作流程。</p>
+<h4 id="2-viewrootimplrequestlayout">2. ViewRootImpl.requestLayout<a hidden class="anchor" aria-hidden="true" href="#2-viewrootimplrequestlayout">#</a></h4>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="nd">@Override</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">requestLayout</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">mHandlingLayoutInLayoutRequest</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="c1">// 检查线程对象，调用方若不在当前ViewRootImpl线程将会出错</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">checkThread</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">mLayoutRequested</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="c1">// 计划执行遍历任务</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">scheduleTraversals</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kt">void</span><span class="w"> </span><span class="nf">checkThread</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">mThread</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">Thread</span><span class="p">.</span><span class="na">currentThread</span><span class="p">())</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">throw</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">CalledFromWrongThreadException</span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="s">&#34;Only the original thread that created a view hierarchy&#34;</span><span class="w"> </span><span class="o">+</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="s">&#34;can touch its views.&#34;</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></div><p>这里需要说明的是，View的工作流程是在创建ViewRootImpl的线程中运行的，而ViewRootImpl是在主线程被创建的！</p>
+<h4 id="3-viewrootimplscheduletraversals">3. ViewRootImpl.scheduleTraversals<a hidden class="anchor" aria-hidden="true" href="#3-viewrootimplscheduletraversals">#</a></h4>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">Choreographer</span><span class="w"> </span><span class="n">mChoreographer</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kt">void</span><span class="w"> </span><span class="nf">scheduleTraversals</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">mTraversalScheduled</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">mTraversalScheduled</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="c1">// 同步屏障，此时同步消息将不被执行，但异步消息照常处理</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">mTraversalBarrier</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mHandler</span><span class="p">.</span><span class="na">getLooper</span><span class="p">().</span><span class="na">getQueue</span><span class="p">().</span><span class="na">postSyncBarrier</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="c1">// Choreographer协调显示处理，执行mTraversalRunnable任务</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">mChoreographer</span><span class="p">.</span><span class="na">postCallback</span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">Choreographer</span><span class="p">.</span><span class="na">CALLBACK_TRAVERSAL</span><span class="p">,</span><span class="w"> </span><span class="n">mTraversalRunnable</span><span class="p">,</span><span class="w"> </span><span class="kc">null</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">...</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></div><h4 id="4-traversalrunnable">4. TraversalRunnable<a hidden class="anchor" aria-hidden="true" href="#4-traversalrunnable">#</a></h4>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">public</span><span class="w"> </span><span class="kd">final</span><span class="w"> </span><span class="kd">class</span> <span class="nc">ViewRootImpl</span><span class="w"> </span><span class="p">...{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">final</span><span class="w"> </span><span class="kd">class</span> <span class="nc">TraversalRunnable</span><span class="w"> </span><span class="kd">implements</span><span class="w"> </span><span class="n">Runnable</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="nd">@Override</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">run</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">doTraversal</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">final</span><span class="w"> </span><span class="n">TraversalRunnable</span><span class="w"> </span><span class="n">mTraversalRunnable</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">TraversalRunnable</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></div><p>TraversalRunnable这个任务只执行了ViewRootImpl的doTraversal方法</p>
+<h4 id="5-viewrootimpldotraversal">5. ViewRootImpl.doTraversal<a hidden class="anchor" aria-hidden="true" href="#5-viewrootimpldotraversal">#</a></h4>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kt">void</span><span class="w"> </span><span class="nf">doTraversal</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">mTraversalScheduled</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">mTraversalScheduled</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="c1">// 移除同步屏障</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">mHandler</span><span class="p">.</span><span class="na">getLooper</span><span class="p">().</span><span class="na">getQueue</span><span class="p">().</span><span class="na">removeSyncBarrier</span><span class="p">(</span><span class="n">mTraversalBarrier</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">// 开始执行遍历操作</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">performTraversals</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></div><p>简而言之，通过Choreographer.postCallback方法执行TraversalRunnable任务中的doTraversal方法。</p>
+<h4 id="6-viewrootimplperformtraversals">6. ViewRootImpl.performTraversals<a hidden class="anchor" aria-hidden="true" href="#6-viewrootimplperformtraversals">#</a></h4>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">private</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">performTraversals</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">final</span><span class="w"> </span><span class="n">View</span><span class="w"> </span><span class="n">host</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mView</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">mIsInTraversal</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">mWillDrawSoon</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kt">boolean</span><span class="w"> </span><span class="n">windowSizeMayChange</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kt">boolean</span><span class="w"> </span><span class="n">newSurface</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kt">boolean</span><span class="w"> </span><span class="n">surfaceChanged</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">WindowManager</span><span class="p">.</span><span class="na">LayoutParams</span><span class="w"> </span><span class="n">lp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mWindowAttributes</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">...</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">mStopped</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">mReportNextDraw</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="kt">int</span><span class="w"> </span><span class="n">childWidthMeasureSpec</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">getRootMeasureSpec</span><span class="p">(</span><span class="n">mWidth</span><span class="p">,</span><span class="w"> </span><span class="n">lp</span><span class="p">.</span><span class="na">width</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="kt">int</span><span class="w"> </span><span class="n">childHeightMeasureSpec</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">getRootMeasureSpec</span><span class="p">(</span><span class="n">mHeight</span><span class="p">,</span><span class="w"> </span><span class="n">lp</span><span class="p">.</span><span class="na">height</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="c1">// 执行measure操作</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">performMeasure</span><span class="p">(</span><span class="n">childWidthMeasureSpec</span><span class="p">,</span><span class="w"> </span><span class="n">childHeightMeasureSpec</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">...</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">layoutRequested</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">final</span><span class="w"> </span><span class="kt">boolean</span><span class="w"> </span><span class="n">didLayout</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">layoutRequested</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">mStopped</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">mReportNextDraw</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">didLayout</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="c1">// 执行layout操作</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">performLayout</span><span class="p">(</span><span class="n">lp</span><span class="p">,</span><span class="w"> </span><span class="n">mWidth</span><span class="p">,</span><span class="w"> </span><span class="n">mHeight</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">...</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">// Remember if we must report the next draw.</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">((</span><span class="n">relayoutResult</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">WindowManagerGlobal</span><span class="p">.</span><span class="na">RELAYOUT_RES_FIRST_TIME</span><span class="p">)</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">reportNextDraw</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kt">boolean</span><span class="w"> </span><span class="n">cancelDraw</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mAttachInfo</span><span class="p">.</span><span class="na">mTreeObserver</span><span class="p">.</span><span class="na">dispatchOnPreDraw</span><span class="p">()</span><span class="w"> 
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="o">||</span><span class="w"> </span><span class="o">!</span><span class="n">isViewVisible</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">cancelDraw</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="o">!</span><span class="n">newSurface</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">...</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="c1">// 执行draw操作    </span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">performDraw</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">// 遍历结束</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">mIsInTraversal</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></div><h3 id="view的测量过程">View的测量过程<a hidden class="anchor" aria-hidden="true" href="#view的测量过程">#</a></h3>
+<h4 id="1-viewrootimplperformmeasure">1. ViewRootImpl.performMeasure<a hidden class="anchor" aria-hidden="true" href="#1-viewrootimplperformmeasure">#</a></h4>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">private</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">performMeasure</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">childWidthMeasureSpec</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">childHeightMeasureSpec</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">...</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">mView</span><span class="p">.</span><span class="na">measure</span><span class="p">(</span><span class="n">childWidthMeasureSpec</span><span class="p">,</span><span class="w"> </span><span class="n">childHeightMeasureSpec</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">...</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></div><p>这个方法直接调用了mView.measure方法，mView是DecorView，但是measure是View的final方法，不可继承重写，所以接着调用了View.measure方法。</p>
+<h4 id="2-viewmeasure">2. View.measure<a hidden class="anchor" aria-hidden="true" href="#2-viewmeasure">#</a></h4>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">public</span><span class="w"> </span><span class="kd">final</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">measure</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">widthMeasureSpec</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">heightMeasureSpec</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">...</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">forceLayout</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">needsLayout</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">...</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">onMeasure</span><span class="p">(</span><span class="n">widthMeasureSpec</span><span class="p">,</span><span class="w"> </span><span class="n">heightMeasureSpec</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">...</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">...</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">protected</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">onMeasure</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">widthMeasureSpec</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">heightMeasureSpec</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">setMeasuredDimension</span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">getDefaultSize</span><span class="p">(</span><span class="n">getSuggestedMinimumWidth</span><span class="p">(),</span><span class="w"> </span><span class="n">widthMeasureSpec</span><span class="p">),</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">getDefaultSize</span><span class="p">(</span><span class="n">getSuggestedMinimumHeight</span><span class="p">(),</span><span class="w"> </span><span class="n">heightMeasureSpec</span><span class="p">));</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="c1">// setMeasuredDimension方法里会继续调用setMeasuredDimensionRaw完成赋值</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">private</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">setMeasuredDimensionRaw</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">measuredWidth</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">measuredHeight</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">mMeasuredWidth</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">measuredWidth</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">mMeasuredHeight</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">measuredHeight</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">mPrivateFlags</span><span class="w"> </span><span class="o">|=</span><span class="w"> </span><span class="n">PFLAG_MEASURED_DIMENSION_SET</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></div><p>measure方法中会调用onMeasure方法，onMeasure方法是可以被重写的，默认实现中只是调用了setMeasuredDimension方法设置测量值！</p>
+<h4 id="3-measurespec">3. MeasureSpec<a hidden class="anchor" aria-hidden="true" href="#3-measurespec">#</a></h4>
+<p>MeasureSpec代表一个32位的int值，高2位代表SpecMode (EXACTLY, AT_MOST, UNSPECIFIED)，低30位代表SpecSize值。具体关系表如下：</p>
+<table>
+  <thead>
+      <tr>
+          <th style="text-align: center">childLayoutParams\parentLayoutParams</th>
+          <th style="text-align: center">EXACTLY</th>
+          <th style="text-align: center">AT_MOST</th>
+          <th style="text-align: center">UNSPECIFIED</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td style="text-align: center">dp/px</td>
+          <td style="text-align: center">EXACTLY (childSize)</td>
+          <td style="text-align: center">EXACTLY (childSize)</td>
+          <td style="text-align: center">EXACTLY (childSize)</td>
+      </tr>
+      <tr>
+          <td style="text-align: center">match_parent</td>
+          <td style="text-align: center">EXACTLY (parentSize)</td>
+          <td style="text-align: center">AT_MOST (parentSize)</td>
+          <td style="text-align: center">UNSPECIFIED (0)</td>
+      </tr>
+      <tr>
+          <td style="text-align: center">wrap_content</td>
+          <td style="text-align: center">AT_MOST (parentSize)</td>
+          <td style="text-align: center">AT_MOST (parentSize)</td>
+          <td style="text-align: center">UNSPECIFIED (0)</td>
+      </tr>
+  </tbody>
+</table>
+<p><strong>MeasureSpec和LayoutParams的对应关系</strong></p>
+<ul>
+<li>对应DecorView，其MeasureSpec由窗口的尺寸和其自身的LayoutParams来共同确定</li>
+<li>对应普通的View，其MeasureSpec由父容器的MeasureSpec和自身的LayoutParams共同决定，同时考虑View的margin及padding的因素</li>
+<li>获取SpecMode和SpecSize：<code>MeasureSpec.getMode(measureSpec); MeasureSpec.getSize(measureSpec);</code></li>
+<li>组装MeasureSpec: <code>MeasureSpec.makeMeasureSpec(int size, int SpecMode)</code></li>
+</ul>
+<p>测量模式一共有三种， 在 Android 中 View 内定义的一个内部类View.MeasureSpec中：</p>
+<table>
+  <thead>
+      <tr>
+          <th>模式</th>
+          <th>二进制数值</th>
+          <th>描述</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>UNSPECIFIED</td>
+          <td>0 &laquo; MODE_SHIFT</td>
+          <td>默认值，父控件没有给子view任何限制，子View可以设置为任意大小。</td>
+      </tr>
+      <tr>
+          <td>EXACTLY</td>
+          <td>1 &laquo; MODE_SHIFT</td>
+          <td>父控件确切地指定子View的大小。match_parent、具体数值对应的都是这个模式。</td>
+      </tr>
+      <tr>
+          <td>AT_MOST</td>
+          <td>2 &laquo; MODE_SHIFT</td>
+          <td>子View具体大小没有限制，但上限一般为父View大小。wrap_content对应这种模式</td>
+      </tr>
+  </tbody>
+</table>
+<h4 id="4-小结">4. 小结<a hidden class="anchor" aria-hidden="true" href="#4-小结">#</a></h4>
+<p>View的测量过程，主要核心点在于View.measure方法中调用的onMeasure方法，在onMeasure方法中会通过setMeasuredDimension方法完成View的最终测量。</p>
+<p>这里分为两种情况：</p>
+<ul>
+<li>当为ViewGroup时，需要一并考虑各个子View的占用大小和其padding值，算出最终占用大小</li>
+<li>当为View时，考虑父容器的测量模式，在onMeasure方法中处理自身占用大小</li>
+</ul>
+<h3 id="view的布局过程">View的布局过程<a hidden class="anchor" aria-hidden="true" href="#view的布局过程">#</a></h3>
+<h4 id="1-viewrootimplperformlayout">1. ViewRootImpl.performLayout<a hidden class="anchor" aria-hidden="true" href="#1-viewrootimplperformlayout">#</a></h4>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">private</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">performLayout</span><span class="p">(</span><span class="n">WindowManager</span><span class="p">.</span><span class="na">LayoutParams</span><span class="w"> </span><span class="n">lp</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">desiredWindowWidth</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                           </span><span class="kt">int</span><span class="w"> </span><span class="n">desiredWindowHeight</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">final</span><span class="w"> </span><span class="n">View</span><span class="w"> </span><span class="n">host</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mView</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">...</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">host</span><span class="p">.</span><span class="na">layout</span><span class="p">(</span><span class="n">0</span><span class="p">,</span><span class="w"> </span><span class="n">0</span><span class="p">,</span><span class="w"> </span><span class="n">host</span><span class="p">.</span><span class="na">getMeasuredWidth</span><span class="p">(),</span><span class="w"> </span><span class="n">host</span><span class="p">.</span><span class="na">getMeasuredHeight</span><span class="p">());</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">...</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></div><p>虽然ViewGroup中重写了View的layout方法，并将其标为final，但是实现还在View.layout方法里。</p>
+<blockquote>
+<p>注意：这里传入的宽高值是measure过程后的测量宽高值。</p>
+</blockquote>
+<h4 id="2-viewlayout">2. View.layout<a hidden class="anchor" aria-hidden="true" href="#2-viewlayout">#</a></h4>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">layout</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">l</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">t</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">r</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">b</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kt">boolean</span><span class="w"> </span><span class="n">changed</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">isLayoutModeOptical</span><span class="p">(</span><span class="n">mParent</span><span class="p">)</span><span class="w"> </span><span class="o">?</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">setOpticalFrame</span><span class="p">(</span><span class="n">l</span><span class="p">,</span><span class="w"> </span><span class="n">t</span><span class="p">,</span><span class="w"> </span><span class="n">r</span><span class="p">,</span><span class="w"> </span><span class="n">b</span><span class="p">)</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">setFrame</span><span class="p">(</span><span class="n">l</span><span class="p">,</span><span class="w"> </span><span class="n">t</span><span class="p">,</span><span class="w"> </span><span class="n">r</span><span class="p">,</span><span class="w"> </span><span class="n">b</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">changed</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="p">(</span><span class="n">mPrivateFlags</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">PFLAG_LAYOUT_REQUIRED</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">PFLAG_LAYOUT_REQUIRED</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">onLayout</span><span class="p">(</span><span class="n">changed</span><span class="p">,</span><span class="w"> </span><span class="n">l</span><span class="p">,</span><span class="w"> </span><span class="n">t</span><span class="p">,</span><span class="w"> </span><span class="n">r</span><span class="p">,</span><span class="w"> </span><span class="n">b</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">...</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">...</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></div><p>在执行onLayout方法回调之前，首先判断布局是否有变化，具体由<strong>setFrame</strong>方法实现，设置以后，我们调用View的getLeft、getTop、getRight和getBottom等方法才会被赋值。</p>
+<h4 id="3-viewsetframe">3. View.setFrame<a hidden class="anchor" aria-hidden="true" href="#3-viewsetframe">#</a></h4>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">protected</span><span class="w"> </span><span class="kt">boolean</span><span class="w"> </span><span class="nf">setFrame</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">left</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">top</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">right</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">bottom</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kt">boolean</span><span class="w"> </span><span class="n">changed</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">mLeft</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">left</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">mRight</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">right</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">mTop</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">top</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">mBottom</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">bottom</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">changed</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">...</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">mLeft</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">left</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">mTop</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">top</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">mRight</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">right</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">mBottom</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">bottom</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">mRenderNode</span><span class="p">.</span><span class="na">setLeftTopRightBottom</span><span class="p">(</span><span class="n">mLeft</span><span class="p">,</span><span class="w"> </span><span class="n">mTop</span><span class="p">,</span><span class="w"> </span><span class="n">mRight</span><span class="p">,</span><span class="w"> </span><span class="n">mBottom</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">mPrivateFlags</span><span class="w"> </span><span class="o">|=</span><span class="w"> </span><span class="n">PFLAG_HAS_BOUNDS</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">...</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">changed</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></div><p>通过这个方法设置后，还会调用onSizeChanged方法回调，通知布局大小发生变化！</p>
+<h4 id="4-viewonlayout">4. View.onLayout<a hidden class="anchor" aria-hidden="true" href="#4-viewonlayout">#</a></h4>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">protected</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">onLayout</span><span class="p">(</span><span class="kt">boolean</span><span class="w"> </span><span class="n">changed</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">left</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">top</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">right</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">bottom</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></div><p>可以看到View的onLayout方法是个空的实现，因为对于这个View而言，经过layout后，具体位置相对于父容器已经确定了。这个onLayout方法主要是给继承自ViewGroup的类使用，因为他们还要考虑子View在自身容器下的布局位置，所以一般会遍历所有子View，算出对应的位置，然后调用View.layout方法确认子View的位置。</p>
+<blockquote>
+<p>View及其直接或间接继承的子View无需关注onLayout，ViewGroup则需要管理子View的布局任务。子View常通过layout方法</p>
+</blockquote>
+<h3 id="view的绘制过程">View的绘制过程<a hidden class="anchor" aria-hidden="true" href="#view的绘制过程">#</a></h3>
+<h4 id="1-viewrootimplperformdraw">1. ViewRootImpl.performDraw<a hidden class="anchor" aria-hidden="true" href="#1-viewrootimplperformdraw">#</a></h4>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">private</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">performDraw</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">final</span><span class="w"> </span><span class="kt">boolean</span><span class="w"> </span><span class="n">fullRedrawNeeded</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mFullRedrawNeeded</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">mReportNextDraw</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">...</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kt">boolean</span><span class="w"> </span><span class="n">canUseAsync</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">draw</span><span class="p">(</span><span class="n">fullRedrawNeeded</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">...</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></div><h4 id="2-viewrootimpldraw">2. ViewRootImpl.draw<a hidden class="anchor" aria-hidden="true" href="#2-viewrootimpldraw">#</a></h4>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">private</span><span class="w"> </span><span class="kt">boolean</span><span class="w"> </span><span class="nf">draw</span><span class="p">(</span><span class="kt">boolean</span><span class="w"> </span><span class="n">fullRedrawNeeded</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">// 需要绘制的内容数据会放到Surface上</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">Surface</span><span class="w"> </span><span class="n">surface</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mSurface</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">surface</span><span class="p">.</span><span class="na">isValid</span><span class="p">())</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="kc">false</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">...</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">drawSoftware</span><span class="p">(</span><span class="n">surface</span><span class="p">,</span><span class="w"> </span><span class="n">mAttachInfo</span><span class="p">,</span><span class="w"> </span><span class="n">xOffset</span><span class="p">,</span><span class="w"> </span><span class="n">yOffset</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                      </span><span class="n">scalingRequired</span><span class="p">,</span><span class="w"> </span><span class="n">dirty</span><span class="p">,</span><span class="w"> </span><span class="n">surfaceInsets</span><span class="p">))</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="kc">false</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></div><p>draw的绘制考虑的情况比较多，这里考虑drawSoftware情况。</p>
+<h4 id="3-viewrootimpldrawsoftware">3. ViewRootImpl.drawSoftware<a hidden class="anchor" aria-hidden="true" href="#3-viewrootimpldrawsoftware">#</a></h4>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="cm">/**
+</span></span></span><span class="line"><span class="cl"><span class="cm">* @return true if drawing was successful, false if an error occurred
+</span></span></span><span class="line"><span class="cl"><span class="cm">*/</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">private</span><span class="w"> </span><span class="kt">boolean</span><span class="w"> </span><span class="nf">drawSoftware</span><span class="p">(</span><span class="n">Surface</span><span class="w"> </span><span class="n">surface</span><span class="p">,</span><span class="w"> </span><span class="n">AttachInfo</span><span class="w"> </span><span class="n">attachInfo</span><span class="p">,</span><span class="w"> 
+</span></span></span><span class="line"><span class="cl"><span class="w">                             </span><span class="kt">int</span><span class="w"> </span><span class="n">xoff</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">yoff</span><span class="p">,</span><span class="kt">boolean</span><span class="w"> </span><span class="n">scalingRequired</span><span class="p">,</span><span class="w"> 
+</span></span></span><span class="line"><span class="cl"><span class="w">                             </span><span class="n">Rect</span><span class="w"> </span><span class="n">dirty</span><span class="p">,</span><span class="w"> </span><span class="n">Rect</span><span class="w"> </span><span class="n">surfaceInsets</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">// Draw with software renderer.</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">final</span><span class="w"> </span><span class="n">Canvas</span><span class="w"> </span><span class="n">canvas</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">canvas</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mSurface</span><span class="p">.</span><span class="na">lockCanvas</span><span class="p">(</span><span class="n">dirty</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">canvas</span><span class="p">.</span><span class="na">setDensity</span><span class="p">(</span><span class="n">mDensity</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">...</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">mView</span><span class="p">.</span><span class="na">draw</span><span class="p">(</span><span class="n">canvas</span><span class="p">);</span><span class="w">    
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">surface</span><span class="p">.</span><span class="na">unlockCanvasAndPost</span><span class="p">(</span><span class="n">canvas</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">...</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="kc">true</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></div><p>这一步调用DecorView的draw方法，将需要绘制的数据传给Canvas，之后被Surface组装。</p>
+<h4 id="4-viewdraw">4. View.draw<a hidden class="anchor" aria-hidden="true" href="#4-viewdraw">#</a></h4>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="nd">@CallSuper</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">draw</span><span class="p">(</span><span class="n">Canvas</span><span class="w"> </span><span class="n">canvas</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="cm">/*
+</span></span></span><span class="line"><span class="cl"><span class="cm">     * Draw traversal performs several drawing steps which must be executed
+</span></span></span><span class="line"><span class="cl"><span class="cm">     * in the appropriate order:
+</span></span></span><span class="line"><span class="cl"><span class="cm">     *
+</span></span></span><span class="line"><span class="cl"><span class="cm">     *      1. Draw the background
+</span></span></span><span class="line"><span class="cl"><span class="cm">     *      2. If necessary, save the canvas&#39; layers to prepare for fading
+</span></span></span><span class="line"><span class="cl"><span class="cm">     *      3. Draw view&#39;s content
+</span></span></span><span class="line"><span class="cl"><span class="cm">     *      4. Draw children
+</span></span></span><span class="line"><span class="cl"><span class="cm">     *      5. If necessary, draw the fading edges and restore layers
+</span></span></span><span class="line"><span class="cl"><span class="cm">     *      6. Draw decorations (scrollbars for instance)
+</span></span></span><span class="line"><span class="cl"><span class="cm">     */</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">// Step 1, draw the background, if needed</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">saveCount</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">dirtyOpaque</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">drawBackground</span><span class="p">(</span><span class="n">canvas</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">// skip step 2 &amp; 5 if possible (common case)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">final</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">viewFlags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mViewFlags</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kt">boolean</span><span class="w"> </span><span class="n">horizontalEdges</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">viewFlags</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">FADING_EDGE_HORIZONTAL</span><span class="p">)</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">0</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kt">boolean</span><span class="w"> </span><span class="n">verticalEdges</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">viewFlags</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">FADING_EDGE_VERTICAL</span><span class="p">)</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">0</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">verticalEdges</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="o">!</span><span class="n">horizontalEdges</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="c1">// Step 3, draw the content</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">dirtyOpaque</span><span class="p">)</span><span class="w"> </span><span class="n">onDraw</span><span class="p">(</span><span class="n">canvas</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="c1">// Step 4, draw the children</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">dispatchDraw</span><span class="p">(</span><span class="n">canvas</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">drawAutofilledHighlight</span><span class="p">(</span><span class="n">canvas</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="c1">// Overlay is part of the content and draws beneath Foreground</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">mOverlay</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="kc">null</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="o">!</span><span class="n">mOverlay</span><span class="p">.</span><span class="na">isEmpty</span><span class="p">())</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">mOverlay</span><span class="p">.</span><span class="na">getOverlayView</span><span class="p">().</span><span class="na">dispatchDraw</span><span class="p">(</span><span class="n">canvas</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="c1">// Step 6, draw decorations (foreground, scrollbars)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">onDrawForeground</span><span class="p">(</span><span class="n">canvas</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="c1">// Step 7, draw the default focus highlight</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">drawDefaultFocusHighlight</span><span class="p">(</span><span class="n">canvas</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="c1">// we&#39;re done...</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">return</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></div><p>在View的draw方法中，做的事情大致有：</p>
+<ul>
+<li>绘制背景：<code>drawBackground(canvas)</code></li>
+<li>绘制自身内容：<code>onDraw(canvas)</code></li>
+<li>分发给子View的绘制：<code>dispatchDraw(canvas)</code></li>
+<li>绘制前景：<code>onDrawForeground(canvas)</code></li>
+<li>绘制默认焦点高亮区域：<code>drawDefaultFocusHighlight(canvas)</code></li>
+</ul>
+<blockquote>
+<p>一般而言，ViewGroup的子类无须管理绘制任务，而View及其直接或者间接继承的子View只需关注onDraw方法绘制自身即可。</p>
+</blockquote>
+<h3 id="view小结">View小结<a hidden class="anchor" aria-hidden="true" href="#view小结">#</a></h3>
+<p>View的工作流程可以用下图简要表示：</p>
+<p><img alt="performTraversals" loading="lazy" src="/resource/android/performTraversal_process.png"></p>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="/tags/view%E4%BA%8B%E4%BB%B6%E4%BD%93%E7%B3%BB/">View事件体系</a></li>
+    </ul>
+<nav class="paginav">
+  <a class="prev" href="/posts/android/nested_scroll_basic/">
+    <span class="title">« Prev</span>
+    <br>
+    <span>NestedScrolling机制基础篇</span>
+  </a>
+  <a class="next" href="/posts/android/view_basic/">
+    <span class="title">Next »</span>
+    <br>
+    <span>Android View基础知识</span>
+  </a>
+</nav>
+
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2025 <a href="/">缥缈夏鸢</a></span> · 
+
+    <span>
+        Powered by
+        <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+        <path d="M12 6H0l6-6z" />
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu')
+    if (menu) {
+        menu.scrollLeft = localStorage.getItem("menu-scroll-position");
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        if (document.body.className.includes("dark")) {
+            document.body.classList.remove('dark');
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            document.body.classList.add('dark');
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerHTML = 'copy';
+
+        function copyingDone() {
+            copybutton.innerHTML = 'copied!';
+            setTimeout(() => {
+                copybutton.innerHTML = 'copy';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+</body>
+
+</html>

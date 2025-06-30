@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>NestedScrolling机制基础篇 | 缥缈夏鸢</title>
+<meta name="keywords" content="View事件体系">
+<meta name="description" content="NestedScrollingChild
+1. 接口版本对比
+
+  
+      
+          接口名称
+          引入版本
+          核心改进
+      
+  
+  
+      
+          NestedScrollingChild
+          Support 23.1
+          基础嵌套滚动功能
+      
+      
+          NestedScrollingChild2
+          Support 25.0
+          增加滚动类型（Touch/Fling）区分
+      
+      
+          NestedScrollingChild3
+          AndroidX
+          支持 NestedScrollingParent3 的扩展方法
+      
+  
+
+2. 接口方法列表
+NestedScrollingChild接口方法：
+public interface NestedScrollingChild {
+  // 启用/禁用嵌套滚动
+  void setNestedScrollingEnabled(boolean enabled);
+  boolean isNestedScrollingEnabled();
+  
+  // 启动/停止嵌套滚动
+  boolean startNestedScroll(@ScrollAxis int axes);
+  void stopNestedScroll();
+  
+  // 检查是否存在嵌套滚动父级
+  boolean hasNestedScrollingParent();
+  
+  // 分发滚动事件
+  boolean dispatchNestedPreScroll(int dx, int dy, @Nullable int[] consumed,
+            @Nullable int[] offsetInWindow);
+  boolean dispatchNestedScroll(int dxConsumed, int dyConsumed,
+            int dxUnconsumed, int dyUnconsumed, @Nullable int[] offsetInWindow);
+  
+  // 处理惯性滚动
+  boolean dispatchNestedPreFling(float velocityX, float velocityY);
+  boolean dispatchNestedFling(float velocityX, float velocityY, boolean consumed);
+}
+NestedScrollingChild2接口方法：">
+<meta name="author" content="夏天的小西瓜">
+<link rel="canonical" href="/posts/android/nested_scroll_basic/">
+<meta name="google-site-verification" content="XYZabc">
+<meta name="msvalidate.01" content="XYZabc">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.44278f16c6e7e77192a15a0565fb5b0f220c56128442fcfa6937b4d84456ecf0.css" integrity="sha256-RCePFsbn53GSoVoFZftbDyIMVhKEQvz6aTe02ERW7PA=" rel="preload stylesheet" as="style">
+<link rel="icon" href="/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="mask-icon" href="/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="en" href="/posts/android/nested_scroll_basic/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-track {
+                background: 0 0;
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-thumb {
+                border-color: var(--theme);
+            }
+        }
+
+    </style>
+</noscript><script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+<script>
+
+const config = {
+    startOnLoad:true,
+    
+    themeVariables: {
+        lineColor: "#ffffff"    
+    },
+    flowchart: {
+        useMaxWidth:false,
+        htmlLabels:true
+    }
+};
+mermaid.initialize(config);
+
+
+window.onload = () => {
+    window.mermaid.init(undefined, document.querySelectorAll('.language-mermaid'));
+}
+</script><meta property="og:url" content="/posts/android/nested_scroll_basic/">
+  <meta property="og:site_name" content="缥缈夏鸢">
+  <meta property="og:title" content="NestedScrolling机制基础篇">
+  <meta property="og:description" content="NestedScrollingChild 1. 接口版本对比 接口名称 引入版本 核心改进 NestedScrollingChild Support 23.1 基础嵌套滚动功能 NestedScrollingChild2 Support 25.0 增加滚动类型（Touch/Fling）区分 NestedScrollingChild3 AndroidX 支持 NestedScrollingParent3 的扩展方法 2. 接口方法列表 NestedScrollingChild接口方法：
+public interface NestedScrollingChild { // 启用/禁用嵌套滚动 void setNestedScrollingEnabled(boolean enabled); boolean isNestedScrollingEnabled(); // 启动/停止嵌套滚动 boolean startNestedScroll(@ScrollAxis int axes); void stopNestedScroll(); // 检查是否存在嵌套滚动父级 boolean hasNestedScrollingParent(); // 分发滚动事件 boolean dispatchNestedPreScroll(int dx, int dy, @Nullable int[] consumed, @Nullable int[] offsetInWindow); boolean dispatchNestedScroll(int dxConsumed, int dyConsumed, int dxUnconsumed, int dyUnconsumed, @Nullable int[] offsetInWindow); // 处理惯性滚动 boolean dispatchNestedPreFling(float velocityX, float velocityY); boolean dispatchNestedFling(float velocityX, float velocityY, boolean consumed); } NestedScrollingChild2接口方法：">
+  <meta property="og:locale" content="en-us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2025-05-14T14:30:22+08:00">
+    <meta property="article:modified_time" content="2025-05-14T14:30:22+08:00">
+    <meta property="article:tag" content="View事件体系">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="NestedScrolling机制基础篇">
+<meta name="twitter:description" content="NestedScrollingChild
+1. 接口版本对比
+
+  
+      
+          接口名称
+          引入版本
+          核心改进
+      
+  
+  
+      
+          NestedScrollingChild
+          Support 23.1
+          基础嵌套滚动功能
+      
+      
+          NestedScrollingChild2
+          Support 25.0
+          增加滚动类型（Touch/Fling）区分
+      
+      
+          NestedScrollingChild3
+          AndroidX
+          支持 NestedScrollingParent3 的扩展方法
+      
+  
+
+2. 接口方法列表
+NestedScrollingChild接口方法：
+public interface NestedScrollingChild {
+  // 启用/禁用嵌套滚动
+  void setNestedScrollingEnabled(boolean enabled);
+  boolean isNestedScrollingEnabled();
+  
+  // 启动/停止嵌套滚动
+  boolean startNestedScroll(@ScrollAxis int axes);
+  void stopNestedScroll();
+  
+  // 检查是否存在嵌套滚动父级
+  boolean hasNestedScrollingParent();
+  
+  // 分发滚动事件
+  boolean dispatchNestedPreScroll(int dx, int dy, @Nullable int[] consumed,
+            @Nullable int[] offsetInWindow);
+  boolean dispatchNestedScroll(int dxConsumed, int dyConsumed,
+            int dxUnconsumed, int dyUnconsumed, @Nullable int[] offsetInWindow);
+  
+  // 处理惯性滚动
+  boolean dispatchNestedPreFling(float velocityX, float velocityY);
+  boolean dispatchNestedFling(float velocityX, float velocityY, boolean consumed);
+}
+NestedScrollingChild2接口方法：">
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Posts",
+      "item": "/posts/"
+    }
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "NestedScrolling机制基础篇",
+      "item": "/posts/android/nested_scroll_basic/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "NestedScrolling机制基础篇",
+  "name": "NestedScrolling机制基础篇",
+  "description": "NestedScrollingChild 1. 接口版本对比 接口名称 引入版本 核心改进 NestedScrollingChild Support 23.1 基础嵌套滚动功能 NestedScrollingChild2 Support 25.0 增加滚动类型（Touch/Fling）区分 NestedScrollingChild3 AndroidX 支持 NestedScrollingParent3 的扩展方法 2. 接口方法列表 NestedScrollingChild接口方法：\npublic interface NestedScrollingChild { // 启用/禁用嵌套滚动 void setNestedScrollingEnabled(boolean enabled); boolean isNestedScrollingEnabled(); // 启动/停止嵌套滚动 boolean startNestedScroll(@ScrollAxis int axes); void stopNestedScroll(); // 检查是否存在嵌套滚动父级 boolean hasNestedScrollingParent(); // 分发滚动事件 boolean dispatchNestedPreScroll(int dx, int dy, @Nullable int[] consumed, @Nullable int[] offsetInWindow); boolean dispatchNestedScroll(int dxConsumed, int dyConsumed, int dxUnconsumed, int dyUnconsumed, @Nullable int[] offsetInWindow); // 处理惯性滚动 boolean dispatchNestedPreFling(float velocityX, float velocityY); boolean dispatchNestedFling(float velocityX, float velocityY, boolean consumed); } NestedScrollingChild2接口方法：\n",
+  "keywords": [
+    "View事件体系"
+  ],
+  "articleBody": "NestedScrollingChild 1. 接口版本对比 接口名称 引入版本 核心改进 NestedScrollingChild Support 23.1 基础嵌套滚动功能 NestedScrollingChild2 Support 25.0 增加滚动类型（Touch/Fling）区分 NestedScrollingChild3 AndroidX 支持 NestedScrollingParent3 的扩展方法 2. 接口方法列表 NestedScrollingChild接口方法：\npublic interface NestedScrollingChild { // 启用/禁用嵌套滚动 void setNestedScrollingEnabled(boolean enabled); boolean isNestedScrollingEnabled(); // 启动/停止嵌套滚动 boolean startNestedScroll(@ScrollAxis int axes); void stopNestedScroll(); // 检查是否存在嵌套滚动父级 boolean hasNestedScrollingParent(); // 分发滚动事件 boolean dispatchNestedPreScroll(int dx, int dy, @Nullable int[] consumed, @Nullable int[] offsetInWindow); boolean dispatchNestedScroll(int dxConsumed, int dyConsumed, int dxUnconsumed, int dyUnconsumed, @Nullable int[] offsetInWindow); // 处理惯性滚动 boolean dispatchNestedPreFling(float velocityX, float velocityY); boolean dispatchNestedFling(float velocityX, float velocityY, boolean consumed); } NestedScrollingChild2接口方法：\npublic interface NestedScrollingChild2 extends NestedScrollingChild { // 新增 type 参数（TYPE_TOUCH / TYPE_NON_TOUCH） boolean startNestedScroll(@ScrollAxis int axes, @NestedScrollType int type); void stopNestedScroll(@NestedScrollType int type); boolean hasNestedScrollingParent(@NestedScrollType int type); boolean dispatchNestedScroll(int dxConsumed, int dyConsumed, int dxUnconsumed, int dyUnconsumed, @Nullable int[] offsetInWindow, @NestedScrollType int type); boolean dispatchNestedPreScroll(int dx, int dy, @Nullable int[] consumed, @Nullable int[] offsetInWindow, @NestedScrollType int type); } NestedScrollingChild3接口方法：\npublic interface NestedScrollingChild3 extends NestedScrollingChild2 { // 新增consumed参数，适配 NestedScrollingParent3 void dispatchNestedScroll(int dxConsumed, int dyConsumed, int dxUnconsumed, int dyUnconsumed, @Nullable int[] offsetInWindow, @ViewCompat.NestedScrollType int type, @NonNull int[] consumed); } 3. 关键实现说明 核心方法解析\n方法名 作用说明 参数说明 startNestedScroll() 启动嵌套滚动流程 axes: 滚动方向（SCROLL_AXIS_VERTICAL/HORIZONTAL） type: 滚动类型（Touch/Fling） dispatchNestedPreScroll() 分发预滚动事件给父容器 dx/dy: 滚动增量 consumed: 父容器消费量 type: 滚动类型 dispatchNestedScroll() 分发剩余滚动事件给父容器 dxConsumed/dyConsumed: 已消费量 dxUnconsumed/dyUnconsumed: 未消费量 dispatchNestedFling() 处理惯性滚动事件 velocityX/Y: 滑动速度 滚动类型（type）\n类型常量 值 说明 ViewCompat.TYPE_TOUCH 0 由触摸触发的滚动（手指拖动） ViewCompat.TYPE_NON_TOUCH 1 由惯性触发的滚动（Fling 效果） 与父容器的交互流程\nsequenceDiagram participant Child participant Parent Child-\u003e\u003eParent: startNestedScroll(axes, type) Parent--\u003e\u003eChild: 是否接受滚动 loop 滚动处理 Child-\u003e\u003eParent: dispatchNestedPreScroll(dx, dy, type) Parent-\u003e\u003eParent: 消费部分滚动量 Parent--\u003e\u003eChild: 返回已消费量 Child-\u003e\u003eChild: 自身滚动剩余量 Child-\u003e\u003eParent: dispatchNestedScroll(..., type) end Child-\u003e\u003eParent: stopNestedScroll(type) NestedScrollingParent 1. 接口版本对比 接口名称 引入版本 核心改进 NestedScrollingParent Support 23.1 基础嵌套滚动功能 NestedScrollingParent2 Support 25.0 增加滚动类型（Touch/Fling）区分 NestedScrollingParent3 AndroidX 新增 onNestedScroll 的扩展参数，支持更精细的未消费滚动量处理 2. 接口方法列表 NestedScrollingParent 接口方法：\npublic interface NestedScrollingParent { // 是否响应子类嵌套滑动请求 boolean onStartNestedScroll(@NonNull View child, @NonNull View target, @ScrollAxis int axes); // 同意响应的滑动回调 void onNestedScrollAccepted(@NonNull View child, @NonNull View target, @ScrollAxis int axes); // 嵌套滑动停止回调 void onStopNestedScroll(@NonNull View target); // 预滑动的嵌套处理 void onNestedPreScroll(@NonNull View target, int dx, int dy, @NonNull int[] consumed); // 滑动的嵌套处理 void onNestedScroll(@NonNull View target, int dxConsumed, int dyConsumed, int dxUnconsumed, int dyUnconsumed); // 惯性滑动处理 boolean onNestedPreFling(@NonNull View target, float velocityX, float velocityY); boolean onNestedFling(@NonNull View target, float velocityX, float velocityY, boolean consumed); // 返回当前滑动的方向 @ScrollAxis int getNestedScrollAxes(); } NestedScrollingParent2 接口方法：\npublic interface NestedScrollingParent2 extends NestedScrollingParent { // 新增 type 参数（TYPE_TOUCH / TYPE_NON_TOUCH） boolean onStartNestedScroll(@NonNull View child, @NonNull View target, @ScrollAxis int axes, @NestedScrollType int type); void onNestedScrollAccepted(@NonNull View child, @NonNull View target, @ScrollAxis int axes, @NestedScrollType int type); void onStopNestedScroll(@NonNull View target, @NestedScrollType int type); void onNestedPreScroll(@NonNull View target, int dx, int dy, @NonNull int[] consumed, @NestedScrollType int type); void onNestedScroll(@NonNull View target, int dxConsumed, int dyConsumed, int dxUnconsumed, int dyUnconsumed, @NestedScrollType int type); } NestedScrollingParent3 接口方法：\npublic interface NestedScrollingParent3 extends NestedScrollingParent2 { // 扩展 onNestedScroll 方法：新增consumed参数 void onNestedScroll(@NonNull View target, int dxConsumed, int dyConsumed, int dxUnconsumed, int dyUnconsumed, @ViewCompat.NestedScrollType int type, @NonNull int[] consumed); } 3. 关键实现说明 核心方法解析\n方法名 调用时机 典型实现逻辑 onStartNestedScroll() 子视图开始滚动时 返回 true 表示父容器需要处理该方向的滚动 onNestedPreScroll() 子视图自身滚动前 父容器优先消费部分滚动量（如收起头部） onNestedScroll() 子视图完成自身滚动后 处理子视图未消费的滚动量（如展开头部） onStopNestedScroll() 滚动完全结束（包括惯性滚动） 清理滚动状态 onNestedPreFling() 子视图触发惯性滚动前 父容器决定是否消费惯性（如快速折叠头部） onNestedFling() 子视图处理惯性滚动时 父容器补充处理惯性滚动（如展开头部动画） 滚动类型（type）\n类型常量 值 说明 ViewCompat.TYPE_TOUCH 0 由触摸触发的滚动（手指拖动） ViewCompat.TYPE_NON_TOUCH 1 由惯性触发的滚动（Fling 效果） 简要流程小结 以下是嵌套滑动机制的核心方法流转示意图，使用Mermaid语法表示：\nsequenceDiagram autonumber participant Child as 子视图 (NestedScrollingChild3) participant Parent as 父容器 (NestedScrollingParent3) Note over Child, Parent: 1. 启动嵌套滚动 Child-\u003e\u003eParent: startNestedScroll(axes, type) activate Parent Parent--\u003e\u003eChild: onStartNestedScroll() 返回 true Parent-\u003e\u003eParent: onNestedScrollAccepted() deactivate Parent loop 滚动处理循环 Note over Child, Parent: 2. 预滚动阶段 (父容器优先消费) Child-\u003e\u003eParent: dispatchNestedPreScroll(dx, dy, type) activate Parent Parent-\u003e\u003eParent: onNestedPreScroll(dx, dy, consumed, type) Parent--\u003e\u003eChild: 返回 consumed 值 deactivate Parent Note over Child, Parent: 3. 子视图自身滚动 alt 有剩余未消费量 (remainingDy ≠ 0) Child-\u003e\u003eChild: 自身滚动处理(remainingDy) end Note over Child, Parent: 4. 剩余滚动量处理 Child-\u003e\u003eParent: dispatchNestedScroll(dxConsumed, dyConsumed, dxUnconsumed, dyUnconsumed, type) activate Parent Parent-\u003e\u003eParent: onNestedScroll(... type, consumed) deactivate Parent end Note over Child, Parent: 5. 结束滚动 Child-\u003e\u003eParent: stopNestedScroll(type) activate Parent Parent-\u003e\u003eParent: onStopNestedScroll(type) deactivate Parent Note over Child, Parent: 6. 惯性滚动处理（可选） alt 存在惯性滚动 Child-\u003e\u003eParent: dispatchNestedFling(velocityX, velocityY) activate Parent Parent-\u003e\u003eParent: onNestedPreFling() / onNestedFling() deactivate Parent end ",
+  "wordCount" : "625",
+  "inLanguage": "en",
+  "datePublished": "2025-05-14T14:30:22+08:00",
+  "dateModified": "2025-05-14T14:30:22+08:00",
+  "author":[{
+    "@type": "Person",
+    "name": "夏天的小西瓜"
+  }],
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "/posts/android/nested_scroll_basic/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "缥缈夏鸢",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "/favicon.ico"
+    }
+  }
+}
+</script>
+</head>
+
+<body class="" id="top">
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.body.classList.add('dark');
+    } else if (localStorage.getItem("pref-theme") === "light") {
+        document.body.classList.remove('dark')
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.body.classList.add('dark');
+    }
+
+</script>
+
+<header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="/" accesskey="h" title="缥缈夏鸢 (Alt + H)">缥缈夏鸢</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" accesskey="t" title="(Alt + T)">
+                    <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu">
+            <li>
+                <a href="/" title="首页">
+                    <span>首页</span>
+                </a>
+            </li>
+            <li>
+                <a href="/posts/" title="文章">
+                    <span>文章</span>
+                </a>
+            </li>
+            <li>
+                <a href="/categories/" title="分类">
+                    <span>分类</span>
+                </a>
+            </li>
+            <li>
+                <a href="/tags/" title="标签">
+                    <span>标签</span>
+                </a>
+            </li>
+            <li>
+                <a href="/archives/" title="归档">
+                    <span>归档</span>
+                </a>
+            </li>
+            <li>
+                <a href="/about/" title="关于">
+                    <span>关于</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <div class="breadcrumbs"><a href="/">Home</a>&nbsp;»&nbsp;<a href="/posts/">Posts</a></div>
+    <h1 class="post-title entry-hint-parent">
+      NestedScrolling机制基础篇
+    </h1>
+    <div class="post-meta"><span title='2025-05-14 14:30:22 +0800 CST'>May 14, 2025</span>&nbsp;·&nbsp;3 min&nbsp;·&nbsp;625 words&nbsp;·&nbsp;夏天的小西瓜
+
+</div>
+  </header> <aside id="toc-container" class="toc-container wide">
+    <div class="toc">
+        <details  open>
+            <summary accesskey="c" title="(Alt + C)">
+                <span class="details">Table of Contents</span>
+            </summary>
+
+            <div class="inner"><ul>
+                    <li>
+                        <a href="#nestedscrollingchild" aria-label="NestedScrollingChild">NestedScrollingChild</a><ul>
+                            
+                    <li>
+                        <a href="#1-%e6%8e%a5%e5%8f%a3%e7%89%88%e6%9c%ac%e5%af%b9%e6%af%94" aria-label="1. 接口版本对比">1. 接口版本对比</a></li>
+                    <li>
+                        <a href="#2-%e6%8e%a5%e5%8f%a3%e6%96%b9%e6%b3%95%e5%88%97%e8%a1%a8" aria-label="2. 接口方法列表">2. 接口方法列表</a></li>
+                    <li>
+                        <a href="#3-%e5%85%b3%e9%94%ae%e5%ae%9e%e7%8e%b0%e8%af%b4%e6%98%8e" aria-label="3. 关键实现说明">3. 关键实现说明</a></li></ul>
+                    </li>
+                    <li>
+                        <a href="#nestedscrollingparent" aria-label="NestedScrollingParent">NestedScrollingParent</a><ul>
+                            
+                    <li>
+                        <a href="#1-%e6%8e%a5%e5%8f%a3%e7%89%88%e6%9c%ac%e5%af%b9%e6%af%94-1" aria-label="1. 接口版本对比">1. 接口版本对比</a></li>
+                    <li>
+                        <a href="#2-%e6%8e%a5%e5%8f%a3%e6%96%b9%e6%b3%95%e5%88%97%e8%a1%a8-1" aria-label="2. 接口方法列表">2. 接口方法列表</a></li>
+                    <li>
+                        <a href="#3-%e5%85%b3%e9%94%ae%e5%ae%9e%e7%8e%b0%e8%af%b4%e6%98%8e-1" aria-label="3. 关键实现说明">3. 关键实现说明</a></li></ul>
+                    </li>
+                    <li>
+                        <a href="#%e7%ae%80%e8%a6%81%e6%b5%81%e7%a8%8b%e5%b0%8f%e7%bb%93" aria-label="简要流程小结">简要流程小结</a>
+                    </li>
+                </ul>
+            </div>
+        </details>
+    </div>
+</aside>
+<script>
+    let activeElement;
+    let elements;
+    window.addEventListener('DOMContentLoaded', function (event) {
+        checkTocPosition();
+
+        elements = document.querySelectorAll('h1[id],h2[id],h3[id],h4[id],h5[id],h6[id]');
+         
+         activeElement = elements[0];
+         const id = encodeURI(activeElement.getAttribute('id')).toLowerCase();
+         document.querySelector(`.inner ul li a[href="#${id}"]`).classList.add('active');
+     }, false);
+
+    window.addEventListener('resize', function(event) {
+        checkTocPosition();
+    }, false);
+
+    window.addEventListener('scroll', () => {
+        
+        activeElement = Array.from(elements).find((element) => {
+            if ((getOffsetTop(element) - window.pageYOffset) > 0 && 
+                (getOffsetTop(element) - window.pageYOffset) < window.innerHeight/2) {
+                return element;
+            }
+        }) || activeElement
+
+        elements.forEach(element => {
+             const id = encodeURI(element.getAttribute('id')).toLowerCase();
+             if (element === activeElement){
+                 document.querySelector(`.inner ul li a[href="#${id}"]`).classList.add('active');
+             } else {
+                 document.querySelector(`.inner ul li a[href="#${id}"]`).classList.remove('active');
+             }
+         })
+     }, false);
+
+    const main = parseInt(getComputedStyle(document.body).getPropertyValue('--article-width'), 10);
+    const toc = parseInt(getComputedStyle(document.body).getPropertyValue('--toc-width'), 10);
+    const gap = parseInt(getComputedStyle(document.body).getPropertyValue('--gap'), 10);
+
+    function checkTocPosition() {
+        const width = document.body.scrollWidth;
+
+        if (width - main - (toc * 2) - (gap * 4) > 0) {
+            document.getElementById("toc-container").classList.add("wide");
+        } else {
+            document.getElementById("toc-container").classList.remove("wide");
+        }
+    }
+
+    function getOffsetTop(element) {
+        if (!element.getClientRects().length) {
+            return 0;
+        }
+        let rect = element.getBoundingClientRect();
+        let win = element.ownerDocument.defaultView;
+        return rect.top + win.pageYOffset;   
+    }
+</script>
+
+  <div class="post-content"><h3 id="nestedscrollingchild">NestedScrollingChild<a hidden class="anchor" aria-hidden="true" href="#nestedscrollingchild">#</a></h3>
+<h4 id="1-接口版本对比">1. 接口版本对比<a hidden class="anchor" aria-hidden="true" href="#1-接口版本对比">#</a></h4>
+<table>
+  <thead>
+      <tr>
+          <th style="text-align: left">接口名称</th>
+          <th style="text-align: left">引入版本</th>
+          <th style="text-align: left">核心改进</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td style="text-align: left"><code>NestedScrollingChild</code></td>
+          <td style="text-align: left">Support 23.1</td>
+          <td style="text-align: left">基础嵌套滚动功能</td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><code>NestedScrollingChild2</code></td>
+          <td style="text-align: left">Support 25.0</td>
+          <td style="text-align: left">增加滚动类型（Touch/Fling）区分</td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><code>NestedScrollingChild3</code></td>
+          <td style="text-align: left">AndroidX</td>
+          <td style="text-align: left">支持 <code>NestedScrollingParent3</code> 的扩展方法</td>
+      </tr>
+  </tbody>
+</table>
+<h4 id="2-接口方法列表">2. 接口方法列表<a hidden class="anchor" aria-hidden="true" href="#2-接口方法列表">#</a></h4>
+<p>NestedScrollingChild接口方法：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">public</span><span class="w"> </span><span class="kd">interface</span> <span class="nc">NestedScrollingChild</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="c1">// 启用/禁用嵌套滚动</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="kt">void</span><span class="w"> </span><span class="nf">setNestedScrollingEnabled</span><span class="p">(</span><span class="kt">boolean</span><span class="w"> </span><span class="n">enabled</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="kt">boolean</span><span class="w"> </span><span class="nf">isNestedScrollingEnabled</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="c1">// 启动/停止嵌套滚动</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="kt">boolean</span><span class="w"> </span><span class="nf">startNestedScroll</span><span class="p">(</span><span class="nd">@ScrollAxis</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">axes</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="kt">void</span><span class="w"> </span><span class="nf">stopNestedScroll</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="c1">// 检查是否存在嵌套滚动父级</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="kt">boolean</span><span class="w"> </span><span class="nf">hasNestedScrollingParent</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="c1">// 分发滚动事件</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="kt">boolean</span><span class="w"> </span><span class="nf">dispatchNestedPreScroll</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">dx</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">dy</span><span class="p">,</span><span class="w"> </span><span class="nd">@Nullable</span><span class="w"> </span><span class="kt">int</span><span class="o">[]</span><span class="w"> </span><span class="n">consumed</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="nd">@Nullable</span><span class="w"> </span><span class="kt">int</span><span class="o">[]</span><span class="w"> </span><span class="n">offsetInWindow</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="kt">boolean</span><span class="w"> </span><span class="nf">dispatchNestedScroll</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">dxConsumed</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">dyConsumed</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="kt">int</span><span class="w"> </span><span class="n">dxUnconsumed</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">dyUnconsumed</span><span class="p">,</span><span class="w"> </span><span class="nd">@Nullable</span><span class="w"> </span><span class="kt">int</span><span class="o">[]</span><span class="w"> </span><span class="n">offsetInWindow</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="c1">// 处理惯性滚动</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="kt">boolean</span><span class="w"> </span><span class="nf">dispatchNestedPreFling</span><span class="p">(</span><span class="kt">float</span><span class="w"> </span><span class="n">velocityX</span><span class="p">,</span><span class="w"> </span><span class="kt">float</span><span class="w"> </span><span class="n">velocityY</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="kt">boolean</span><span class="w"> </span><span class="nf">dispatchNestedFling</span><span class="p">(</span><span class="kt">float</span><span class="w"> </span><span class="n">velocityX</span><span class="p">,</span><span class="w"> </span><span class="kt">float</span><span class="w"> </span><span class="n">velocityY</span><span class="p">,</span><span class="w"> </span><span class="kt">boolean</span><span class="w"> </span><span class="n">consumed</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></div><p>NestedScrollingChild2接口方法：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">public</span><span class="w"> </span><span class="kd">interface</span> <span class="nc">NestedScrollingChild2</span><span class="w"> </span><span class="kd">extends</span><span class="w"> </span><span class="n">NestedScrollingChild</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="c1">// 新增 type 参数（TYPE_TOUCH / TYPE_NON_TOUCH）</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="kt">boolean</span><span class="w"> </span><span class="nf">startNestedScroll</span><span class="p">(</span><span class="nd">@ScrollAxis</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">axes</span><span class="p">,</span><span class="w"> </span><span class="nd">@NestedScrollType</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">type</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="kt">void</span><span class="w"> </span><span class="nf">stopNestedScroll</span><span class="p">(</span><span class="nd">@NestedScrollType</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">type</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="kt">boolean</span><span class="w"> </span><span class="nf">hasNestedScrollingParent</span><span class="p">(</span><span class="nd">@NestedScrollType</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">type</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="kt">boolean</span><span class="w"> </span><span class="nf">dispatchNestedScroll</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">dxConsumed</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">dyConsumed</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="kt">int</span><span class="w"> </span><span class="n">dxUnconsumed</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">dyUnconsumed</span><span class="p">,</span><span class="w"> </span><span class="nd">@Nullable</span><span class="w"> </span><span class="kt">int</span><span class="o">[]</span><span class="w"> </span><span class="n">offsetInWindow</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="nd">@NestedScrollType</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">type</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="kt">boolean</span><span class="w"> </span><span class="nf">dispatchNestedPreScroll</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">dx</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">dy</span><span class="p">,</span><span class="w"> </span><span class="nd">@Nullable</span><span class="w"> </span><span class="kt">int</span><span class="o">[]</span><span class="w"> </span><span class="n">consumed</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="nd">@Nullable</span><span class="w"> </span><span class="kt">int</span><span class="o">[]</span><span class="w"> </span><span class="n">offsetInWindow</span><span class="p">,</span><span class="w"> </span><span class="nd">@NestedScrollType</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">type</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></div><p>NestedScrollingChild3接口方法：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">public</span><span class="w"> </span><span class="kd">interface</span> <span class="nc">NestedScrollingChild3</span><span class="w"> </span><span class="kd">extends</span><span class="w"> </span><span class="n">NestedScrollingChild2</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="c1">// 新增consumed参数，适配 NestedScrollingParent3</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="kt">void</span><span class="w"> </span><span class="nf">dispatchNestedScroll</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">dxConsumed</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">dyConsumed</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">dxUnconsumed</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">dyUnconsumed</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="nd">@Nullable</span><span class="w"> </span><span class="kt">int</span><span class="o">[]</span><span class="w"> </span><span class="n">offsetInWindow</span><span class="p">,</span><span class="w"> </span><span class="nd">@ViewCompat.NestedScrollType</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">type</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="nd">@NonNull</span><span class="w"> </span><span class="kt">int</span><span class="o">[]</span><span class="w"> </span><span class="n">consumed</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></div><h4 id="3-关键实现说明">3. 关键实现说明<a hidden class="anchor" aria-hidden="true" href="#3-关键实现说明">#</a></h4>
+<p><strong>核心方法解析</strong></p>
+<table>
+  <thead>
+      <tr>
+          <th style="text-align: left">方法名</th>
+          <th style="text-align: left">作用说明</th>
+          <th style="text-align: left">参数说明</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td style="text-align: left"><code>startNestedScroll()</code></td>
+          <td style="text-align: left">启动嵌套滚动流程</td>
+          <td style="text-align: left"><code>axes</code>: 滚动方向（SCROLL_AXIS_VERTICAL/HORIZONTAL） <code>type</code>: 滚动类型（Touch/Fling）</td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><code>dispatchNestedPreScroll()</code></td>
+          <td style="text-align: left">分发预滚动事件给父容器</td>
+          <td style="text-align: left"><code>dx/dy</code>: 滚动增量 <code>consumed</code>: 父容器消费量 <code>type</code>: 滚动类型</td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><code>dispatchNestedScroll()</code></td>
+          <td style="text-align: left">分发剩余滚动事件给父容器</td>
+          <td style="text-align: left"><code>dxConsumed/dyConsumed</code>: 已消费量 <code>dxUnconsumed/dyUnconsumed</code>: 未消费量</td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><code>dispatchNestedFling()</code></td>
+          <td style="text-align: left">处理惯性滚动事件</td>
+          <td style="text-align: left"><code>velocityX/Y</code>: 滑动速度</td>
+      </tr>
+  </tbody>
+</table>
+<p><strong>滚动类型（type）</strong></p>
+<table>
+  <thead>
+      <tr>
+          <th style="text-align: left">类型常量</th>
+          <th style="text-align: left">值</th>
+          <th style="text-align: left">说明</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td style="text-align: left"><code>ViewCompat.TYPE_TOUCH</code></td>
+          <td style="text-align: left">0</td>
+          <td style="text-align: left">由触摸触发的滚动（手指拖动）</td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><code>ViewCompat.TYPE_NON_TOUCH</code></td>
+          <td style="text-align: left">1</td>
+          <td style="text-align: left">由惯性触发的滚动（Fling 效果）</td>
+      </tr>
+  </tbody>
+</table>
+<p><strong>与父容器的交互流程</strong></p>
+<pre class="mermaid">sequenceDiagram
+    participant Child
+    participant Parent
+
+    Child->>Parent: startNestedScroll(axes, type)
+    Parent-->>Child: 是否接受滚动
+
+    loop 滚动处理
+        Child->>Parent: dispatchNestedPreScroll(dx, dy, type)
+        Parent->>Parent: 消费部分滚动量
+        Parent-->>Child: 返回已消费量
+        Child->>Child: 自身滚动剩余量
+        Child->>Parent: dispatchNestedScroll(..., type)
+    end
+
+    Child->>Parent: stopNestedScroll(type)
+</pre>
+<h3 id="nestedscrollingparent">NestedScrollingParent<a hidden class="anchor" aria-hidden="true" href="#nestedscrollingparent">#</a></h3>
+<h4 id="1-接口版本对比-1">1. 接口版本对比<a hidden class="anchor" aria-hidden="true" href="#1-接口版本对比-1">#</a></h4>
+<table>
+  <thead>
+      <tr>
+          <th style="text-align: left">接口名称</th>
+          <th style="text-align: left">引入版本</th>
+          <th style="text-align: left">核心改进</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td style="text-align: left"><code>NestedScrollingParent</code></td>
+          <td style="text-align: left">Support 23.1</td>
+          <td style="text-align: left">基础嵌套滚动功能</td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><code>NestedScrollingParent2</code></td>
+          <td style="text-align: left">Support 25.0</td>
+          <td style="text-align: left">增加滚动类型（Touch/Fling）区分</td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><code>NestedScrollingParent3</code></td>
+          <td style="text-align: left">AndroidX</td>
+          <td style="text-align: left">新增 <code>onNestedScroll</code> 的扩展参数，支持更精细的未消费滚动量处理</td>
+      </tr>
+  </tbody>
+</table>
+<h4 id="2-接口方法列表-1">2. 接口方法列表<a hidden class="anchor" aria-hidden="true" href="#2-接口方法列表-1">#</a></h4>
+<p>NestedScrollingParent 接口方法：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">public</span><span class="w"> </span><span class="kd">interface</span> <span class="nc">NestedScrollingParent</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="c1">// 是否响应子类嵌套滑动请求</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="kt">boolean</span><span class="w"> </span><span class="nf">onStartNestedScroll</span><span class="p">(</span><span class="nd">@NonNull</span><span class="w"> </span><span class="n">View</span><span class="w"> </span><span class="n">child</span><span class="p">,</span><span class="w"> </span><span class="nd">@NonNull</span><span class="w"> </span><span class="n">View</span><span class="w"> </span><span class="n">target</span><span class="p">,</span><span class="w"> </span><span class="nd">@ScrollAxis</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">axes</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="c1">// 同意响应的滑动回调</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="kt">void</span><span class="w"> </span><span class="nf">onNestedScrollAccepted</span><span class="p">(</span><span class="nd">@NonNull</span><span class="w"> </span><span class="n">View</span><span class="w"> </span><span class="n">child</span><span class="p">,</span><span class="w"> </span><span class="nd">@NonNull</span><span class="w"> </span><span class="n">View</span><span class="w"> </span><span class="n">target</span><span class="p">,</span><span class="w"> </span><span class="nd">@ScrollAxis</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">axes</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="c1">// 嵌套滑动停止回调</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="kt">void</span><span class="w"> </span><span class="nf">onStopNestedScroll</span><span class="p">(</span><span class="nd">@NonNull</span><span class="w"> </span><span class="n">View</span><span class="w"> </span><span class="n">target</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="c1">// 预滑动的嵌套处理</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="kt">void</span><span class="w"> </span><span class="nf">onNestedPreScroll</span><span class="p">(</span><span class="nd">@NonNull</span><span class="w"> </span><span class="n">View</span><span class="w"> </span><span class="n">target</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">dx</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">dy</span><span class="p">,</span><span class="w"> </span><span class="nd">@NonNull</span><span class="w"> </span><span class="kt">int</span><span class="o">[]</span><span class="w"> </span><span class="n">consumed</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="c1">// 滑动的嵌套处理</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="kt">void</span><span class="w"> </span><span class="nf">onNestedScroll</span><span class="p">(</span><span class="nd">@NonNull</span><span class="w"> </span><span class="n">View</span><span class="w"> </span><span class="n">target</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">dxConsumed</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">dyConsumed</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="kt">int</span><span class="w"> </span><span class="n">dxUnconsumed</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">dyUnconsumed</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="c1">// 惯性滑动处理</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="kt">boolean</span><span class="w"> </span><span class="nf">onNestedPreFling</span><span class="p">(</span><span class="nd">@NonNull</span><span class="w"> </span><span class="n">View</span><span class="w"> </span><span class="n">target</span><span class="p">,</span><span class="w"> </span><span class="kt">float</span><span class="w"> </span><span class="n">velocityX</span><span class="p">,</span><span class="w"> </span><span class="kt">float</span><span class="w"> </span><span class="n">velocityY</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="kt">boolean</span><span class="w"> </span><span class="nf">onNestedFling</span><span class="p">(</span><span class="nd">@NonNull</span><span class="w"> </span><span class="n">View</span><span class="w"> </span><span class="n">target</span><span class="p">,</span><span class="w"> </span><span class="kt">float</span><span class="w"> </span><span class="n">velocityX</span><span class="p">,</span><span class="w"> </span><span class="kt">float</span><span class="w"> </span><span class="n">velocityY</span><span class="p">,</span><span class="w"> </span><span class="kt">boolean</span><span class="w"> </span><span class="n">consumed</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="c1">// 返回当前滑动的方向</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nd">@ScrollAxis</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="nf">getNestedScrollAxes</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></div><p>NestedScrollingParent2 接口方法：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">public</span><span class="w"> </span><span class="kd">interface</span> <span class="nc">NestedScrollingParent2</span><span class="w"> </span><span class="kd">extends</span><span class="w"> </span><span class="n">NestedScrollingParent</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="c1">// 新增 type 参数（TYPE_TOUCH / TYPE_NON_TOUCH）</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="kt">boolean</span><span class="w"> </span><span class="nf">onStartNestedScroll</span><span class="p">(</span><span class="nd">@NonNull</span><span class="w"> </span><span class="n">View</span><span class="w"> </span><span class="n">child</span><span class="p">,</span><span class="w"> </span><span class="nd">@NonNull</span><span class="w"> </span><span class="n">View</span><span class="w"> </span><span class="n">target</span><span class="p">,</span><span class="w"> </span><span class="nd">@ScrollAxis</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">axes</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="nd">@NestedScrollType</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">type</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="kt">void</span><span class="w"> </span><span class="nf">onNestedScrollAccepted</span><span class="p">(</span><span class="nd">@NonNull</span><span class="w"> </span><span class="n">View</span><span class="w"> </span><span class="n">child</span><span class="p">,</span><span class="w"> </span><span class="nd">@NonNull</span><span class="w"> </span><span class="n">View</span><span class="w"> </span><span class="n">target</span><span class="p">,</span><span class="w"> </span><span class="nd">@ScrollAxis</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">axes</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="nd">@NestedScrollType</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">type</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="kt">void</span><span class="w"> </span><span class="nf">onStopNestedScroll</span><span class="p">(</span><span class="nd">@NonNull</span><span class="w"> </span><span class="n">View</span><span class="w"> </span><span class="n">target</span><span class="p">,</span><span class="w"> </span><span class="nd">@NestedScrollType</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">type</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="kt">void</span><span class="w"> </span><span class="nf">onNestedPreScroll</span><span class="p">(</span><span class="nd">@NonNull</span><span class="w"> </span><span class="n">View</span><span class="w"> </span><span class="n">target</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">dx</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">dy</span><span class="p">,</span><span class="w"> </span><span class="nd">@NonNull</span><span class="w"> </span><span class="kt">int</span><span class="o">[]</span><span class="w"> </span><span class="n">consumed</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="nd">@NestedScrollType</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">type</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="kt">void</span><span class="w"> </span><span class="nf">onNestedScroll</span><span class="p">(</span><span class="nd">@NonNull</span><span class="w"> </span><span class="n">View</span><span class="w"> </span><span class="n">target</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">dxConsumed</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">dyConsumed</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="kt">int</span><span class="w"> </span><span class="n">dxUnconsumed</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">dyUnconsumed</span><span class="p">,</span><span class="w"> </span><span class="nd">@NestedScrollType</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">type</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></div><p>NestedScrollingParent3 接口方法：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">public</span><span class="w"> </span><span class="kd">interface</span> <span class="nc">NestedScrollingParent3</span><span class="w"> </span><span class="kd">extends</span><span class="w"> </span><span class="n">NestedScrollingParent2</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="c1">// 扩展 onNestedScroll 方法：新增consumed参数</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="kt">void</span><span class="w"> </span><span class="nf">onNestedScroll</span><span class="p">(</span><span class="nd">@NonNull</span><span class="w"> </span><span class="n">View</span><span class="w"> </span><span class="n">target</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">dxConsumed</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">dyConsumed</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">dxUnconsumed</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="kt">int</span><span class="w"> </span><span class="n">dyUnconsumed</span><span class="p">,</span><span class="w"> </span><span class="nd">@ViewCompat.NestedScrollType</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">type</span><span class="p">,</span><span class="w"> </span><span class="nd">@NonNull</span><span class="w"> </span><span class="kt">int</span><span class="o">[]</span><span class="w"> </span><span class="n">consumed</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></div><h4 id="3-关键实现说明-1">3. 关键实现说明<a hidden class="anchor" aria-hidden="true" href="#3-关键实现说明-1">#</a></h4>
+<p><strong>核心方法解析</strong></p>
+<table>
+  <thead>
+      <tr>
+          <th style="text-align: left">方法名</th>
+          <th style="text-align: left">调用时机</th>
+          <th style="text-align: left">典型实现逻辑</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td style="text-align: left"><code>onStartNestedScroll()</code></td>
+          <td style="text-align: left">子视图开始滚动时</td>
+          <td style="text-align: left">返回 <code>true</code> 表示父容器需要处理该方向的滚动</td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><code>onNestedPreScroll()</code></td>
+          <td style="text-align: left">子视图自身滚动前</td>
+          <td style="text-align: left">父容器优先消费部分滚动量（如收起头部）</td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><code>onNestedScroll()</code></td>
+          <td style="text-align: left">子视图完成自身滚动后</td>
+          <td style="text-align: left">处理子视图未消费的滚动量（如展开头部）</td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><code>onStopNestedScroll()</code></td>
+          <td style="text-align: left">滚动完全结束（包括惯性滚动）</td>
+          <td style="text-align: left">清理滚动状态</td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><code>onNestedPreFling()</code></td>
+          <td style="text-align: left">子视图触发惯性滚动前</td>
+          <td style="text-align: left">父容器决定是否消费惯性（如快速折叠头部）</td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><code>onNestedFling()</code></td>
+          <td style="text-align: left">子视图处理惯性滚动时</td>
+          <td style="text-align: left">父容器补充处理惯性滚动（如展开头部动画）</td>
+      </tr>
+  </tbody>
+</table>
+<p><strong>滚动类型（type）</strong></p>
+<table>
+  <thead>
+      <tr>
+          <th style="text-align: left">类型常量</th>
+          <th style="text-align: left">值</th>
+          <th style="text-align: left">说明</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td style="text-align: left"><code>ViewCompat.TYPE_TOUCH</code></td>
+          <td style="text-align: left">0</td>
+          <td style="text-align: left">由触摸触发的滚动（手指拖动）</td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><code>ViewCompat.TYPE_NON_TOUCH</code></td>
+          <td style="text-align: left">1</td>
+          <td style="text-align: left">由惯性触发的滚动（Fling 效果）</td>
+      </tr>
+  </tbody>
+</table>
+<h3 id="简要流程小结">简要流程小结<a hidden class="anchor" aria-hidden="true" href="#简要流程小结">#</a></h3>
+<p>以下是嵌套滑动机制的核心方法流转示意图，使用Mermaid语法表示：</p>
+<pre class="mermaid">sequenceDiagram
+    autonumber
+    participant Child as 子视图 (NestedScrollingChild3)
+    participant Parent as 父容器 (NestedScrollingParent3)
+
+    Note over Child, Parent: 1. 启动嵌套滚动
+    Child->>Parent: startNestedScroll(axes, type)
+    activate Parent
+    Parent-->>Child: onStartNestedScroll() 返回 true
+    Parent->>Parent: onNestedScrollAccepted()
+    deactivate Parent
+
+    loop 滚动处理循环
+        Note over Child, Parent: 2. 预滚动阶段 (父容器优先消费)
+        Child->>Parent: dispatchNestedPreScroll(dx, dy, type)
+        activate Parent
+        Parent->>Parent: onNestedPreScroll(dx, dy, consumed, type)
+        Parent-->>Child: 返回 consumed 值
+        deactivate Parent
+
+        Note over Child, Parent: 3. 子视图自身滚动
+        alt 有剩余未消费量 (remainingDy ≠ 0)
+            Child->>Child: 自身滚动处理(remainingDy)
+        end
+
+        Note over Child, Parent: 4. 剩余滚动量处理
+        Child->>Parent: dispatchNestedScroll(dxConsumed, dyConsumed, dxUnconsumed, dyUnconsumed, type)
+        activate Parent
+        Parent->>Parent: onNestedScroll(... type, consumed)
+        deactivate Parent
+    end
+
+    Note over Child, Parent: 5. 结束滚动
+    Child->>Parent: stopNestedScroll(type)
+    activate Parent
+    Parent->>Parent: onStopNestedScroll(type)
+    deactivate Parent
+
+    Note over Child, Parent: 6. 惯性滚动处理（可选）
+    alt 存在惯性滚动
+        Child->>Parent: dispatchNestedFling(velocityX, velocityY)
+        activate Parent
+        Parent->>Parent: onNestedPreFling() / onNestedFling()
+        deactivate Parent
+    end
+</pre>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="/tags/view%E4%BA%8B%E4%BB%B6%E4%BD%93%E7%B3%BB/">View事件体系</a></li>
+    </ul>
+<nav class="paginav">
+  <a class="prev" href="/posts/tools/vim/">
+    <span class="title">« Prev</span>
+    <br>
+    <span>Vim基础使用</span>
+  </a>
+  <a class="next" href="/posts/android/view_traversals/">
+    <span class="title">Next »</span>
+    <br>
+    <span>Android View工作流程</span>
+  </a>
+</nav>
+
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2025 <a href="/">缥缈夏鸢</a></span> · 
+
+    <span>
+        Powered by
+        <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+        <path d="M12 6H0l6-6z" />
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu')
+    if (menu) {
+        menu.scrollLeft = localStorage.getItem("menu-scroll-position");
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        if (document.body.className.includes("dark")) {
+            document.body.classList.remove('dark');
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            document.body.classList.add('dark');
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerHTML = 'copy';
+
+        function copyingDone() {
+            copybutton.innerHTML = 'copied!';
+            setTimeout(() => {
+                copybutton.innerHTML = 'copy';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+</body>
+
+</html>

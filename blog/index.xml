@@ -1,0 +1,669 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>缥缈夏鸢</title>
+    <link>/</link>
+    <description>Recent content on 缥缈夏鸢</description>
+    <generator>Hugo -- 0.138.0</generator>
+    <language>en-us</language>
+    <lastBuildDate>Fri, 30 May 2025 14:41:49 +0800</lastBuildDate>
+    <atom:link href="/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Vim基础使用</title>
+      <link>/posts/tools/vim/</link>
+      <pubDate>Fri, 30 May 2025 14:41:49 +0800</pubDate>
+      <guid>/posts/tools/vim/</guid>
+      <description>&lt;h3 id=&#34;vim基本操作&#34;&gt;Vim基本操作&lt;/h3&gt;
+&lt;h4 id=&#34;1-移动光标&#34;&gt;1. 移动光标&lt;/h4&gt;
+&lt;table&gt;
+  &lt;thead&gt;
+      &lt;tr&gt;
+          &lt;th style=&#34;text-align: center&#34;&gt;键位&lt;/th&gt;
+          &lt;th&gt;含义&lt;/th&gt;
+      &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+      &lt;tr&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;hjkl，方向键&lt;/td&gt;
+          &lt;td&gt;移动一位，hjkl代表左、下、上、右&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;数字0&lt;/td&gt;
+          &lt;td&gt;移至本行开头&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;^&lt;/td&gt;
+          &lt;td&gt;移至本行第一个非空字符，匹配开头&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;$&lt;/td&gt;
+          &lt;td&gt;移至本行结尾，可以包含空格&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;w&lt;/td&gt;
+          &lt;td&gt;移至下一单词或标点的开头&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;b&lt;/td&gt;
+          &lt;td&gt;移至上一单词或标点开头&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;ctrl-f/PgDn&lt;/td&gt;
+          &lt;td&gt;下翻一页&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;ctrl-b/PgUp&lt;/td&gt;
+          &lt;td&gt;上翻一页&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;nG&lt;/td&gt;
+          &lt;td&gt;移至第n行（n为数字）&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;gg&lt;/td&gt;
+          &lt;td&gt;光标移至第一行&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;G&lt;/td&gt;
+          &lt;td&gt;光标移至最后一行&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;:n  enter键&lt;/td&gt;
+          &lt;td&gt;移至第n行&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;n+&lt;/td&gt;
+          &lt;td&gt;向下跳n行&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;n-&lt;/td&gt;
+          &lt;td&gt;向上跳n行&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;H&lt;/td&gt;
+          &lt;td&gt;移至当前屏幕的第一行&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;L&lt;/td&gt;
+          &lt;td&gt;移至当前屏幕的最后一行&lt;/td&gt;
+      &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;blockquote&gt;
+&lt;p&gt;注意：许多vi的命令前面都可以缀上数字，前缀数字可以控制该命令执行的次数，比如5j可以使得光标向下移动5行&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h4 id=&#34;2-基本编辑&#34;&gt;2. 基本编辑&lt;/h4&gt;
+&lt;table&gt;
+  &lt;thead&gt;
+      &lt;tr&gt;
+          &lt;th style=&#34;text-align: center&#34;&gt;键位&lt;/th&gt;
+          &lt;th&gt;含义&lt;/th&gt;
+      &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+      &lt;tr&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;a&lt;/td&gt;
+          &lt;td&gt;在当前字符后插入文本&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;A&lt;/td&gt;
+          &lt;td&gt;在行尾插入文本&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;i&lt;/td&gt;
+          &lt;td&gt;在当前字符前插入文本&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;I&lt;/td&gt;
+          &lt;td&gt;在行首插入文本&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;o&lt;/td&gt;
+          &lt;td&gt;当前行下方插入新行并进入插入模式&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;O&lt;/td&gt;
+          &lt;td&gt;当前行上方插入新行并进入插入模式&lt;/td&gt;
+      &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;h4 id=&#34;3-删除和撤销&#34;&gt;3. 删除和撤销&lt;/h4&gt;
+&lt;table&gt;
+  &lt;thead&gt;
+      &lt;tr&gt;
+          &lt;th style=&#34;text-align: center&#34;&gt;键位&lt;/th&gt;
+          &lt;th&gt;含义&lt;/th&gt;
+      &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+      &lt;tr&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;x&lt;/td&gt;
+          &lt;td&gt;删除当前字符（剪切）&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;nx&lt;/td&gt;
+          &lt;td&gt;向后删除当前行在内的n个字符（剪切）&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;dd&lt;/td&gt;
+          &lt;td&gt;删除（剪切）当前行&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;ndd&lt;/td&gt;
+          &lt;td&gt;向下删除当前行在内的n行（剪切）&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;u&lt;/td&gt;
+          &lt;td&gt;撤销上一次操作&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;nu&lt;/td&gt;
+          &lt;td&gt;撤销n次操作&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;U&lt;/td&gt;
+          &lt;td&gt;撤销对当前行的所有操作&lt;/td&gt;
+      &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;blockquote&gt;
+&lt;p&gt;结合光标移动以及这里的删除和撤销，可以组合命令。如：dG，代表删除当前行到文件末尾（剪切）&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>NestedScrolling机制基础篇</title>
+      <link>/posts/android/nested_scroll_basic/</link>
+      <pubDate>Wed, 14 May 2025 14:30:22 +0800</pubDate>
+      <guid>/posts/android/nested_scroll_basic/</guid>
+      <description>&lt;h3 id=&#34;nestedscrollingchild&#34;&gt;NestedScrollingChild&lt;/h3&gt;
+&lt;h4 id=&#34;1-接口版本对比&#34;&gt;1. 接口版本对比&lt;/h4&gt;
+&lt;table&gt;
+  &lt;thead&gt;
+      &lt;tr&gt;
+          &lt;th style=&#34;text-align: left&#34;&gt;接口名称&lt;/th&gt;
+          &lt;th style=&#34;text-align: left&#34;&gt;引入版本&lt;/th&gt;
+          &lt;th style=&#34;text-align: left&#34;&gt;核心改进&lt;/th&gt;
+      &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+      &lt;tr&gt;
+          &lt;td style=&#34;text-align: left&#34;&gt;&lt;code&gt;NestedScrollingChild&lt;/code&gt;&lt;/td&gt;
+          &lt;td style=&#34;text-align: left&#34;&gt;Support 23.1&lt;/td&gt;
+          &lt;td style=&#34;text-align: left&#34;&gt;基础嵌套滚动功能&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td style=&#34;text-align: left&#34;&gt;&lt;code&gt;NestedScrollingChild2&lt;/code&gt;&lt;/td&gt;
+          &lt;td style=&#34;text-align: left&#34;&gt;Support 25.0&lt;/td&gt;
+          &lt;td style=&#34;text-align: left&#34;&gt;增加滚动类型（Touch/Fling）区分&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td style=&#34;text-align: left&#34;&gt;&lt;code&gt;NestedScrollingChild3&lt;/code&gt;&lt;/td&gt;
+          &lt;td style=&#34;text-align: left&#34;&gt;AndroidX&lt;/td&gt;
+          &lt;td style=&#34;text-align: left&#34;&gt;支持 &lt;code&gt;NestedScrollingParent3&lt;/code&gt; 的扩展方法&lt;/td&gt;
+      &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;h4 id=&#34;2-接口方法列表&#34;&gt;2. 接口方法列表&lt;/h4&gt;
+&lt;p&gt;NestedScrollingChild接口方法：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;kd&#34;&gt;public&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;kd&#34;&gt;interface&lt;/span&gt; &lt;span class=&#34;nc&#34;&gt;NestedScrollingChild&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;  &lt;/span&gt;&lt;span class=&#34;c1&#34;&gt;// 启用/禁用嵌套滚动&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;  &lt;/span&gt;&lt;span class=&#34;kt&#34;&gt;void&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;nf&#34;&gt;setNestedScrollingEnabled&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;kt&#34;&gt;boolean&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;enabled&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;);&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;  &lt;/span&gt;&lt;span class=&#34;kt&#34;&gt;boolean&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;nf&#34;&gt;isNestedScrollingEnabled&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;();&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;  
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;  &lt;/span&gt;&lt;span class=&#34;c1&#34;&gt;// 启动/停止嵌套滚动&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;  &lt;/span&gt;&lt;span class=&#34;kt&#34;&gt;boolean&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;nf&#34;&gt;startNestedScroll&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;nd&#34;&gt;@ScrollAxis&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;kt&#34;&gt;int&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;axes&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;);&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;  &lt;/span&gt;&lt;span class=&#34;kt&#34;&gt;void&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;nf&#34;&gt;stopNestedScroll&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;();&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;  
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;  &lt;/span&gt;&lt;span class=&#34;c1&#34;&gt;// 检查是否存在嵌套滚动父级&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;  &lt;/span&gt;&lt;span class=&#34;kt&#34;&gt;boolean&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;nf&#34;&gt;hasNestedScrollingParent&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;();&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;  
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;  &lt;/span&gt;&lt;span class=&#34;c1&#34;&gt;// 分发滚动事件&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;  &lt;/span&gt;&lt;span class=&#34;kt&#34;&gt;boolean&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;nf&#34;&gt;dispatchNestedPreScroll&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;kt&#34;&gt;int&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;dx&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;kt&#34;&gt;int&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;dy&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;nd&#34;&gt;@Nullable&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;kt&#34;&gt;int&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;[]&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;consumed&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;            &lt;/span&gt;&lt;span class=&#34;nd&#34;&gt;@Nullable&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;kt&#34;&gt;int&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;[]&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;offsetInWindow&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;);&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;  &lt;/span&gt;&lt;span class=&#34;kt&#34;&gt;boolean&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;nf&#34;&gt;dispatchNestedScroll&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;kt&#34;&gt;int&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;dxConsumed&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;kt&#34;&gt;int&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;dyConsumed&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;            &lt;/span&gt;&lt;span class=&#34;kt&#34;&gt;int&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;dxUnconsumed&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;kt&#34;&gt;int&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;dyUnconsumed&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;nd&#34;&gt;@Nullable&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;kt&#34;&gt;int&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;[]&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;offsetInWindow&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;);&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;  
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;  &lt;/span&gt;&lt;span class=&#34;c1&#34;&gt;// 处理惯性滚动&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;  &lt;/span&gt;&lt;span class=&#34;kt&#34;&gt;boolean&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;nf&#34;&gt;dispatchNestedPreFling&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;kt&#34;&gt;float&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;velocityX&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;kt&#34;&gt;float&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;velocityY&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;);&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;  &lt;/span&gt;&lt;span class=&#34;kt&#34;&gt;boolean&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;nf&#34;&gt;dispatchNestedFling&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;kt&#34;&gt;float&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;velocityX&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;kt&#34;&gt;float&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;velocityY&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;kt&#34;&gt;boolean&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;consumed&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;);&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;NestedScrollingChild2接口方法：&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>Android View工作流程</title>
+      <link>/posts/android/view_traversals/</link>
+      <pubDate>Wed, 14 May 2025 13:10:56 +0800</pubDate>
+      <guid>/posts/android/view_traversals/</guid>
+      <description>&lt;h3 id=&#34;概述&#34;&gt;概述&lt;/h3&gt;
+&lt;p&gt;在Android的知识体系中，&lt;strong&gt;View&lt;/strong&gt;扮演着很重要的角色，简单来理解，View是Android里Window的表现形式。&lt;/p&gt;
+&lt;p&gt;ViewRootImpl在整个View体系中起着中流砥柱的作用，它是控件树正常运作的动力所在，主要功能有：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;连接WindowManager和DecorView的纽带；&lt;/li&gt;
+&lt;li&gt;向DecorView分发输入事件；&lt;/li&gt;
+&lt;li&gt;完成View的绘制(measure，layout，draw)；&lt;/li&gt;
+&lt;li&gt;负责与WMS交互通信，调整窗口大小及布局。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;view工作流程&#34;&gt;View工作流程&lt;/h3&gt;
+&lt;h4 id=&#34;1-viewrootimplsetview&#34;&gt;1. ViewRootImpl.setView&lt;/h4&gt;
+&lt;p&gt;在WindowManagerGlobal.addView方法中，会创建ViewRootImpl对象，并通过setView方法将DecorView对象和WindowManager.LayoutParams等参数传入。View流程相关的代码如下：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;kd&#34;&gt;public&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;kt&#34;&gt;void&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;nf&#34;&gt;setView&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;View&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;view&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;WindowManager&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;na&#34;&gt;LayoutParams&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;attrs&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;View&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;panelParentView&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;    &lt;/span&gt;&lt;span class=&#34;p&#34;&gt;...&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;    &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;mView&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;view&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;    &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;mWindowAttributes&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;na&#34;&gt;copyFrom&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;attrs&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;);&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;    &lt;/span&gt;&lt;span class=&#34;p&#34;&gt;...&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;    &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;mAdded&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;kc&#34;&gt;true&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;    &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;requestLayout&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;();&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;    &lt;/span&gt;&lt;span class=&#34;p&#34;&gt;...&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;通过内部的requestLayout()方法开启View的工作流程。&lt;/p&gt;
+&lt;h4 id=&#34;2-viewrootimplrequestlayout&#34;&gt;2. ViewRootImpl.requestLayout&lt;/h4&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nd&#34;&gt;@Override&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;&lt;/span&gt;&lt;span class=&#34;kd&#34;&gt;public&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;kt&#34;&gt;void&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;nf&#34;&gt;requestLayout&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;()&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;    &lt;/span&gt;&lt;span class=&#34;k&#34;&gt;if&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;!&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;mHandlingLayoutInLayoutRequest&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;        &lt;/span&gt;&lt;span class=&#34;c1&#34;&gt;// 检查线程对象，调用方若不在当前ViewRootImpl线程将会出错&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;        &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;checkThread&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;();&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;        &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;mLayoutRequested&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;kc&#34;&gt;true&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;        &lt;/span&gt;&lt;span class=&#34;c1&#34;&gt;// 计划执行遍历任务&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;        &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;scheduleTraversals&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;();&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;    &lt;/span&gt;&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;&lt;/span&gt;&lt;span class=&#34;kt&#34;&gt;void&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;nf&#34;&gt;checkThread&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;()&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;    &lt;/span&gt;&lt;span class=&#34;k&#34;&gt;if&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;mThread&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;o&#34;&gt;!=&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;Thread&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;na&#34;&gt;currentThread&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;())&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;        &lt;/span&gt;&lt;span class=&#34;k&#34;&gt;throw&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;k&#34;&gt;new&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;CalledFromWrongThreadException&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;            &lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;Only the original thread that created a view hierarchy&amp;#34;&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;o&#34;&gt;+&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;            &lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;can touch its views.&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;);&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;    &lt;/span&gt;&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;这里需要说明的是，View的工作流程是在创建ViewRootImpl的线程中运行的，而ViewRootImpl是在主线程被创建的！&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>Android View基础知识</title>
+      <link>/posts/android/view_basic/</link>
+      <pubDate>Tue, 13 May 2025 15:11:46 +0800</pubDate>
+      <guid>/posts/android/view_basic/</guid>
+      <description>&lt;p&gt;View是Android所有控件的基类，是一种界面层控件的抽象角色。在Android的设计中，ViewGroup也继承了View，这就意味着View本身就可以是单个控件也可以是由多个控件组成的一组控件，通过这种关系就形成了View树的结构。&lt;/p&gt;
+&lt;h3 id=&#34;view位置参数&#34;&gt;View位置参数&lt;/h3&gt;
+&lt;p&gt;View的位置主要由它的四个顶点来决定，分别对应于View的四个属性：&lt;strong&gt;top、left、right、bottom&lt;/strong&gt;，其中top是左上角纵坐标，left是左上角横坐标，right是右下角横坐标，bottom是右下角纵坐标。注意，这些坐标是相对于View的父容器来说的，它是一种相对坐标。&lt;/p&gt;
+&lt;p&gt;View的宽高和坐标的关系：&lt;code&gt;width = right -left; height = bottom - top;&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;从Android3.0开始，View增加参数：&lt;strong&gt;x、y、translationX、translationY&lt;/strong&gt;，其中x和y是View左上角的坐标，而translationX和translationY是View左上角相对于父容器的偏移量。这几个参数也是相对于父容器的坐标，并且&lt;strong&gt;translationX和translationY的默认值是0&lt;/strong&gt;。&lt;/p&gt;
+&lt;p&gt;这几个参数的换算关系如下：&lt;code&gt;x = left + translationX; y = top + translationY;&lt;/code&gt;&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;在View在平移的过程中，top和left是原始左上角的位置信息，不会发生改变。发生改变的是x、y、translationX和translationY这四个参数。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h3 id=&#34;motionevent和touchslop&#34;&gt;MotionEvent和TouchSlop&lt;/h3&gt;
+&lt;p&gt;在手指接触屏幕后产生的一系列事件，该事件对象是&lt;strong&gt;MotionEvent&lt;/strong&gt;。&lt;/p&gt;
+&lt;p&gt;下面是常用的事件类型：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;kd&#34;&gt;public&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;kd&#34;&gt;final&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;kd&#34;&gt;class&lt;/span&gt; &lt;span class=&#34;nc&#34;&gt;MotionEvent&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;kd&#34;&gt;extends&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;InputEvent&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;kd&#34;&gt;implements&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;Parcelable&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;    &lt;/span&gt;&lt;span class=&#34;kd&#34;&gt;public&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;kd&#34;&gt;static&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;kd&#34;&gt;final&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;kt&#34;&gt;int&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;ACTION_MASK&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;             &lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;0xff&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;    &lt;/span&gt;&lt;span class=&#34;kd&#34;&gt;public&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;kd&#34;&gt;static&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;kd&#34;&gt;final&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;kt&#34;&gt;int&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;ACTION_DOWN&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;             &lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;0&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;    &lt;/span&gt;&lt;span class=&#34;kd&#34;&gt;public&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;kd&#34;&gt;static&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;kd&#34;&gt;final&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;kt&#34;&gt;int&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;ACTION_UP&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;               &lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;1&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;    &lt;/span&gt;&lt;span class=&#34;kd&#34;&gt;public&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;kd&#34;&gt;static&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;kd&#34;&gt;final&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;kt&#34;&gt;int&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;ACTION_MOVE&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;             &lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;2&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;    &lt;/span&gt;&lt;span class=&#34;kd&#34;&gt;public&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;kd&#34;&gt;static&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;kd&#34;&gt;final&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;kt&#34;&gt;int&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;ACTION_CANCEL&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;           &lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;3&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;    &lt;/span&gt;&lt;span class=&#34;kd&#34;&gt;public&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;kd&#34;&gt;static&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;kd&#34;&gt;final&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;kt&#34;&gt;int&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;ACTION_OUTSIDE&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;          &lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;4&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;    &lt;/span&gt;&lt;span class=&#34;kd&#34;&gt;public&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;kd&#34;&gt;static&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;kd&#34;&gt;final&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;kt&#34;&gt;int&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;ACTION_POINTER_DOWN&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;     &lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;5&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;    &lt;/span&gt;&lt;span class=&#34;kd&#34;&gt;public&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;kd&#34;&gt;static&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;kd&#34;&gt;final&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;kt&#34;&gt;int&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;ACTION_POINTER_UP&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;       &lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;6&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;    &lt;/span&gt;&lt;span class=&#34;p&#34;&gt;...&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;strong&gt;TouchSlop&lt;/strong&gt;是系统所能识别出的被认为是滑动的最小距离。可以通过如下代码获取：&lt;code&gt;ViewConfiguration. get(getContext()).getScaledTouchSlop()&lt;/code&gt;。当我们在处理滑动时，可以利用这个常量来做一些过滤，比如当两次滑动事件的滑动距离小于这个值，我们就可以认为未达到滑动距离的临界值，因此就可以认为它们不是滑动，这样做可以有更好的用户体验&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>Charles网络抓包</title>
+      <link>/posts/tools/charles/</link>
+      <pubDate>Wed, 22 Jan 2025 17:27:21 +0800</pubDate>
+      <guid>/posts/tools/charles/</guid>
+      <description>&lt;h3 id=&#34;下载与安装&#34;&gt;下载与安装&lt;/h3&gt;
+&lt;p&gt;Charles官网下载安装包，下载成功后根据指示安装即可&lt;/p&gt;
+&lt;p&gt;官网地址： &lt;a href=&#34;https://www.charlesproxy.com/&#34;&gt;www.charlesproxy.com&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;Charles激活码：&lt;/p&gt;
+&lt;p&gt;Registered Name: &lt;code&gt;https://zhile.io&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;License Key: &lt;code&gt;48891cf209c6d32bf4&lt;/code&gt;&lt;/p&gt;
+&lt;h3 id=&#34;http代理设置&#34;&gt;HTTP代理设置&lt;/h3&gt;
+&lt;h4 id=&#34;1-设置pc端代理端口号&#34;&gt;1. 设置PC端代理端口号&lt;/h4&gt;
+&lt;p&gt;在&lt;code&gt;Proxy -&amp;gt; Proxy settings&lt;/code&gt;可设置HTTP Proxy的端口号。&lt;/p&gt;
+&lt;h4 id=&#34;2-设置手机端代理端口号&#34;&gt;2. 设置手机端代理端口号&lt;/h4&gt;
+&lt;p&gt;在应用内的&lt;code&gt;Help -&amp;gt; Local IP Address&lt;/code&gt;上查看本机的IP地址（en0等标识）&lt;/p&gt;
+&lt;h4 id=&#34;3-android手机代理设置&#34;&gt;3. Android手机代理设置&lt;/h4&gt;
+&lt;p&gt;设置-WLAN，进入已连接WiFi手动设置（端口需与PC端设置端口号一致）&lt;/p&gt;
+&lt;p&gt;编辑网络，选择手动代理，输入PC端的IP地址 + Charles配置的端口号。&lt;/p&gt;
+&lt;p&gt;当手机进行数据请求时，Charles 将弹出是否允许连接此代理(选择允许 allow)，之后便可进行HTTP抓包。&lt;/p&gt;
+&lt;h3 id=&#34;https代理设置&#34;&gt;HTTPS代理设置&lt;/h3&gt;
+&lt;p&gt;HTTP的代理设置是抓取不了HTTPS，故需要进行HTTPS代理设置。&lt;/p&gt;
+&lt;p&gt;手机上需要安装Charles SSL证书认证，证书下载地址：&lt;code&gt;http://charlesproxy.com/getssl&lt;/code&gt;&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;建议使用Chrome浏览器，其它浏览器有可能报错。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;其它下载地址推荐：https://www.charlesproxy.com/assets/legacy-ssl/charles.crt&lt;/p&gt;
+&lt;h4 id=&#34;1-charles配置ssl&#34;&gt;1. Charles配置SSL&lt;/h4&gt;
+&lt;p&gt;选中&lt;code&gt;Proxy -&amp;gt; SSL Proxying Setting&lt;/code&gt;选项，开启SSL代理，并添加或移除信任地址（默认端口号443）。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;如果拦截所有，则配置主机&lt;code&gt;*&lt;/code&gt;，端口号 &lt;strong&gt;443&lt;/strong&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h4 id=&#34;2-android手机安装证书&#34;&gt;2. Android手机安装证书&lt;/h4&gt;
+&lt;p&gt;在手机浏览器输入上面的证书下载地址，证书下载成功后，进入&lt;code&gt;设置-安全-加密与凭据-安装证书-CA证书&lt;/code&gt;，选择已下载的证书进行安装。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;不同安卓手机设置里面选择不同，可自行查找系统安全进入证书安装&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h4 id=&#34;3-android系统证书配置&#34;&gt;3. Android系统证书配置&lt;/h4&gt;
+&lt;p&gt;上面的方式配置出来的证书是用户类型，如果需要抓取应用release类型的网络日志，则需要配置成系统证书。&lt;/p&gt;
+&lt;p&gt;具体步骤如下：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;选中&lt;code&gt;Help -&amp;gt; SSL Proxying -&amp;gt; Save Charles Root Certificate...&lt;/code&gt;选项&lt;/li&gt;
+&lt;li&gt;保存&lt;code&gt;charles-ssl-proxying-certificate.pem&lt;/code&gt;到指定目录&lt;/li&gt;
+&lt;li&gt;执行&lt;code&gt;openssl x509 -inform PEM -subject_hash_old -in [pem文件路径]&lt;/code&gt;，这里最上方一行输出的是“91b45736”&lt;/li&gt;
+&lt;li&gt;重命名pem文件，系统的证书名称格式一般为：&lt;code&gt;[pem的hash值].0&lt;/code&gt;名称。故笔者这里需要将pem文件命名为&lt;code&gt;91b45736.0&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;将重命名后的文件push到如下路径：&lt;strong&gt;/system/etc/security/cacerts/&lt;/strong&gt;&lt;/li&gt;
+&lt;li&gt;重启手机，在设置应用上找到&lt;code&gt;信任的凭据&lt;/code&gt;,查看系统的CA证书列表，确认是否有Charles Proxy CA存在&lt;/li&gt;
+&lt;/ol&gt;
+&lt;blockquote&gt;
+&lt;p&gt;附上cer转换成pem的命令：&lt;code&gt;openssl x509 -inform DER -in [cer文件] -out [pem文件]&lt;/code&gt;&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>openVPN</title>
+      <link>/posts/tools/openvpn/</link>
+      <pubDate>Mon, 23 Dec 2024 17:09:22 +0800</pubDate>
+      <guid>/posts/tools/openvpn/</guid>
+      <description>&lt;p&gt;本文将基于Ubuntu系统环境快速搭建OpenVPN用于端对端的安全传输通道访问。&lt;/p&gt;
+&lt;h3 id=&#34;1-安装软件&#34;&gt;1. 安装软件&lt;/h3&gt;
+&lt;p&gt;安装相关的软件(openvpn与easy-rsa)，执行命令：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;sudo apt update
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;sudo apt install openvpn easy-rsa
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;查看安装后的 openvpn与 easy-rsa 版本，如下：&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;openvpn/focal-updates,focal-security,now 2.4.12-0ubuntu0.20.04.2 amd64 [installed]
+  virtual private network daemon
+
+easy-rsa/focal,focal,now 3.0.6-1 all [installed]
+  Simple shell based CA utility
+&lt;/code&gt;&lt;/pre&gt;&lt;h3 id=&#34;2-制作证书&#34;&gt;2. 制作证书&lt;/h3&gt;
+&lt;p&gt;OpenVPN 的证书分为三部分：CA证书、Server端证书、Client端证书。下面我们通过easy-rsa分别对其进行制作。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;制作证书&lt;/strong&gt;：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;进入 &lt;strong&gt;/usr/share/easy-rsa&lt;/strong&gt; 目录&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;拷贝 vars.example 文件，并将新的文件命名为 &lt;strong&gt;vars&lt;/strong&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;编辑 vars 文件，取消注释并按需修改以下内容信息：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;set_var EASYRSA_REQ_COUNTRY    &lt;span class=&#34;s2&#34;&gt;&amp;#34;US&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;set_var EASYRSA_REQ_PROVINCE   &lt;span class=&#34;s2&#34;&gt;&amp;#34;California&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;set_var EASYRSA_REQ_CITY       &lt;span class=&#34;s2&#34;&gt;&amp;#34;San Francisco&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;set_var EASYRSA_REQ_ORG        &lt;span class=&#34;s2&#34;&gt;&amp;#34;Copyleft Certificate Co&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;set_var EASYRSA_REQ_EMAIL      &lt;span class=&#34;s2&#34;&gt;&amp;#34;me@example.net&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;set_var EASYRSA_REQ_OU         &lt;span class=&#34;s2&#34;&gt;&amp;#34;My Organizational Unit&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;在该目录里执行以下命令用于初始化与生成CA证书：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;sudo ./easyrsa init-pki
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;sudo ./easyrsa build-ca nopass
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;生成服务端证书：&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>Linux使用介绍</title>
+      <link>/posts/os/linux/</link>
+      <pubDate>Fri, 15 Nov 2024 14:38:57 +0800</pubDate>
+      <guid>/posts/os/linux/</guid>
+      <description>&lt;h2 id=&#34;简要概述&#34;&gt;简要概述&lt;/h2&gt;
+&lt;h3 id=&#34;1-启动过程&#34;&gt;1. 启动过程&lt;/h3&gt;
+&lt;p&gt;Linux系统的启动过程可以分为5个阶段：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;内核的引导&lt;/li&gt;
+&lt;li&gt;运行 init&lt;/li&gt;
+&lt;li&gt;系统初始化&lt;/li&gt;
+&lt;li&gt;建立终端&lt;/li&gt;
+&lt;li&gt;用户登录系统&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;启动流程图:&lt;/p&gt;
+&lt;pre class=&#34;mermaid&#34;&gt;graph LR
+system(操作系统)
+boot(/boot)
+init(init进程)
+run(运行级别)
+etc(/etc/init.d)
+user(用户登录)
+shell(Login shell)
+
+system --&gt; boot
+boot --&gt; init
+init --&gt; run
+run --&gt; etc
+etc --&gt; user
+user --&gt; shell
+&lt;/pre&gt;
+&lt;h3 id=&#34;2-目录结构&#34;&gt;2. 目录结构&lt;/h3&gt;
+&lt;p&gt;登录系统后，在当前命令窗口下输入命令：&lt;code&gt;ls /&lt;/code&gt;&lt;/p&gt;
+&lt;table&gt;
+  &lt;thead&gt;
+      &lt;tr&gt;
+          &lt;th&gt;根目录文件夹及文件&lt;/th&gt;
+          &lt;th&gt;描述&lt;/th&gt;
+      &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+      &lt;tr&gt;
+          &lt;td&gt;/bin&lt;/td&gt;
+          &lt;td&gt;bin是Binary的缩写, 这个目录存放着最经常使用的命令&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;/boot&lt;/td&gt;
+          &lt;td&gt;存放的是启动Linux时使用的一些核心文件，包括一些连接文件以及镜像文件&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;/dev&lt;/td&gt;
+          &lt;td&gt;dev是Device(设备)的缩写, 该目录下存放的是Linux的外部设备，在Linux中访问设备的方式和访问文件的方式是相同的&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;/etc&lt;/td&gt;
+          &lt;td&gt;用来存放所有的系统管理所需要的配置文件和子目录&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;/home&lt;/td&gt;
+          &lt;td&gt;用户的主目录，在Linux中，每个用户都有一个自己的目录，一般该目录名是以用户的账号命名的&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;/lib&lt;/td&gt;
+          &lt;td&gt;存放着系统最基本的动态连接共享库，其作用类似于Windows里的dll文件&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;/lost+found&lt;/td&gt;
+          &lt;td&gt;一般情况下是空的，当系统非法关机后，这里就存放了一些文件&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;/media&lt;/td&gt;
+          &lt;td&gt;linux系统会自动识别一些设备，例如U盘、光驱等等，当识别后，linux会把识别的设备挂载到这个目录下&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;/mnt&lt;/td&gt;
+          &lt;td&gt;系统提供该目录是为了让用户临时挂载别的文件系统的，我们可以将光驱挂载在/mnt/上，然后进入该目录就可以查看光驱里的内容了&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;/opt&lt;/td&gt;
+          &lt;td&gt;给主机额外安装软件所摆放的目录。比如你安装一个ORACLE数据库则就可以放到这个目录下。默认是空的&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;/proc&lt;/td&gt;
+          &lt;td&gt;这个目录的内容不在硬盘上而是在内存里 ,是一个虚拟的目录它是系统内存的映射，可以通过直接访问这个目录来获取系统信息&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;/root&lt;/td&gt;
+          &lt;td&gt;该目录为系统管理员，也称作超级权限者的用户主目录&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;/sbin&lt;/td&gt;
+          &lt;td&gt;s就是Super User的意思，这里存放的是系统管理员使用的系统管理程序&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;/srv&lt;/td&gt;
+          &lt;td&gt;该目录存放一些服务启动之后需要提取的数据&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;/sys&lt;/td&gt;
+          &lt;td&gt;系统文件夹&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;/tmp&lt;/td&gt;
+          &lt;td&gt;这个目录是用来存放一些临时文件的&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;/usr&lt;/td&gt;
+          &lt;td&gt;这是一个非常重要的目录，用户的很多应用程序和文件都放在这个目录下，类似于windows下的program files目录&lt;br/&gt;/usr/bin：系统用户使用的应用程序&lt;br/&gt;/usr/sbin：超级用户使用的比较高级的管理程序和系统守护程序&lt;br/&gt;/usr/src：内核源代码默认的放置目录&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;/var&lt;/td&gt;
+          &lt;td&gt;这个目录中存放着在不断扩充着的东西，我们习惯将那些经常被修改的目录放在这个目录下。包括各种日志文件&lt;/td&gt;
+      &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;h3 id=&#34;3-文件权限管理&#34;&gt;3. 文件权限管理&lt;/h3&gt;
+&lt;p&gt;Linux系统是一种典型的多用户系统，不同的用户处于不同的地位，拥有不同的权限。为了保护系统的安全性，Linux系统对不同的用户访问同一文件（包括目录文件）的权限做了不同的规定。 &lt;br&gt;
+在Linux中我们可以使用ll或者ls –l命令来显示一个文件的属性以及文件所属的用户和组，如：&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>Git入门介绍</title>
+      <link>/posts/tools/git/</link>
+      <pubDate>Fri, 15 Nov 2024 14:30:04 +0800</pubDate>
+      <guid>/posts/tools/git/</guid>
+      <description>&lt;h3 id=&#34;1-概述&#34;&gt;1. 概述&lt;/h3&gt;
+&lt;p&gt;Git的本地区域可以划分为如下几个部分：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;工作目录（Working Directory）&lt;/li&gt;
+&lt;li&gt;暂存目录（也叫做索引，Index)&lt;/li&gt;
+&lt;li&gt;本地仓库（Repository）&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h3 id=&#34;2-基本用法&#34;&gt;2. 基本用法&lt;/h3&gt;
+&lt;h4 id=&#34;20-常用操作&#34;&gt;2.0 常用操作&lt;/h4&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;查找某个字串：&lt;code&gt;git grep -nir [word-regexp]&lt;/code&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;基于当前分支创建新分支，并创建对应远程分支与之关联&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;基于当前分支创建并切换分支：git checkout -b [branch]
+创建新的远程分支：git push origin [branch]
+本地分支与远程分支相互关联：git branch --set-upstream-to=origin/&amp;lt;remote_branch&amp;gt; &amp;lt;local_branch&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;为当前工程配置本地的用户名和邮箱：&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;git config --local user.name &amp;#34;linlishui&amp;#34;
+git config --local user.email &amp;#34;lishui.lin@qq.com&amp;#34;
+&lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;全局的文件过滤配置：&lt;code&gt;git config --global core.excludesfile [全局的.gitignore文件]&lt;/code&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;全局的钩子目录配置：&lt;code&gt;git config --global core.hookspath [全局的钩子目录位置.git/hooks]&lt;/code&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;迁移仓库内所有分支及tag到另一个远程空仓库里&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;1.本地创建远程分支：git branch -r &lt;span class=&#34;p&#34;&gt;|&lt;/span&gt; grep -v &lt;span class=&#34;s1&#34;&gt;&amp;#39;\-&amp;gt;&amp;#39;&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;|&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;while&lt;/span&gt; &lt;span class=&#34;nb&#34;&gt;read&lt;/span&gt; remote&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;do&lt;/span&gt; git branch --track &lt;span class=&#34;s2&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span class=&#34;si&#34;&gt;${&lt;/span&gt;&lt;span class=&#34;nv&#34;&gt;remote&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;#origin/&lt;/span&gt;&lt;span class=&#34;si&#34;&gt;}&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span class=&#34;nv&#34;&gt;$remote&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;done&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;2.将本地所有分支与远程保持同步: git fetch --all &lt;span class=&#34;o&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; git pull --all
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;3.移除之前的origin：git remote remove origin
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;4.绑定现有的origin：git remote add origin &lt;span class=&#34;o&#34;&gt;[&lt;/span&gt;new_repo.git&lt;span class=&#34;o&#34;&gt;]&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;5.提交所有分支代码: git push -u origin --all &lt;span class=&#34;o&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; git push -u origin --tags
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;为release分支进行tag操作&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>adb日常使用</title>
+      <link>/posts/tools/adb/</link>
+      <pubDate>Fri, 15 Nov 2024 14:20:18 +0800</pubDate>
+      <guid>/posts/tools/adb/</guid>
+      <description>&lt;h2 id=&#34;简述&#34;&gt;简述&lt;/h2&gt;
+&lt;h2 id=&#34;adb日志操作&#34;&gt;adb日志操作&lt;/h2&gt;
+&lt;p&gt;adb logcat日志可分为：main、system、events、radio、crash、kernel类型的log，常用日志过滤命令如下：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;adb logcat -b main&lt;/li&gt;
+&lt;li&gt;adb logcat -b system&lt;/li&gt;
+&lt;li&gt;adb logcat -b events&lt;/li&gt;
+&lt;li&gt;adb logcat -b radio&lt;/li&gt;
+&lt;li&gt;adb logcat -b crash&lt;/li&gt;
+&lt;li&gt;adb logcat -b kernel&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;logcat其它命令补充：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;adb logcat -b events：输出指定buffer的log&lt;/li&gt;
+&lt;li&gt;adb logcat -s &amp;ldquo;ActivityManager&amp;rdquo;：输出指定tag的log&lt;/li&gt;
+&lt;li&gt;adb logcat -L：上次重启时的log&lt;/li&gt;
+&lt;li&gt;adb logcat -f [file_path]：将log保存到指定文件&lt;/li&gt;
+&lt;li&gt;adb logcat -g：缓冲区大小&lt;/li&gt;
+&lt;li&gt;adb logcat -S：log统计信息&lt;/li&gt;
+&lt;li&gt;adb shell setprop log.tag.[Tag] {VDIWE}：设置log标签的过滤级别&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;dmesg&lt;/code&gt;或者&lt;code&gt;cat /proc/kmsg&lt;/code&gt;：adb shell进入手机后打印内核日志&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;adb logcat -b events | egrep -i resume_activity&lt;/code&gt;：查看执行到resume状态的activity&lt;/li&gt;
+&lt;/ul&gt;
+&lt;blockquote&gt;
+&lt;p&gt;从Android O开始引入Log的chatty机制，会把中间的重复内容不再打印，而是输出类似 “uid=1000(system) Binder:1453_1D identical 7 lines” ，告知有多少行的日志是一样的，这不是错误，只是减少了重复打印的次数。&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>Hugo入门使用</title>
+      <link>/posts/hugo_intro/</link>
+      <pubDate>Thu, 14 Nov 2024 10:43:59 +0800</pubDate>
+      <guid>/posts/hugo_intro/</guid>
+      <description>&lt;h3 id=&#34;安装hugo&#34;&gt;安装Hugo&lt;/h3&gt;
+&lt;p&gt;不同系统环境安装命令：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# Ubuntu 环境&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;## apt方式。下载版本可能会旧一些&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;sudo apt update
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;sudo apt install hugo
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;## deb包方式&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;uname -i  &lt;span class=&#34;c1&#34;&gt;# 64位：x86_64；32位：i686&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;sudo dpkg -i hugo*.deb
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# Mac 环境&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;brew install hugo
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;查看HUGO版本确认安装成功：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;hugo version
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;快速开始&#34;&gt;快速开始&lt;/h3&gt;
+&lt;p&gt;可参考文档：&lt;a href=&#34;https://hugo.opendocs.io/getting-started/quick-start/&#34;&gt;Hugo快速入门&lt;/a&gt;&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;hugo 创建站点：&lt;/li&gt;
+&lt;/ol&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# 说明：my-site 是站点的名称&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;hugo new site my-site
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;创建完成后，站点目录 包含以下文件：&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;.
+├── archetypes/
+│   └── default.md    &amp;lt;-- default.md是默认的博文模版
+├── assets/           &amp;lt;-- 存放被 Hugo Pipes 处理的文件
+├── content/          &amp;lt;-- 存放markdown文件作为博文内容
+├── data/             &amp;lt;-- 存放 Hugo 处理的数据
+├── i18n/
+├── layouts/     
+├── static/           &amp;lt;-- 存放静态文件,例如 图片 CSS JS文件
+├── themes/           &amp;lt;-- 存放不同的主题
+└── config.yaml         &amp;lt;-- site configuration
+&lt;/code&gt;&lt;/pre&gt;&lt;ol start=&#34;2&#34;&gt;
+&lt;li&gt;创建文章&lt;/li&gt;
+&lt;/ol&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;hugo new content/posts/hugo_intro.md
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# 指定模板创建内容&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;hugo new --kind &amp;lt;template&amp;gt; &amp;lt;name&amp;gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;ol start=&#34;3&#34;&gt;
+&lt;li&gt;设置主题（子模块形式）&lt;/li&gt;
+&lt;/ol&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;git submodule add --depth&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;m&#34;&gt;1&lt;/span&gt; https://github.com/adityatelange/hugo-PaperMod.git themes/PaperMod
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;git submodule update --init --recursive &lt;span class=&#34;c1&#34;&gt;# needed when you reclone your repo (submodules may not get cloned automatically)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# 重新clone，需要初始化子模块，等同于上面的复合命令&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;git submodule init
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;git submodule update
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;blockquote&gt;
+&lt;p&gt;这里使用的主题为：&lt;a href=&#34;https://adityatelange.github.io/hugo-PaperMod/posts/papermod/papermod-features/&#34;&gt;PaperMod&lt;/a&gt;&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>关于我</title>
+      <link>/about/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>/about/</guid>
+      <description>关于</description>
+    </item>
+  </channel>
+</rss>
