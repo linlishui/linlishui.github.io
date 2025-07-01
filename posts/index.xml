@@ -547,8 +547,8 @@ user --&gt; shell
 &lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;
 &lt;li&gt;
 &lt;p&gt;为当前工程配置本地的用户名和邮箱：&lt;/p&gt;
-&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;git config --local user.name &amp;#34;linlishui&amp;#34;
-git config --local user.email &amp;#34;lishui.lin@qq.com&amp;#34;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;git config --local user.name &amp;#34;user&amp;#34;
+git config --local user.email &amp;#34;user@example.com&amp;#34;
 &lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;
 &lt;li&gt;
 &lt;p&gt;全局的文件过滤配置：&lt;code&gt;git config --global core.excludesfile [全局的.gitignore文件]&lt;/code&gt;&lt;/p&gt;
