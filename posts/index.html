@@ -194,6 +194,22 @@ window.onload = () => {
 
 <article class="post-entry"> 
   <header class="entry-header">
+    <h2 class="entry-hint-parent">Shell入门
+    </h2>
+  </header>
+  <div class="entry-content">
+    <p>概述 Shell 是操作系统的命令行解释器，是用户与操作系统内核交互的接口。常见的 Shell 类型包括：
+Bash：Linux 默认 Shell，功能丰富 Zsh：增强版 Shell，支持更多特性 入门 shell脚本基本结构
+#!/bin/bash # 脚本注释 echo &#34;Hello World&#34; 参数 脚本参数小知识
+#!/bin/bash # 1. 位置参数 ## 脚本名: script.sh echo &#34;脚本名称: $0&#34; echo &#34;第一个参数: $1&#34; echo &#34;第二个参数: $2&#34; echo &#34;第三个参数: $3&#34; ## 使用方式: ./script.sh arg1 arg2 arg3 # 2. 特殊参数变量 echo &#34;参数总数: $#&#34; echo &#34;所有参数(作为单个字符串): $*&#34; echo &#34;所有参数(作为独立字符串): $@&#34; echo &#34;脚本进程ID: $$&#34; echo &#34;上一个命令退出状态: $?&#34; # 3. 参数检查 if [ $# -eq 0 ]; then echo &#34;用法: $0 &lt;文件名&gt; [选项]&#34; exit 1 fi if [ $# -lt 2 ]; then echo &#34;错误: 需要至少2个参数&#34; exit 1 fi # 4. 参数默认值 filename=${1:-&#34;default.txt&#34;} action=${2:-&#34;read&#34;} verbose=${3:-&#34;false&#34;} echo &#34;文件名: $filename&#34; echo &#34;操作: $action&#34; echo &#34;详细模式: $verbose&#34; 变量 变量操作
+...</p>
+  </div>
+  <footer class="entry-footer"><span title='2025-07-07 20:28:24 +0800 CST'>July 7, 2025</span>&nbsp;·&nbsp;4 min&nbsp;·&nbsp;852 words&nbsp;·&nbsp;夏天的小西瓜</footer>
+  <a class="entry-link" aria-label="post link to Shell入门" href="/posts/tools/shell/"></a>
+</article>
+
+<article class="post-entry"> 
+  <header class="entry-header">
     <h2 class="entry-hint-parent">Vim基础使用
     </h2>
   </header>
@@ -363,23 +379,12 @@ adb logcat -b events：输出指定buffer的log adb logcat -s “ActivityManager
   <footer class="entry-footer"><span title='2024-11-15 14:20:18 +0800 CST'>November 15, 2024</span>&nbsp;·&nbsp;6 min&nbsp;·&nbsp;1158 words&nbsp;·&nbsp;夏天的小西瓜</footer>
   <a class="entry-link" aria-label="post link to adb日常使用" href="/posts/tools/adb/"></a>
 </article>
-
-<article class="post-entry"> 
-  <header class="entry-header">
-    <h2 class="entry-hint-parent">Hugo入门使用
-    </h2>
-  </header>
-  <div class="entry-content">
-    <p>安装Hugo 不同系统环境安装命令：
-# Ubuntu 环境 ## apt方式。下载版本可能会旧一些 sudo apt update sudo apt install hugo ## deb包方式 uname -i # 64位：x86_64；32位：i686 sudo dpkg -i hugo*.deb # Mac 环境 brew install hugo 查看HUGO版本确认安装成功：
-hugo version 快速开始 可参考文档：Hugo快速入门
-hugo 创建站点： # 说明：my-site 是站点的名称 hugo new site my-site 创建完成后，站点目录 包含以下文件：
-. ├── archetypes/ │ └── default.md &lt;-- default.md是默认的博文模版 ├── assets/ &lt;-- 存放被 Hugo Pipes 处理的文件 ├── content/ &lt;-- 存放markdown文件作为博文内容 ├── data/ &lt;-- 存放 Hugo 处理的数据 ├── i18n/ ├── layouts/ ├── static/ &lt;-- 存放静态文件,例如 图片 CSS JS文件 ├── themes/ &lt;-- 存放不同的主题 └── config.yaml &lt;-- site configuration 创建文章 hugo new content/posts/hugo_intro.md # 指定模板创建内容 hugo new --kind &lt;template&gt; &lt;name&gt; 设置主题（子模块形式） git submodule add --depth=1 https://github.com/adityatelange/hugo-PaperMod.git themes/PaperMod git submodule update --init --recursive # needed when you reclone your repo (submodules may not get cloned automatically) # 重新clone，需要初始化子模块，等同于上面的复合命令 git submodule init git submodule update 这里使用的主题为：PaperMod
-...</p>
-  </div>
-  <footer class="entry-footer"><span title='2024-11-14 10:43:59 +0800 CST'>November 14, 2024</span>&nbsp;·&nbsp;2 min&nbsp;·&nbsp;342 words&nbsp;·&nbsp;夏天的小西瓜</footer>
-  <a class="entry-link" aria-label="post link to Hugo入门使用" href="/posts/hugo_intro/"></a>
-</article>
+<footer class="page-footer">
+  <nav class="pagination">
+    <a class="next" href="/posts/page/2/">Next&nbsp;&nbsp;»
+    </a>
+  </nav>
+</footer>
     </main>
     
 <footer class="footer">

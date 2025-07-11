@@ -179,6 +179,22 @@ window.onload = () => {
 
 <article class="post-entry tag-entry"> 
   <header class="entry-header">
+    <h2 class="entry-hint-parent">Shell入门
+    </h2>
+  </header>
+  <div class="entry-content">
+    <p>概述 Shell 是操作系统的命令行解释器，是用户与操作系统内核交互的接口。常见的 Shell 类型包括：
+Bash：Linux 默认 Shell，功能丰富 Zsh：增强版 Shell，支持更多特性 入门 shell脚本基本结构
+#!/bin/bash # 脚本注释 echo &#34;Hello World&#34; 参数 脚本参数小知识
+#!/bin/bash # 1. 位置参数 ## 脚本名: script.sh echo &#34;脚本名称: $0&#34; echo &#34;第一个参数: $1&#34; echo &#34;第二个参数: $2&#34; echo &#34;第三个参数: $3&#34; ## 使用方式: ./script.sh arg1 arg2 arg3 # 2. 特殊参数变量 echo &#34;参数总数: $#&#34; echo &#34;所有参数(作为单个字符串): $*&#34; echo &#34;所有参数(作为独立字符串): $@&#34; echo &#34;脚本进程ID: $$&#34; echo &#34;上一个命令退出状态: $?&#34; # 3. 参数检查 if [ $# -eq 0 ]; then echo &#34;用法: $0 &lt;文件名&gt; [选项]&#34; exit 1 fi if [ $# -lt 2 ]; then echo &#34;错误: 需要至少2个参数&#34; exit 1 fi # 4. 参数默认值 filename=${1:-&#34;default.txt&#34;} action=${2:-&#34;read&#34;} verbose=${3:-&#34;false&#34;} echo &#34;文件名: $filename&#34; echo &#34;操作: $action&#34; echo &#34;详细模式: $verbose&#34; 变量 变量操作
+...</p>
+  </div>
+  <footer class="entry-footer"><span title='2025-07-07 20:28:24 +0800 CST'>July 7, 2025</span>&nbsp;·&nbsp;4 min&nbsp;·&nbsp;852 words&nbsp;·&nbsp;夏天的小西瓜</footer>
+  <a class="entry-link" aria-label="post link to Shell入门" href="/posts/tools/shell/"></a>
+</article>
+
+<article class="post-entry tag-entry"> 
+  <header class="entry-header">
     <h2 class="entry-hint-parent">Vim基础使用
     </h2>
   </header>

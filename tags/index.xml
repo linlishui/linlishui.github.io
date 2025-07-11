@@ -6,8 +6,15 @@
     <description>Recent content in Tags on 缥缈夏鸢</description>
     <generator>Hugo -- 0.138.0</generator>
     <language>en-us</language>
-    <lastBuildDate>Fri, 30 May 2025 14:41:49 +0800</lastBuildDate>
+    <lastBuildDate>Mon, 07 Jul 2025 20:28:24 +0800</lastBuildDate>
     <atom:link href="/tags/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Shell</title>
+      <link>/tags/shell/</link>
+      <pubDate>Mon, 07 Jul 2025 20:28:24 +0800</pubDate>
+      <guid>/tags/shell/</guid>
+      <description></description>
+    </item>
     <item>
       <title>Vim</title>
       <link>/tags/vim/</link>
