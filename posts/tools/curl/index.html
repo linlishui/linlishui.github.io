@@ -1,0 +1,1125 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>curl入门 | 缥缈夏鸢</title>
+<meta name="keywords" content="curl">
+<meta name="description" content="概述
+curl（Client URL）是一个强大的命令行工具，用于在 Linux/Unix 系统中传输数据。它支持多种协议，包括 HTTP、HTTPS、FTP、SFTP 等，是开发者和系统管理员日常工作中不可或缺的工具。
+基本语法结构
+curl 命令的基本语法格式如下：curl [options] [URL&hellip;]
+参数说明：
+
+options：各种可选参数，用于控制 curl 的行为
+URL：要访问的一个或多个网址
+
+常用选项参数详解
+1. 基本请求控制
+
+  
+      
+          选项
+          说明
+          示例
+      
+  
+  
+      
+          -X
+          指定 HTTP 方法
+          curl -X POST https://example.com
+      
+      
+          -d
+          发送 POST 数据
+          curl -d &quot;name=John&quot; https://example.com
+      
+      
+          -G
+          将 -d 数据作为 GET 参数发送
+          curl -G -d &quot;q=keyword&quot; https://search.com
+      
+      
+          -H
+          添加请求头
+          curl -H &quot;Content-Type: application/json&quot; https://api.com
+      
+  
+
+2. 输出控制
+
+  
+      
+          选项
+          说明
+          示例
+      
+  
+  
+      
+          -o
+          将输出保存到文件
+          curl -o output.file https://example.com
+      
+      
+          -O
+          使用远程文件名保存
+          curl -O https://example.com/file.zip
+      
+      
+          -s
+          静默模式（不显示进度）
+          curl -s https://api.com/data.json
+      
+      
+          -v
+          显示详细通信过程
+          curl -v https://example.com
+      
+  
+
+3. 认证与安全
+
+  
+      
+          选项
+          说明
+          示例
+      
+  
+  
+      
+          -u
+          用户名密码认证
+          curl -u user:pass https://secure.com
+      
+      
+          -k
+          忽略 SSL 证书验证
+          curl -k https://self-signed.com
+      
+      
+          --cacert
+          指定 CA 证书
+          curl --cacert cert.pem https://secure.com
+      
+  
+
+4. 其他实用选项
+
+  
+      
+          选项
+          说明
+          示例
+      
+  
+  
+      
+          -L
+          跟随重定向
+          curl -L https://short.url
+      
+      
+          -I
+          只获取响应头与状态码
+          curl -I https://example.com
+      
+      
+          --limit-rate
+          限制传输速度（单位可以是 K、M）
+          curl --limit-rate 100K https://largefile.com
+      
+  
+
+常见HTTP操作
+1. 指定请求方法
+# GET（默认）
+curl https://api.example.com/users
+
+# POST
+curl -X POST https://api.example.com/users
+
+# PUT
+curl -X PUT https://api.example.com/users/123
+
+# DELETE
+curl -X DELETE https://api.example.com/users/123
+
+# PATCH
+curl -X PATCH https://api.example.com/users/123
+2. Header、Cookie 与认证
+# 1. 添加/修改请求头。多次 -H 会添加多个 header。
+curl https://api.example.com/users \
+  -H &#34;Accept: application/json&#34; \
+  -H &#34;X-Request-Id: 123456&#34;
+  
+# 2. Content-Type 使用
+## JSON类型
+curl -X POST https://api.example.com/users \
+  -H &#34;Content-Type: application/json&#34; \
+  -d &#39;{&#34;name&#34;:&#34;Tom&#34;,&#34;age&#34;:18}&#39;
+
+## 表单类型
+curl -X POST https://api.example.com/login \
+  -H &#34;Content-Type: application/x-www-form-urlencoded&#34; \
+  -d &#34;username=tom&amp;password=123456&#34;
+
+# 3. Basic Auth
+## 显式写用户名密码
+curl -u user:pass https://api.example.com/secure
+3. 表单、JSON、文件上传
+# 1. 表单数据（application/x-www-form-urlencoded）
+curl -X POST https://api.example.com/login \
+  -d &#34;username=tom&amp;password=123456&#34;
+  
+# 2. JSON 请求体（application/json）
+curl -X POST https://api.example.com/users \
+  -H &#34;Content-Type: application/json&#34; \
+  -d &#39;{&#34;name&#34;:&#34;Tom&#34;,&#34;age&#34;:18}&#39;
+  
+## 如果 JSON 较复杂，可以放到文件中：
+curl -X POST https://api.example.com/users \
+  -H &#34;Content-Type: application/json&#34; \
+  -d @user.json
+
+# 3. multipart/form-data 文件上传
+## 上传单个文件
+curl -X POST https://api.example.com/upload \
+  -F &#34;file=@/path/to/file.png&#34;
+
+## 带额外字段
+curl -X POST https://api.example.com/upload \
+  -F &#34;file=@/path/to/file.png&#34; \
+  -F &#34;userId=123&#34; \
+  -F &#34;description=avatar&#34;
+4. 保存文件、断点续传、限速
+# 1. 下载并显示进度条。使用远程文件名保存
+curl -O https://example.com/file.zip
+
+# 2. 断点续传（范围下载）
+## -C - 表示从已下载的大小继续。假设 file.zip 已下载了一部分
+curl -C - -O https://example.com/file.zip
+
+## 手动指定范围。只下载文件前 1024 字节
+curl -r 0-1023 -o part1.bin https://example.com/file.bin
+
+# 3. 限速下载/上传（带宽控制）
+## 最大下载速度限制为 100 KB/s，也支持 M：--limit-rate 1M
+curl --limit-rate 100K -O https://example.com/file.zip
+5. 代理、超时设置
+# 1. 代理
+## HTTP 代理
+curl -x http://127.0.0.1:8080 https://example.com
+## 带认证的代理
+curl -x http://user:pass@proxy.example.com:8080 https://example.com
+
+# 2. 超时设置
+## 整体超时时间（秒）
+curl --max-time 10 https://slow.example.com
+## 连接超时
+curl --connect-timeout 5 https://slow.example.com
+">
+<meta name="author" content="夏天的小西瓜">
+<link rel="canonical" href="/posts/tools/curl/">
+<meta name="google-site-verification" content="XYZabc">
+<meta name="msvalidate.01" content="XYZabc">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.44278f16c6e7e77192a15a0565fb5b0f220c56128442fcfa6937b4d84456ecf0.css" integrity="sha256-RCePFsbn53GSoVoFZftbDyIMVhKEQvz6aTe02ERW7PA=" rel="preload stylesheet" as="style">
+<link rel="icon" href="/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="mask-icon" href="/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="en" href="/posts/tools/curl/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-track {
+                background: 0 0;
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-thumb {
+                border-color: var(--theme);
+            }
+        }
+
+    </style>
+</noscript><script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+<script>
+
+const config = {
+    startOnLoad:true,
+    
+    themeVariables: {
+        lineColor: "#ffffff"    
+    },
+    flowchart: {
+        useMaxWidth:false,
+        htmlLabels:true
+    }
+};
+mermaid.initialize(config);
+
+
+window.onload = () => {
+    window.mermaid.init(undefined, document.querySelectorAll('.language-mermaid'));
+}
+</script><meta property="og:url" content="/posts/tools/curl/">
+  <meta property="og:site_name" content="缥缈夏鸢">
+  <meta property="og:title" content="curl入门">
+  <meta property="og:description" content="概述 curl（Client URL）是一个强大的命令行工具，用于在 Linux/Unix 系统中传输数据。它支持多种协议，包括 HTTP、HTTPS、FTP、SFTP 等，是开发者和系统管理员日常工作中不可或缺的工具。
+基本语法结构 curl 命令的基本语法格式如下：curl [options] [URL…]
+参数说明：
+options：各种可选参数，用于控制 curl 的行为 URL：要访问的一个或多个网址 常用选项参数详解 1. 基本请求控制 选项 说明 示例 -X 指定 HTTP 方法 curl -X POST https://example.com -d 发送 POST 数据 curl -d &#34;name=John&#34; https://example.com -G 将 -d 数据作为 GET 参数发送 curl -G -d &#34;q=keyword&#34; https://search.com -H 添加请求头 curl -H &#34;Content-Type: application/json&#34; https://api.com 2. 输出控制 选项 说明 示例 -o 将输出保存到文件 curl -o output.file https://example.com -O 使用远程文件名保存 curl -O https://example.com/file.zip -s 静默模式（不显示进度） curl -s https://api.com/data.json -v 显示详细通信过程 curl -v https://example.com 3. 认证与安全 选项 说明 示例 -u 用户名密码认证 curl -u user:pass https://secure.com -k 忽略 SSL 证书验证 curl -k https://self-signed.com --cacert 指定 CA 证书 curl --cacert cert.pem https://secure.com 4. 其他实用选项 选项 说明 示例 -L 跟随重定向 curl -L https://short.url -I 只获取响应头与状态码 curl -I https://example.com --limit-rate 限制传输速度（单位可以是 K、M） curl --limit-rate 100K https://largefile.com 常见HTTP操作 1. 指定请求方法 # GET（默认） curl https://api.example.com/users # POST curl -X POST https://api.example.com/users # PUT curl -X PUT https://api.example.com/users/123 # DELETE curl -X DELETE https://api.example.com/users/123 # PATCH curl -X PATCH https://api.example.com/users/123 2. Header、Cookie 与认证 # 1. 添加/修改请求头。多次 -H 会添加多个 header。 curl https://api.example.com/users \ -H &#34;Accept: application/json&#34; \ -H &#34;X-Request-Id: 123456&#34; # 2. Content-Type 使用 ## JSON类型 curl -X POST https://api.example.com/users \ -H &#34;Content-Type: application/json&#34; \ -d &#39;{&#34;name&#34;:&#34;Tom&#34;,&#34;age&#34;:18}&#39; ## 表单类型 curl -X POST https://api.example.com/login \ -H &#34;Content-Type: application/x-www-form-urlencoded&#34; \ -d &#34;username=tom&amp;password=123456&#34; # 3. Basic Auth ## 显式写用户名密码 curl -u user:pass https://api.example.com/secure 3. 表单、JSON、文件上传 # 1. 表单数据（application/x-www-form-urlencoded） curl -X POST https://api.example.com/login \ -d &#34;username=tom&amp;password=123456&#34; # 2. JSON 请求体（application/json） curl -X POST https://api.example.com/users \ -H &#34;Content-Type: application/json&#34; \ -d &#39;{&#34;name&#34;:&#34;Tom&#34;,&#34;age&#34;:18}&#39; ## 如果 JSON 较复杂，可以放到文件中： curl -X POST https://api.example.com/users \ -H &#34;Content-Type: application/json&#34; \ -d @user.json # 3. multipart/form-data 文件上传 ## 上传单个文件 curl -X POST https://api.example.com/upload \ -F &#34;file=@/path/to/file.png&#34; ## 带额外字段 curl -X POST https://api.example.com/upload \ -F &#34;file=@/path/to/file.png&#34; \ -F &#34;userId=123&#34; \ -F &#34;description=avatar&#34; 4. 保存文件、断点续传、限速 # 1. 下载并显示进度条。使用远程文件名保存 curl -O https://example.com/file.zip # 2. 断点续传（范围下载） ## -C - 表示从已下载的大小继续。假设 file.zip 已下载了一部分 curl -C - -O https://example.com/file.zip ## 手动指定范围。只下载文件前 1024 字节 curl -r 0-1023 -o part1.bin https://example.com/file.bin # 3. 限速下载/上传（带宽控制） ## 最大下载速度限制为 100 KB/s，也支持 M：--limit-rate 1M curl --limit-rate 100K -O https://example.com/file.zip 5. 代理、超时设置 # 1. 代理 ## HTTP 代理 curl -x http://127.0.0.1:8080 https://example.com ## 带认证的代理 curl -x http://user:pass@proxy.example.com:8080 https://example.com # 2. 超时设置 ## 整体超时时间（秒） curl --max-time 10 https://slow.example.com ## 连接超时 curl --connect-timeout 5 https://slow.example.com ">
+  <meta property="og:locale" content="en-us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2026-01-13T11:22:04+08:00">
+    <meta property="article:modified_time" content="2026-01-13T11:22:04+08:00">
+    <meta property="article:tag" content="Curl">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="curl入门">
+<meta name="twitter:description" content="概述
+curl（Client URL）是一个强大的命令行工具，用于在 Linux/Unix 系统中传输数据。它支持多种协议，包括 HTTP、HTTPS、FTP、SFTP 等，是开发者和系统管理员日常工作中不可或缺的工具。
+基本语法结构
+curl 命令的基本语法格式如下：curl [options] [URL&hellip;]
+参数说明：
+
+options：各种可选参数，用于控制 curl 的行为
+URL：要访问的一个或多个网址
+
+常用选项参数详解
+1. 基本请求控制
+
+  
+      
+          选项
+          说明
+          示例
+      
+  
+  
+      
+          -X
+          指定 HTTP 方法
+          curl -X POST https://example.com
+      
+      
+          -d
+          发送 POST 数据
+          curl -d &quot;name=John&quot; https://example.com
+      
+      
+          -G
+          将 -d 数据作为 GET 参数发送
+          curl -G -d &quot;q=keyword&quot; https://search.com
+      
+      
+          -H
+          添加请求头
+          curl -H &quot;Content-Type: application/json&quot; https://api.com
+      
+  
+
+2. 输出控制
+
+  
+      
+          选项
+          说明
+          示例
+      
+  
+  
+      
+          -o
+          将输出保存到文件
+          curl -o output.file https://example.com
+      
+      
+          -O
+          使用远程文件名保存
+          curl -O https://example.com/file.zip
+      
+      
+          -s
+          静默模式（不显示进度）
+          curl -s https://api.com/data.json
+      
+      
+          -v
+          显示详细通信过程
+          curl -v https://example.com
+      
+  
+
+3. 认证与安全
+
+  
+      
+          选项
+          说明
+          示例
+      
+  
+  
+      
+          -u
+          用户名密码认证
+          curl -u user:pass https://secure.com
+      
+      
+          -k
+          忽略 SSL 证书验证
+          curl -k https://self-signed.com
+      
+      
+          --cacert
+          指定 CA 证书
+          curl --cacert cert.pem https://secure.com
+      
+  
+
+4. 其他实用选项
+
+  
+      
+          选项
+          说明
+          示例
+      
+  
+  
+      
+          -L
+          跟随重定向
+          curl -L https://short.url
+      
+      
+          -I
+          只获取响应头与状态码
+          curl -I https://example.com
+      
+      
+          --limit-rate
+          限制传输速度（单位可以是 K、M）
+          curl --limit-rate 100K https://largefile.com
+      
+  
+
+常见HTTP操作
+1. 指定请求方法
+# GET（默认）
+curl https://api.example.com/users
+
+# POST
+curl -X POST https://api.example.com/users
+
+# PUT
+curl -X PUT https://api.example.com/users/123
+
+# DELETE
+curl -X DELETE https://api.example.com/users/123
+
+# PATCH
+curl -X PATCH https://api.example.com/users/123
+2. Header、Cookie 与认证
+# 1. 添加/修改请求头。多次 -H 会添加多个 header。
+curl https://api.example.com/users \
+  -H &#34;Accept: application/json&#34; \
+  -H &#34;X-Request-Id: 123456&#34;
+  
+# 2. Content-Type 使用
+## JSON类型
+curl -X POST https://api.example.com/users \
+  -H &#34;Content-Type: application/json&#34; \
+  -d &#39;{&#34;name&#34;:&#34;Tom&#34;,&#34;age&#34;:18}&#39;
+
+## 表单类型
+curl -X POST https://api.example.com/login \
+  -H &#34;Content-Type: application/x-www-form-urlencoded&#34; \
+  -d &#34;username=tom&amp;password=123456&#34;
+
+# 3. Basic Auth
+## 显式写用户名密码
+curl -u user:pass https://api.example.com/secure
+3. 表单、JSON、文件上传
+# 1. 表单数据（application/x-www-form-urlencoded）
+curl -X POST https://api.example.com/login \
+  -d &#34;username=tom&amp;password=123456&#34;
+  
+# 2. JSON 请求体（application/json）
+curl -X POST https://api.example.com/users \
+  -H &#34;Content-Type: application/json&#34; \
+  -d &#39;{&#34;name&#34;:&#34;Tom&#34;,&#34;age&#34;:18}&#39;
+  
+## 如果 JSON 较复杂，可以放到文件中：
+curl -X POST https://api.example.com/users \
+  -H &#34;Content-Type: application/json&#34; \
+  -d @user.json
+
+# 3. multipart/form-data 文件上传
+## 上传单个文件
+curl -X POST https://api.example.com/upload \
+  -F &#34;file=@/path/to/file.png&#34;
+
+## 带额外字段
+curl -X POST https://api.example.com/upload \
+  -F &#34;file=@/path/to/file.png&#34; \
+  -F &#34;userId=123&#34; \
+  -F &#34;description=avatar&#34;
+4. 保存文件、断点续传、限速
+# 1. 下载并显示进度条。使用远程文件名保存
+curl -O https://example.com/file.zip
+
+# 2. 断点续传（范围下载）
+## -C - 表示从已下载的大小继续。假设 file.zip 已下载了一部分
+curl -C - -O https://example.com/file.zip
+
+## 手动指定范围。只下载文件前 1024 字节
+curl -r 0-1023 -o part1.bin https://example.com/file.bin
+
+# 3. 限速下载/上传（带宽控制）
+## 最大下载速度限制为 100 KB/s，也支持 M：--limit-rate 1M
+curl --limit-rate 100K -O https://example.com/file.zip
+5. 代理、超时设置
+# 1. 代理
+## HTTP 代理
+curl -x http://127.0.0.1:8080 https://example.com
+## 带认证的代理
+curl -x http://user:pass@proxy.example.com:8080 https://example.com
+
+# 2. 超时设置
+## 整体超时时间（秒）
+curl --max-time 10 https://slow.example.com
+## 连接超时
+curl --connect-timeout 5 https://slow.example.com
+">
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Posts",
+      "item": "/posts/"
+    }
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "curl入门",
+      "item": "/posts/tools/curl/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "curl入门",
+  "name": "curl入门",
+  "description": "概述 curl（Client URL）是一个强大的命令行工具，用于在 Linux/Unix 系统中传输数据。它支持多种协议，包括 HTTP、HTTPS、FTP、SFTP 等，是开发者和系统管理员日常工作中不可或缺的工具。\n基本语法结构 curl 命令的基本语法格式如下：curl [options] [URL\u0026hellip;]\n参数说明：\noptions：各种可选参数，用于控制 curl 的行为 URL：要访问的一个或多个网址 常用选项参数详解 1. 基本请求控制 选项 说明 示例 -X 指定 HTTP 方法 curl -X POST https://example.com -d 发送 POST 数据 curl -d \u0026quot;name=John\u0026quot; https://example.com -G 将 -d 数据作为 GET 参数发送 curl -G -d \u0026quot;q=keyword\u0026quot; https://search.com -H 添加请求头 curl -H \u0026quot;Content-Type: application/json\u0026quot; https://api.com 2. 输出控制 选项 说明 示例 -o 将输出保存到文件 curl -o output.file https://example.com -O 使用远程文件名保存 curl -O https://example.com/file.zip -s 静默模式（不显示进度） curl -s https://api.com/data.json -v 显示详细通信过程 curl -v https://example.com 3. 认证与安全 选项 说明 示例 -u 用户名密码认证 curl -u user:pass https://secure.com -k 忽略 SSL 证书验证 curl -k https://self-signed.com --cacert 指定 CA 证书 curl --cacert cert.pem https://secure.com 4. 其他实用选项 选项 说明 示例 -L 跟随重定向 curl -L https://short.url -I 只获取响应头与状态码 curl -I https://example.com --limit-rate 限制传输速度（单位可以是 K、M） curl --limit-rate 100K https://largefile.com 常见HTTP操作 1. 指定请求方法 # GET（默认） curl https://api.example.com/users # POST curl -X POST https://api.example.com/users # PUT curl -X PUT https://api.example.com/users/123 # DELETE curl -X DELETE https://api.example.com/users/123 # PATCH curl -X PATCH https://api.example.com/users/123 2. Header、Cookie 与认证 # 1. 添加/修改请求头。多次 -H 会添加多个 header。 curl https://api.example.com/users \\ -H \u0026#34;Accept: application/json\u0026#34; \\ -H \u0026#34;X-Request-Id: 123456\u0026#34; # 2. Content-Type 使用 ## JSON类型 curl -X POST https://api.example.com/users \\ -H \u0026#34;Content-Type: application/json\u0026#34; \\ -d \u0026#39;{\u0026#34;name\u0026#34;:\u0026#34;Tom\u0026#34;,\u0026#34;age\u0026#34;:18}\u0026#39; ## 表单类型 curl -X POST https://api.example.com/login \\ -H \u0026#34;Content-Type: application/x-www-form-urlencoded\u0026#34; \\ -d \u0026#34;username=tom\u0026amp;password=123456\u0026#34; # 3. Basic Auth ## 显式写用户名密码 curl -u user:pass https://api.example.com/secure 3. 表单、JSON、文件上传 # 1. 表单数据（application/x-www-form-urlencoded） curl -X POST https://api.example.com/login \\ -d \u0026#34;username=tom\u0026amp;password=123456\u0026#34; # 2. JSON 请求体（application/json） curl -X POST https://api.example.com/users \\ -H \u0026#34;Content-Type: application/json\u0026#34; \\ -d \u0026#39;{\u0026#34;name\u0026#34;:\u0026#34;Tom\u0026#34;,\u0026#34;age\u0026#34;:18}\u0026#39; ## 如果 JSON 较复杂，可以放到文件中： curl -X POST https://api.example.com/users \\ -H \u0026#34;Content-Type: application/json\u0026#34; \\ -d @user.json # 3. multipart/form-data 文件上传 ## 上传单个文件 curl -X POST https://api.example.com/upload \\ -F \u0026#34;file=@/path/to/file.png\u0026#34; ## 带额外字段 curl -X POST https://api.example.com/upload \\ -F \u0026#34;file=@/path/to/file.png\u0026#34; \\ -F \u0026#34;userId=123\u0026#34; \\ -F \u0026#34;description=avatar\u0026#34; 4. 保存文件、断点续传、限速 # 1. 下载并显示进度条。使用远程文件名保存 curl -O https://example.com/file.zip # 2. 断点续传（范围下载） ## -C - 表示从已下载的大小继续。假设 file.zip 已下载了一部分 curl -C - -O https://example.com/file.zip ## 手动指定范围。只下载文件前 1024 字节 curl -r 0-1023 -o part1.bin https://example.com/file.bin # 3. 限速下载/上传（带宽控制） ## 最大下载速度限制为 100 KB/s，也支持 M：--limit-rate 1M curl --limit-rate 100K -O https://example.com/file.zip 5. 代理、超时设置 # 1. 代理 ## HTTP 代理 curl -x http://127.0.0.1:8080 https://example.com ## 带认证的代理 curl -x http://user:pass@proxy.example.com:8080 https://example.com # 2. 超时设置 ## 整体超时时间（秒） curl --max-time 10 https://slow.example.com ## 连接超时 curl --connect-timeout 5 https://slow.example.com ",
+  "keywords": [
+    "curl"
+  ],
+  "articleBody": "概述 curl（Client URL）是一个强大的命令行工具，用于在 Linux/Unix 系统中传输数据。它支持多种协议，包括 HTTP、HTTPS、FTP、SFTP 等，是开发者和系统管理员日常工作中不可或缺的工具。\n基本语法结构 curl 命令的基本语法格式如下：curl [options] [URL…]\n参数说明：\noptions：各种可选参数，用于控制 curl 的行为 URL：要访问的一个或多个网址 常用选项参数详解 1. 基本请求控制 选项 说明 示例 -X 指定 HTTP 方法 curl -X POST https://example.com -d 发送 POST 数据 curl -d \"name=John\" https://example.com -G 将 -d 数据作为 GET 参数发送 curl -G -d \"q=keyword\" https://search.com -H 添加请求头 curl -H \"Content-Type: application/json\" https://api.com 2. 输出控制 选项 说明 示例 -o 将输出保存到文件 curl -o output.file https://example.com -O 使用远程文件名保存 curl -O https://example.com/file.zip -s 静默模式（不显示进度） curl -s https://api.com/data.json -v 显示详细通信过程 curl -v https://example.com 3. 认证与安全 选项 说明 示例 -u 用户名密码认证 curl -u user:pass https://secure.com -k 忽略 SSL 证书验证 curl -k https://self-signed.com --cacert 指定 CA 证书 curl --cacert cert.pem https://secure.com 4. 其他实用选项 选项 说明 示例 -L 跟随重定向 curl -L https://short.url -I 只获取响应头与状态码 curl -I https://example.com --limit-rate 限制传输速度（单位可以是 K、M） curl --limit-rate 100K https://largefile.com 常见HTTP操作 1. 指定请求方法 # GET（默认） curl https://api.example.com/users # POST curl -X POST https://api.example.com/users # PUT curl -X PUT https://api.example.com/users/123 # DELETE curl -X DELETE https://api.example.com/users/123 # PATCH curl -X PATCH https://api.example.com/users/123 2. Header、Cookie 与认证 # 1. 添加/修改请求头。多次 -H 会添加多个 header。 curl https://api.example.com/users \\ -H \"Accept: application/json\" \\ -H \"X-Request-Id: 123456\" # 2. Content-Type 使用 ## JSON类型 curl -X POST https://api.example.com/users \\ -H \"Content-Type: application/json\" \\ -d '{\"name\":\"Tom\",\"age\":18}' ## 表单类型 curl -X POST https://api.example.com/login \\ -H \"Content-Type: application/x-www-form-urlencoded\" \\ -d \"username=tom\u0026password=123456\" # 3. Basic Auth ## 显式写用户名密码 curl -u user:pass https://api.example.com/secure 3. 表单、JSON、文件上传 # 1. 表单数据（application/x-www-form-urlencoded） curl -X POST https://api.example.com/login \\ -d \"username=tom\u0026password=123456\" # 2. JSON 请求体（application/json） curl -X POST https://api.example.com/users \\ -H \"Content-Type: application/json\" \\ -d '{\"name\":\"Tom\",\"age\":18}' ## 如果 JSON 较复杂，可以放到文件中： curl -X POST https://api.example.com/users \\ -H \"Content-Type: application/json\" \\ -d @user.json # 3. multipart/form-data 文件上传 ## 上传单个文件 curl -X POST https://api.example.com/upload \\ -F \"file=@/path/to/file.png\" ## 带额外字段 curl -X POST https://api.example.com/upload \\ -F \"file=@/path/to/file.png\" \\ -F \"userId=123\" \\ -F \"description=avatar\" 4. 保存文件、断点续传、限速 # 1. 下载并显示进度条。使用远程文件名保存 curl -O https://example.com/file.zip # 2. 断点续传（范围下载） ## -C - 表示从已下载的大小继续。假设 file.zip 已下载了一部分 curl -C - -O https://example.com/file.zip ## 手动指定范围。只下载文件前 1024 字节 curl -r 0-1023 -o part1.bin https://example.com/file.bin # 3. 限速下载/上传（带宽控制） ## 最大下载速度限制为 100 KB/s，也支持 M：--limit-rate 1M curl --limit-rate 100K -O https://example.com/file.zip 5. 代理、超时设置 # 1. 代理 ## HTTP 代理 curl -x http://127.0.0.1:8080 https://example.com ## 带认证的代理 curl -x http://user:pass@proxy.example.com:8080 https://example.com # 2. 超时设置 ## 整体超时时间（秒） curl --max-time 10 https://slow.example.com ## 连接超时 curl --connect-timeout 5 https://slow.example.com ",
+  "wordCount" : "370",
+  "inLanguage": "en",
+  "datePublished": "2026-01-13T11:22:04+08:00",
+  "dateModified": "2026-01-13T11:22:04+08:00",
+  "author":[{
+    "@type": "Person",
+    "name": "夏天的小西瓜"
+  }],
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "/posts/tools/curl/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "缥缈夏鸢",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "/favicon.ico"
+    }
+  }
+}
+</script>
+</head>
+
+<body class="" id="top">
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.body.classList.add('dark');
+    } else if (localStorage.getItem("pref-theme") === "light") {
+        document.body.classList.remove('dark')
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.body.classList.add('dark');
+    }
+
+</script>
+
+<header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="/" accesskey="h" title="缥缈夏鸢 (Alt + H)">缥缈夏鸢</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" accesskey="t" title="(Alt + T)">
+                    <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu">
+            <li>
+                <a href="/" title="首页">
+                    <span>首页</span>
+                </a>
+            </li>
+            <li>
+                <a href="/posts/" title="文章">
+                    <span>文章</span>
+                </a>
+            </li>
+            <li>
+                <a href="/categories/" title="分类">
+                    <span>分类</span>
+                </a>
+            </li>
+            <li>
+                <a href="/tags/" title="标签">
+                    <span>标签</span>
+                </a>
+            </li>
+            <li>
+                <a href="/archives/" title="归档">
+                    <span>归档</span>
+                </a>
+            </li>
+            <li>
+                <a href="/about/" title="关于">
+                    <span>关于</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <div class="breadcrumbs"><a href="/">Home</a>&nbsp;»&nbsp;<a href="/posts/">Posts</a></div>
+    <h1 class="post-title entry-hint-parent">
+      curl入门
+    </h1>
+    <div class="post-meta"><span title='2026-01-13 11:22:04 +0800 CST'>January 13, 2026</span>&nbsp;·&nbsp;2 min&nbsp;·&nbsp;370 words&nbsp;·&nbsp;夏天的小西瓜
+
+</div>
+  </header> <aside id="toc-container" class="toc-container wide">
+    <div class="toc">
+        <details  open>
+            <summary accesskey="c" title="(Alt + C)">
+                <span class="details">Table of Contents</span>
+            </summary>
+
+            <div class="inner"><ul>
+                    <li>
+                        <a href="#%e6%a6%82%e8%bf%b0" aria-label="概述">概述</a></li>
+                    <li>
+                        <a href="#%e5%9f%ba%e6%9c%ac%e8%af%ad%e6%b3%95%e7%bb%93%e6%9e%84" aria-label="基本语法结构">基本语法结构</a></li>
+                    <li>
+                        <a href="#%e5%b8%b8%e7%94%a8%e9%80%89%e9%a1%b9%e5%8f%82%e6%95%b0%e8%af%a6%e8%a7%a3" aria-label="常用选项参数详解">常用选项参数详解</a><ul>
+                            
+                    <li>
+                        <a href="#1-%e5%9f%ba%e6%9c%ac%e8%af%b7%e6%b1%82%e6%8e%a7%e5%88%b6" aria-label="1. 基本请求控制">1. 基本请求控制</a></li>
+                    <li>
+                        <a href="#2-%e8%be%93%e5%87%ba%e6%8e%a7%e5%88%b6" aria-label="2. 输出控制">2. 输出控制</a></li>
+                    <li>
+                        <a href="#3-%e8%ae%a4%e8%af%81%e4%b8%8e%e5%ae%89%e5%85%a8" aria-label="3. 认证与安全">3. 认证与安全</a></li>
+                    <li>
+                        <a href="#4-%e5%85%b6%e4%bb%96%e5%ae%9e%e7%94%a8%e9%80%89%e9%a1%b9" aria-label="4. 其他实用选项">4. 其他实用选项</a></li></ul>
+                    </li>
+                    <li>
+                        <a href="#%e5%b8%b8%e8%a7%81http%e6%93%8d%e4%bd%9c" aria-label="常见HTTP操作">常见HTTP操作</a><ul>
+                            
+                    <li>
+                        <a href="#1-%e6%8c%87%e5%ae%9a%e8%af%b7%e6%b1%82%e6%96%b9%e6%b3%95" aria-label="1. 指定请求方法">1. 指定请求方法</a></li>
+                    <li>
+                        <a href="#2-headercookie-%e4%b8%8e%e8%ae%a4%e8%af%81" aria-label="2. Header、Cookie 与认证">2. Header、Cookie 与认证</a></li>
+                    <li>
+                        <a href="#3-%e8%a1%a8%e5%8d%95json%e6%96%87%e4%bb%b6%e4%b8%8a%e4%bc%a0" aria-label="3. 表单、JSON、文件上传">3. 表单、JSON、文件上传</a></li>
+                    <li>
+                        <a href="#4-%e4%bf%9d%e5%ad%98%e6%96%87%e4%bb%b6%e6%96%ad%e7%82%b9%e7%bb%ad%e4%bc%a0%e9%99%90%e9%80%9f" aria-label="4. 保存文件、断点续传、限速">4. 保存文件、断点续传、限速</a></li>
+                    <li>
+                        <a href="#5-%e4%bb%a3%e7%90%86%e8%b6%85%e6%97%b6%e8%ae%be%e7%bd%ae" aria-label="5. 代理、超时设置">5. 代理、超时设置</a>
+                    </li>
+                </ul>
+                </li>
+                </ul>
+            </div>
+        </details>
+    </div>
+</aside>
+<script>
+    let activeElement;
+    let elements;
+    window.addEventListener('DOMContentLoaded', function (event) {
+        checkTocPosition();
+
+        elements = document.querySelectorAll('h1[id],h2[id],h3[id],h4[id],h5[id],h6[id]');
+         
+         activeElement = elements[0];
+         const id = encodeURI(activeElement.getAttribute('id')).toLowerCase();
+         document.querySelector(`.inner ul li a[href="#${id}"]`).classList.add('active');
+     }, false);
+
+    window.addEventListener('resize', function(event) {
+        checkTocPosition();
+    }, false);
+
+    window.addEventListener('scroll', () => {
+        
+        activeElement = Array.from(elements).find((element) => {
+            if ((getOffsetTop(element) - window.pageYOffset) > 0 && 
+                (getOffsetTop(element) - window.pageYOffset) < window.innerHeight/2) {
+                return element;
+            }
+        }) || activeElement
+
+        elements.forEach(element => {
+             const id = encodeURI(element.getAttribute('id')).toLowerCase();
+             if (element === activeElement){
+                 document.querySelector(`.inner ul li a[href="#${id}"]`).classList.add('active');
+             } else {
+                 document.querySelector(`.inner ul li a[href="#${id}"]`).classList.remove('active');
+             }
+         })
+     }, false);
+
+    const main = parseInt(getComputedStyle(document.body).getPropertyValue('--article-width'), 10);
+    const toc = parseInt(getComputedStyle(document.body).getPropertyValue('--toc-width'), 10);
+    const gap = parseInt(getComputedStyle(document.body).getPropertyValue('--gap'), 10);
+
+    function checkTocPosition() {
+        const width = document.body.scrollWidth;
+
+        if (width - main - (toc * 2) - (gap * 4) > 0) {
+            document.getElementById("toc-container").classList.add("wide");
+        } else {
+            document.getElementById("toc-container").classList.remove("wide");
+        }
+    }
+
+    function getOffsetTop(element) {
+        if (!element.getClientRects().length) {
+            return 0;
+        }
+        let rect = element.getBoundingClientRect();
+        let win = element.ownerDocument.defaultView;
+        return rect.top + win.pageYOffset;   
+    }
+</script>
+
+  <div class="post-content"><h2 id="概述">概述<a hidden class="anchor" aria-hidden="true" href="#概述">#</a></h2>
+<p>curl（Client URL）是一个强大的命令行工具，用于在 Linux/Unix 系统中传输数据。它支持多种协议，包括 HTTP、HTTPS、FTP、SFTP 等，是开发者和系统管理员日常工作中不可或缺的工具。</p>
+<h2 id="基本语法结构">基本语法结构<a hidden class="anchor" aria-hidden="true" href="#基本语法结构">#</a></h2>
+<p>curl 命令的基本语法格式如下：<strong>curl [options] [URL&hellip;]</strong></p>
+<p>参数说明：</p>
+<ul>
+<li><code>options</code>：各种可选参数，用于控制 curl 的行为</li>
+<li><code>URL</code>：要访问的一个或多个网址</li>
+</ul>
+<h2 id="常用选项参数详解">常用选项参数详解<a hidden class="anchor" aria-hidden="true" href="#常用选项参数详解">#</a></h2>
+<h3 id="1-基本请求控制">1. 基本请求控制<a hidden class="anchor" aria-hidden="true" href="#1-基本请求控制">#</a></h3>
+<table>
+  <thead>
+      <tr>
+          <th style="text-align: left">选项</th>
+          <th style="text-align: left">说明</th>
+          <th style="text-align: left">示例</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td style="text-align: left"><code>-X</code></td>
+          <td style="text-align: left">指定 HTTP 方法</td>
+          <td style="text-align: left"><code>curl -X POST https://example.com</code></td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><code>-d</code></td>
+          <td style="text-align: left">发送 POST 数据</td>
+          <td style="text-align: left"><code>curl -d &quot;name=John&quot; https://example.com</code></td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><code>-G</code></td>
+          <td style="text-align: left">将 -d 数据作为 GET 参数发送</td>
+          <td style="text-align: left"><code>curl -G -d &quot;q=keyword&quot; https://search.com</code></td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><code>-H</code></td>
+          <td style="text-align: left">添加请求头</td>
+          <td style="text-align: left"><code>curl -H &quot;Content-Type: application/json&quot; https://api.com</code></td>
+      </tr>
+  </tbody>
+</table>
+<h3 id="2-输出控制">2. 输出控制<a hidden class="anchor" aria-hidden="true" href="#2-输出控制">#</a></h3>
+<table>
+  <thead>
+      <tr>
+          <th style="text-align: left">选项</th>
+          <th style="text-align: left">说明</th>
+          <th style="text-align: left">示例</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td style="text-align: left"><code>-o</code></td>
+          <td style="text-align: left">将输出保存到文件</td>
+          <td style="text-align: left"><code>curl -o output.file https://example.com</code></td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><code>-O</code></td>
+          <td style="text-align: left">使用远程文件名保存</td>
+          <td style="text-align: left"><code>curl -O https://example.com/file.zip</code></td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><code>-s</code></td>
+          <td style="text-align: left">静默模式（不显示进度）</td>
+          <td style="text-align: left"><code>curl -s https://api.com/data.json</code></td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><code>-v</code></td>
+          <td style="text-align: left">显示详细通信过程</td>
+          <td style="text-align: left"><code>curl -v https://example.com</code></td>
+      </tr>
+  </tbody>
+</table>
+<h3 id="3-认证与安全">3. 认证与安全<a hidden class="anchor" aria-hidden="true" href="#3-认证与安全">#</a></h3>
+<table>
+  <thead>
+      <tr>
+          <th style="text-align: left">选项</th>
+          <th style="text-align: left">说明</th>
+          <th style="text-align: left">示例</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td style="text-align: left"><code>-u</code></td>
+          <td style="text-align: left">用户名密码认证</td>
+          <td style="text-align: left"><code>curl -u user:pass https://secure.com</code></td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><code>-k</code></td>
+          <td style="text-align: left">忽略 SSL 证书验证</td>
+          <td style="text-align: left"><code>curl -k https://self-signed.com</code></td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><code>--cacert</code></td>
+          <td style="text-align: left">指定 CA 证书</td>
+          <td style="text-align: left"><code>curl --cacert cert.pem https://secure.com</code></td>
+      </tr>
+  </tbody>
+</table>
+<h3 id="4-其他实用选项">4. 其他实用选项<a hidden class="anchor" aria-hidden="true" href="#4-其他实用选项">#</a></h3>
+<table>
+  <thead>
+      <tr>
+          <th style="text-align: left">选项</th>
+          <th style="text-align: left">说明</th>
+          <th style="text-align: left">示例</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td style="text-align: left"><code>-L</code></td>
+          <td style="text-align: left">跟随重定向</td>
+          <td style="text-align: left"><code>curl -L https://short.url</code></td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><code>-I</code></td>
+          <td style="text-align: left">只获取响应头与状态码</td>
+          <td style="text-align: left"><code>curl -I https://example.com</code></td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><code>--limit-rate</code></td>
+          <td style="text-align: left">限制传输速度（单位可以是 K、M）</td>
+          <td style="text-align: left"><code>curl --limit-rate 100K https://largefile.com</code></td>
+      </tr>
+  </tbody>
+</table>
+<h2 id="常见http操作">常见HTTP操作<a hidden class="anchor" aria-hidden="true" href="#常见http操作">#</a></h2>
+<h3 id="1-指定请求方法">1. 指定请求方法<a hidden class="anchor" aria-hidden="true" href="#1-指定请求方法">#</a></h3>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># GET（默认）</span>
+</span></span><span class="line"><span class="cl">curl https://api.example.com/users
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># POST</span>
+</span></span><span class="line"><span class="cl">curl -X POST https://api.example.com/users
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># PUT</span>
+</span></span><span class="line"><span class="cl">curl -X PUT https://api.example.com/users/123
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># DELETE</span>
+</span></span><span class="line"><span class="cl">curl -X DELETE https://api.example.com/users/123
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># PATCH</span>
+</span></span><span class="line"><span class="cl">curl -X PATCH https://api.example.com/users/123
+</span></span></code></pre></div><h3 id="2-headercookie-与认证">2. Header、Cookie 与认证<a hidden class="anchor" aria-hidden="true" href="#2-headercookie-与认证">#</a></h3>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># 1. 添加/修改请求头。多次 -H 会添加多个 header。</span>
+</span></span><span class="line"><span class="cl">curl https://api.example.com/users <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>  -H <span class="s2">&#34;Accept: application/json&#34;</span> <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>  -H <span class="s2">&#34;X-Request-Id: 123456&#34;</span>
+</span></span><span class="line"><span class="cl">  
+</span></span><span class="line"><span class="cl"><span class="c1"># 2. Content-Type 使用</span>
+</span></span><span class="line"><span class="cl"><span class="c1">## JSON类型</span>
+</span></span><span class="line"><span class="cl">curl -X POST https://api.example.com/users <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>  -H <span class="s2">&#34;Content-Type: application/json&#34;</span> <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>  -d <span class="s1">&#39;{&#34;name&#34;:&#34;Tom&#34;,&#34;age&#34;:18}&#39;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">## 表单类型</span>
+</span></span><span class="line"><span class="cl">curl -X POST https://api.example.com/login <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>  -H <span class="s2">&#34;Content-Type: application/x-www-form-urlencoded&#34;</span> <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>  -d <span class="s2">&#34;username=tom&amp;password=123456&#34;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 3. Basic Auth</span>
+</span></span><span class="line"><span class="cl"><span class="c1">## 显式写用户名密码</span>
+</span></span><span class="line"><span class="cl">curl -u user:pass https://api.example.com/secure
+</span></span></code></pre></div><h3 id="3-表单json文件上传">3. 表单、JSON、文件上传<a hidden class="anchor" aria-hidden="true" href="#3-表单json文件上传">#</a></h3>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># 1. 表单数据（application/x-www-form-urlencoded）</span>
+</span></span><span class="line"><span class="cl">curl -X POST https://api.example.com/login <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>  -d <span class="s2">&#34;username=tom&amp;password=123456&#34;</span>
+</span></span><span class="line"><span class="cl">  
+</span></span><span class="line"><span class="cl"><span class="c1"># 2. JSON 请求体（application/json）</span>
+</span></span><span class="line"><span class="cl">curl -X POST https://api.example.com/users <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>  -H <span class="s2">&#34;Content-Type: application/json&#34;</span> <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>  -d <span class="s1">&#39;{&#34;name&#34;:&#34;Tom&#34;,&#34;age&#34;:18}&#39;</span>
+</span></span><span class="line"><span class="cl">  
+</span></span><span class="line"><span class="cl"><span class="c1">## 如果 JSON 较复杂，可以放到文件中：</span>
+</span></span><span class="line"><span class="cl">curl -X POST https://api.example.com/users <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>  -H <span class="s2">&#34;Content-Type: application/json&#34;</span> <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>  -d @user.json
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 3. multipart/form-data 文件上传</span>
+</span></span><span class="line"><span class="cl"><span class="c1">## 上传单个文件</span>
+</span></span><span class="line"><span class="cl">curl -X POST https://api.example.com/upload <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>  -F <span class="s2">&#34;file=@/path/to/file.png&#34;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">## 带额外字段</span>
+</span></span><span class="line"><span class="cl">curl -X POST https://api.example.com/upload <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>  -F <span class="s2">&#34;file=@/path/to/file.png&#34;</span> <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>  -F <span class="s2">&#34;userId=123&#34;</span> <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>  -F <span class="s2">&#34;description=avatar&#34;</span>
+</span></span></code></pre></div><h3 id="4-保存文件断点续传限速">4. 保存文件、断点续传、限速<a hidden class="anchor" aria-hidden="true" href="#4-保存文件断点续传限速">#</a></h3>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># 1. 下载并显示进度条。使用远程文件名保存</span>
+</span></span><span class="line"><span class="cl">curl -O https://example.com/file.zip
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 2. 断点续传（范围下载）</span>
+</span></span><span class="line"><span class="cl"><span class="c1">## -C - 表示从已下载的大小继续。假设 file.zip 已下载了一部分</span>
+</span></span><span class="line"><span class="cl">curl -C - -O https://example.com/file.zip
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">## 手动指定范围。只下载文件前 1024 字节</span>
+</span></span><span class="line"><span class="cl">curl -r 0-1023 -o part1.bin https://example.com/file.bin
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 3. 限速下载/上传（带宽控制）</span>
+</span></span><span class="line"><span class="cl"><span class="c1">## 最大下载速度限制为 100 KB/s，也支持 M：--limit-rate 1M</span>
+</span></span><span class="line"><span class="cl">curl --limit-rate 100K -O https://example.com/file.zip
+</span></span></code></pre></div><h3 id="5-代理超时设置">5. 代理、超时设置<a hidden class="anchor" aria-hidden="true" href="#5-代理超时设置">#</a></h3>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># 1. 代理</span>
+</span></span><span class="line"><span class="cl"><span class="c1">## HTTP 代理</span>
+</span></span><span class="line"><span class="cl">curl -x http://127.0.0.1:8080 https://example.com
+</span></span><span class="line"><span class="cl"><span class="c1">## 带认证的代理</span>
+</span></span><span class="line"><span class="cl">curl -x http://user:pass@proxy.example.com:8080 https://example.com
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 2. 超时设置</span>
+</span></span><span class="line"><span class="cl"><span class="c1">## 整体超时时间（秒）</span>
+</span></span><span class="line"><span class="cl">curl --max-time <span class="m">10</span> https://slow.example.com
+</span></span><span class="line"><span class="cl"><span class="c1">## 连接超时</span>
+</span></span><span class="line"><span class="cl">curl --connect-timeout <span class="m">5</span> https://slow.example.com
+</span></span></code></pre></div>
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="/tags/curl/">Curl</a></li>
+    </ul>
+<nav class="paginav">
+  <a class="next" href="/posts/tools/shell/">
+    <span class="title">Next »</span>
+    <br>
+    <span>Shell入门</span>
+  </a>
+</nav>
+
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2026 <a href="/">缥缈夏鸢</a></span> · 
+
+    <span>
+        Powered by
+        <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+        <path d="M12 6H0l6-6z" />
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu')
+    if (menu) {
+        menu.scrollLeft = localStorage.getItem("menu-scroll-position");
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        if (document.body.className.includes("dark")) {
+            document.body.classList.remove('dark');
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            document.body.classList.add('dark');
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerHTML = 'copy';
+
+        function copyingDone() {
+            copybutton.innerHTML = 'copied!';
+            setTimeout(() => {
+                copybutton.innerHTML = 'copy';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+</body>
+
+</html>

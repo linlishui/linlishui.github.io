@@ -194,6 +194,21 @@ window.onload = () => {
 
 <article class="post-entry"> 
   <header class="entry-header">
+    <h2 class="entry-hint-parent">adb日常使用
+    </h2>
+  </header>
+  <div class="entry-content">
+    <p>简述 adb日志操作 adb logcat日志可分为：main、system、events、radio、crash、kernel类型的log，常用日志过滤命令如下：
+adb logcat -b main adb logcat -b system adb logcat -b events adb logcat -b radio adb logcat -b crash adb logcat -b kernel logcat其它命令补充：
+adb logcat -b events：输出指定buffer的log adb logcat -s “ActivityManager”：输出指定tag的log adb logcat -L：上次重启时的log adb logcat -f [file_path]：将log保存到指定文件 adb logcat -g：缓冲区大小 adb logcat -S：log统计信息 adb shell setprop log.tag.[Tag] {VDIWE}：设置log标签的过滤级别 dmesg或者cat /proc/kmsg：adb shell进入手机后打印内核日志 adb logcat -b events | egrep -i resume_activity：查看执行到resume状态的activity 从Android O开始引入Log的chatty机制，会把中间的重复内容不再打印，而是输出类似 “uid=1000(system) Binder:1453_1D identical 7 lines” ，告知有多少行的日志是一样的，这不是错误，只是减少了重复打印的次数。
+...</p>
+  </div>
+  <footer class="entry-footer"><span title='2024-11-15 14:20:18 +0800 CST'>November 15, 2024</span>&nbsp;·&nbsp;6 min&nbsp;·&nbsp;1158 words&nbsp;·&nbsp;夏天的小西瓜</footer>
+  <a class="entry-link" aria-label="post link to adb日常使用" href="/posts/tools/adb/"></a>
+</article>
+
+<article class="post-entry"> 
+  <header class="entry-header">
     <h2 class="entry-hint-parent">Hugo入门使用
     </h2>
   </header>
@@ -218,7 +233,7 @@ hugo 创建站点： # 说明：my-site 是站点的名称 hugo new site my-site
     </main>
     
 <footer class="footer">
-        <span>&copy; 2025 <a href="/">缥缈夏鸢</a></span> · 
+        <span>&copy; 2026 <a href="/">缥缈夏鸢</a></span> · 
 
     <span>
         Powered by
