@@ -1,0 +1,1740 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>字节码技术入门 | 缥缈夏鸢</title>
+<meta name="keywords" content="字节码">
+<meta name="description" content="
+本文档介绍 Android 开发中的字节码操作技术，包括字节码基础、Javassist、ASM 框架的使用。
+
+1. 字节码基础知识
+1.1 什么是字节码
+Java 字节码（Bytecode）是 Java 源代码编译后的中间表示形式，存储在 .class 文件中。JVM（Java Virtual Machine）执行的就是字节码，而不是源代码。
+特点:
+
+平台无关性：Write Once, Run Anywhere
+介于高级语言和机器码之间
+可被工具读取、修改、生成
+
+1.2 Class 文件结构
+一个 .class 文件的基本结构：
+ClassFile {
+    u4             magic;                    // 魔数 0xCAFEBABE
+    u2             minor_version;            // 次版本号
+    u2             major_version;            // 主版本号
+    u2             constant_pool_count;      // 常量池计数
+    cp_info        constant_pool[];          // 常量池
+    u2             access_flags;             // 访问标志
+    u2             this_class;               // 当前类
+    u2             super_class;              // 父类
+    u2             interfaces_count;         // 接口计数
+    u2             interfaces[];             // 接口表
+    u2             fields_count;             // 字段计数
+    field_info     fields[];                 // 字段表
+    u2             methods_count;            // 方法计数
+    method_info    methods[];                // 方法表
+    u2             attributes_count;         // 属性计数
+    attribute_info attributes[];             // 属性表
+}
+1.3 常用字节码指令
+
+  
+      
+          指令
+          说明
+          示例
+      
+  
+  
+      
+          aload_0
+          加载局部变量表第 0 个引用到栈顶
+          加载 this
+      
+      
+          invokespecial
+          调用实例初始化方法、私有方法
+          构造函数调用
+      
+      
+          invokevirtual
+          调用实例方法（虚方法）
+          普通方法调用
+      
+      
+          invokestatic
+          调用静态方法
+          Math.max()
+      
+      
+          invokeinterface
+          调用接口方法
+          接口方法调用
+      
+      
+          return
+          从方法返回 void
+          void 方法结束
+      
+      
+          areturn
+          从方法返回引用类型
+          返回对象
+      
+      
+          getfield
+          获取实例字段值
+          obj.field
+      
+      
+          putfield
+          设置实例字段值
+          obj.field = value
+      
+      
+          getstatic
+          获取静态字段值
+          Class.STATIC_FIELD
+      
+      
+          putstatic
+          设置静态字段值
+          Class.STATIC_FIELD = value
+      
+      
+          new
+          创建对象实例
+          new Object()
+      
+  
+
+1.4 方法描述符
+方法描述符用于描述方法的参数和返回值类型：">
+<meta name="author" content="夏天的小西瓜">
+<link rel="canonical" href="/posts/jvm/bytecode_guide/">
+<meta name="google-site-verification" content="XYZabc">
+<meta name="msvalidate.01" content="XYZabc">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.44278f16c6e7e77192a15a0565fb5b0f220c56128442fcfa6937b4d84456ecf0.css" integrity="sha256-RCePFsbn53GSoVoFZftbDyIMVhKEQvz6aTe02ERW7PA=" rel="preload stylesheet" as="style">
+<link rel="icon" href="/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="mask-icon" href="/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="en" href="/posts/jvm/bytecode_guide/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-track {
+                background: 0 0;
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-thumb {
+                border-color: var(--theme);
+            }
+        }
+
+    </style>
+</noscript><script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+<script>
+
+const config = {
+    startOnLoad:true,
+    
+    themeVariables: {
+        lineColor: "#ffffff"    
+    },
+    flowchart: {
+        useMaxWidth:false,
+        htmlLabels:true
+    }
+};
+mermaid.initialize(config);
+
+
+window.onload = () => {
+    window.mermaid.init(undefined, document.querySelectorAll('.language-mermaid'));
+}
+</script><meta property="og:url" content="/posts/jvm/bytecode_guide/">
+  <meta property="og:site_name" content="缥缈夏鸢">
+  <meta property="og:title" content="字节码技术入门">
+  <meta property="og:description" content=" 本文档介绍 Android 开发中的字节码操作技术，包括字节码基础、Javassist、ASM 框架的使用。
+1. 字节码基础知识 1.1 什么是字节码 Java 字节码（Bytecode）是 Java 源代码编译后的中间表示形式，存储在 .class 文件中。JVM（Java Virtual Machine）执行的就是字节码，而不是源代码。
+特点:
+平台无关性：Write Once, Run Anywhere 介于高级语言和机器码之间 可被工具读取、修改、生成 1.2 Class 文件结构 一个 .class 文件的基本结构：
+ClassFile { u4 magic; // 魔数 0xCAFEBABE u2 minor_version; // 次版本号 u2 major_version; // 主版本号 u2 constant_pool_count; // 常量池计数 cp_info constant_pool[]; // 常量池 u2 access_flags; // 访问标志 u2 this_class; // 当前类 u2 super_class; // 父类 u2 interfaces_count; // 接口计数 u2 interfaces[]; // 接口表 u2 fields_count; // 字段计数 field_info fields[]; // 字段表 u2 methods_count; // 方法计数 method_info methods[]; // 方法表 u2 attributes_count; // 属性计数 attribute_info attributes[]; // 属性表 } 1.3 常用字节码指令 指令 说明 示例 aload_0 加载局部变量表第 0 个引用到栈顶 加载 this invokespecial 调用实例初始化方法、私有方法 构造函数调用 invokevirtual 调用实例方法（虚方法） 普通方法调用 invokestatic 调用静态方法 Math.max() invokeinterface 调用接口方法 接口方法调用 return 从方法返回 void void 方法结束 areturn 从方法返回引用类型 返回对象 getfield 获取实例字段值 obj.field putfield 设置实例字段值 obj.field = value getstatic 获取静态字段值 Class.STATIC_FIELD putstatic 设置静态字段值 Class.STATIC_FIELD = value new 创建对象实例 new Object() 1.4 方法描述符 方法描述符用于描述方法的参数和返回值类型：">
+  <meta property="og:locale" content="en-us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2026-01-15T14:41:00+08:00">
+    <meta property="article:modified_time" content="2026-01-15T14:41:00+08:00">
+    <meta property="article:tag" content="字节码">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="字节码技术入门">
+<meta name="twitter:description" content="
+本文档介绍 Android 开发中的字节码操作技术，包括字节码基础、Javassist、ASM 框架的使用。
+
+1. 字节码基础知识
+1.1 什么是字节码
+Java 字节码（Bytecode）是 Java 源代码编译后的中间表示形式，存储在 .class 文件中。JVM（Java Virtual Machine）执行的就是字节码，而不是源代码。
+特点:
+
+平台无关性：Write Once, Run Anywhere
+介于高级语言和机器码之间
+可被工具读取、修改、生成
+
+1.2 Class 文件结构
+一个 .class 文件的基本结构：
+ClassFile {
+    u4             magic;                    // 魔数 0xCAFEBABE
+    u2             minor_version;            // 次版本号
+    u2             major_version;            // 主版本号
+    u2             constant_pool_count;      // 常量池计数
+    cp_info        constant_pool[];          // 常量池
+    u2             access_flags;             // 访问标志
+    u2             this_class;               // 当前类
+    u2             super_class;              // 父类
+    u2             interfaces_count;         // 接口计数
+    u2             interfaces[];             // 接口表
+    u2             fields_count;             // 字段计数
+    field_info     fields[];                 // 字段表
+    u2             methods_count;            // 方法计数
+    method_info    methods[];                // 方法表
+    u2             attributes_count;         // 属性计数
+    attribute_info attributes[];             // 属性表
+}
+1.3 常用字节码指令
+
+  
+      
+          指令
+          说明
+          示例
+      
+  
+  
+      
+          aload_0
+          加载局部变量表第 0 个引用到栈顶
+          加载 this
+      
+      
+          invokespecial
+          调用实例初始化方法、私有方法
+          构造函数调用
+      
+      
+          invokevirtual
+          调用实例方法（虚方法）
+          普通方法调用
+      
+      
+          invokestatic
+          调用静态方法
+          Math.max()
+      
+      
+          invokeinterface
+          调用接口方法
+          接口方法调用
+      
+      
+          return
+          从方法返回 void
+          void 方法结束
+      
+      
+          areturn
+          从方法返回引用类型
+          返回对象
+      
+      
+          getfield
+          获取实例字段值
+          obj.field
+      
+      
+          putfield
+          设置实例字段值
+          obj.field = value
+      
+      
+          getstatic
+          获取静态字段值
+          Class.STATIC_FIELD
+      
+      
+          putstatic
+          设置静态字段值
+          Class.STATIC_FIELD = value
+      
+      
+          new
+          创建对象实例
+          new Object()
+      
+  
+
+1.4 方法描述符
+方法描述符用于描述方法的参数和返回值类型：">
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Posts",
+      "item": "/posts/"
+    }
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "字节码技术入门",
+      "item": "/posts/jvm/bytecode_guide/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "字节码技术入门",
+  "name": "字节码技术入门",
+  "description": " 本文档介绍 Android 开发中的字节码操作技术，包括字节码基础、Javassist、ASM 框架的使用。\n1. 字节码基础知识 1.1 什么是字节码 Java 字节码（Bytecode）是 Java 源代码编译后的中间表示形式，存储在 .class 文件中。JVM（Java Virtual Machine）执行的就是字节码，而不是源代码。\n特点:\n平台无关性：Write Once, Run Anywhere 介于高级语言和机器码之间 可被工具读取、修改、生成 1.2 Class 文件结构 一个 .class 文件的基本结构：\nClassFile { u4 magic; // 魔数 0xCAFEBABE u2 minor_version; // 次版本号 u2 major_version; // 主版本号 u2 constant_pool_count; // 常量池计数 cp_info constant_pool[]; // 常量池 u2 access_flags; // 访问标志 u2 this_class; // 当前类 u2 super_class; // 父类 u2 interfaces_count; // 接口计数 u2 interfaces[]; // 接口表 u2 fields_count; // 字段计数 field_info fields[]; // 字段表 u2 methods_count; // 方法计数 method_info methods[]; // 方法表 u2 attributes_count; // 属性计数 attribute_info attributes[]; // 属性表 } 1.3 常用字节码指令 指令 说明 示例 aload_0 加载局部变量表第 0 个引用到栈顶 加载 this invokespecial 调用实例初始化方法、私有方法 构造函数调用 invokevirtual 调用实例方法（虚方法） 普通方法调用 invokestatic 调用静态方法 Math.max() invokeinterface 调用接口方法 接口方法调用 return 从方法返回 void void 方法结束 areturn 从方法返回引用类型 返回对象 getfield 获取实例字段值 obj.field putfield 设置实例字段值 obj.field = value getstatic 获取静态字段值 Class.STATIC_FIELD putstatic 设置静态字段值 Class.STATIC_FIELD = value new 创建对象实例 new Object() 1.4 方法描述符 方法描述符用于描述方法的参数和返回值类型：\n",
+  "keywords": [
+    "字节码"
+  ],
+  "articleBody": " 本文档介绍 Android 开发中的字节码操作技术，包括字节码基础、Javassist、ASM 框架的使用。\n1. 字节码基础知识 1.1 什么是字节码 Java 字节码（Bytecode）是 Java 源代码编译后的中间表示形式，存储在 .class 文件中。JVM（Java Virtual Machine）执行的就是字节码，而不是源代码。\n特点:\n平台无关性：Write Once, Run Anywhere 介于高级语言和机器码之间 可被工具读取、修改、生成 1.2 Class 文件结构 一个 .class 文件的基本结构：\nClassFile { u4 magic; // 魔数 0xCAFEBABE u2 minor_version; // 次版本号 u2 major_version; // 主版本号 u2 constant_pool_count; // 常量池计数 cp_info constant_pool[]; // 常量池 u2 access_flags; // 访问标志 u2 this_class; // 当前类 u2 super_class; // 父类 u2 interfaces_count; // 接口计数 u2 interfaces[]; // 接口表 u2 fields_count; // 字段计数 field_info fields[]; // 字段表 u2 methods_count; // 方法计数 method_info methods[]; // 方法表 u2 attributes_count; // 属性计数 attribute_info attributes[]; // 属性表 } 1.3 常用字节码指令 指令 说明 示例 aload_0 加载局部变量表第 0 个引用到栈顶 加载 this invokespecial 调用实例初始化方法、私有方法 构造函数调用 invokevirtual 调用实例方法（虚方法） 普通方法调用 invokestatic 调用静态方法 Math.max() invokeinterface 调用接口方法 接口方法调用 return 从方法返回 void void 方法结束 areturn 从方法返回引用类型 返回对象 getfield 获取实例字段值 obj.field putfield 设置实例字段值 obj.field = value getstatic 获取静态字段值 Class.STATIC_FIELD putstatic 设置静态字段值 Class.STATIC_FIELD = value new 创建对象实例 new Object() 1.4 方法描述符 方法描述符用于描述方法的参数和返回值类型：\n类型 描述符 void V int I long J float F double D boolean Z char C byte B short S Object Ljava/lang/Object; String[] [Ljava/lang/String; 示例:\nvoid method() -\u003e ()V int method(String str) -\u003e (Ljava/lang/String;)I void method(int a, long b) -\u003e (IJ)V Object method(int[] arr) -\u003e ([I)Ljava/lang/Object; 1.5 操作数栈与局部变量表 操作数栈（Operand Stack）:\n用于方法执行时存储中间计算结果 后进先出（LIFO）结构 深度在编译时确定 局部变量表（Local Variable Table）:\n存储方法参数和局部变量 索引从 0 开始 实例方法的索引 0 是 this long 和 double 占用 2 个槽位 示例:\npublic int calculate(int a, int b) { int sum = a + b; // 局部变量表: [this, a, b, sum] int result = sum * 2; return result; } 1.6 异常处理字节码 异常表（Exception Table）:\nException table: from to target type 0 5 8 Class java/io/IOException try-catch 示例:\ntry { riskyOperation(); } catch (IOException e) { handleError(e); } 对应字节码会包含异常处理跳转逻辑。\n1.7 查看字节码 1.7.1 使用 javap # 编译 Java 文件 javac Example.java # 查看字节码 javap -c Example.class # 查看详细信息（包括常量池、局部变量表） javap -v Example.class # 查看私有成员 javap -p -v Example.class 2. Javassist 使用指南 2.1 简介 Javassist（Java Programming Assistant）是一个用于编辑 Java 字节码的类库，提供了高层级的 API，使得字节码操作更加简单。\n特点:\n✅ API 简单易用，接近 Java 语法 ✅ 无需深入理解字节码指令 ✅ 适合快速实现简单的字节码修改 ⚠️ 性能不如 ASM ⚠️ 灵活性有限 2.2 添加依赖 dependencies { implementation 'org.javassist:javassist:3.29.2-GA' } 2.3 基础使用 2.3.1 创建类 import javassist.*; ClassPool pool = ClassPool.getDefault(); CtClass ctClass = pool.makeClass(\"com.example.DynamicClass\"); // 添加字段 CtField field = new CtField(CtClass.intType, \"count\", ctClass); field.setModifiers(Modifier.PRIVATE); ctClass.addField(field); // 添加方法 CtMethod method = CtNewMethod.make( \"public int getCount() { return count; }\", ctClass ); ctClass.addMethod(method); // 生成 Class 对象 Class\u003c?\u003e clazz = ctClass.toClass(); 2.3.2 修改已有类 ClassPool pool = ClassPool.getDefault(); CtClass ctClass = pool.get(\"com.example.TargetClass\"); // 获取方法 CtMethod method = ctClass.getDeclaredMethod(\"targetMethod\"); // 在方法开始插入代码 method.insertBefore(\"System.out.println(\\\"Method started\\\");\"); // 在方法结束插入代码 method.insertAfter(\"System.out.println(\\\"Method ended\\\");\"); // 替换方法体 method.setBody(\"{ return 42; }\"); // 保存修改后的类 ctClass.writeFile(\"/output/path\"); 2.3.3 访问方法参数 // $0, $1, $2... 表示 this 和参数 method.insertBefore( \"System.out.println(\\\"Param1: \\\" + $1 + \\\", Param2: \\\" + $2);\" ); // $args 表示参数数组 method.insertBefore( \"System.out.println(\\\"Args: \\\" + java.util.Arrays.toString($args));\" ); // $$ 表示所有参数 method.insertBefore( \"logger.log($$);\" // 等价于 logger.log($1, $2, $3, ...) ); 2.3.4 修改返回值 // $_ 表示返回值 method.insertAfter( \"if ($_ == null) { $_ = new Object(); }\" ); // $r 表示返回值类型 method.insertAfter( \"$_ = ($r) transform($_);\" ); 2.4 异常处理 2.4.1 添加 try-catch 块 CtMethod method = ctClass.getDeclaredMethod(\"targetMethod\"); // 添加 try-catch 包裹 method.addCatch( \"{ System.out.println(\\\"Caught: \\\" + $e); throw $e; }\", pool.get(\"java.lang.Exception\"), \"$e\" ); 2.4.2 在 finally 块中执行代码 // 使用 insertAfter 并设置 asFinally = true method.insertAfter( \"System.out.println(\\\"Finally block\\\");\", true // asFinally = true ); 2.5 实践示例: 方法执行日志 ClassPool pool = ClassPool.getDefault(); CtClass ctClass = pool.get(\"com.example.TargetClass\"); CtMethod[] methods = ctClass.getDeclaredMethods(); for (CtMethod method : methods) { // 跳过构造函数和抽象方法 if (method.isEmpty() || Modifier.isAbstract(method.getModifiers())) { continue; } String methodName = method.getName(); // 方法开始记录 method.insertBefore( \"System.out.println(\\\"→ Entering: \" + methodName + \"\\\");\" ); // 方法结束记录（包括异常退出） method.insertAfter( \"System.out.println(\\\"← Exiting: \" + methodName + \"\\\");\", true // asFinally = true ); } ctClass.writeFile(\"./output\"); ctClass.detach(); 3. ASM 使用指南 3.1 简介 ASM 是一个 Java 字节码操作和分析框架，直接操作字节码，性能极高。\n特点:\n✅ 性能极高（比 Javassist 快 10 倍以上） ✅ 灵活性强，可以完成任何字节码操作 ✅ 官方推荐，广泛应用于各种框架 ⚠️ 学习曲线陡峭 ⚠️ 需要理解字节码指令 3.2 添加依赖 dependencies { implementation 'org.ow2.asm:asm:9.6' implementation 'org.ow2.asm:asm-commons:9.6' implementation 'org.ow2.asm:asm-util:9.6' } 3.3 核心 API ASM 提供两种 API：\nCore API: 基于访问者模式，事件驱动 Tree API: 基于对象模型，类似 DOM 3.3.1 Core API（推荐） 主要类:\nClassReader: 读取 class 文件 ClassWriter: 生成 class 文件 ClassVisitor: 访问类结构 MethodVisitor: 访问方法 FieldVisitor: 访问字段 处理流程:\nClassReader → ClassVisitor → ClassWriter ↓ MethodVisitor 3.4 基础使用 3.4.1 读取类信息 import org.objectweb.asm.*; ClassReader classReader = new ClassReader(\"com.example.TargetClass\"); classReader.accept(new ClassVisitor(Opcodes.ASM9) { @Override public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) { System.out.println(\"Class: \" + name); System.out.println(\"SuperClass: \" + superName); } @Override public MethodVisitor visitMethod(int access, String name, String descriptor, String signature, String[] exceptions) { System.out.println(\"Method: \" + name + descriptor); return super.visitMethod(access, name, descriptor, signature, exceptions); } }, ClassReader.SKIP_DEBUG); 3.4.2 修改方法（插入代码） import org.objectweb.asm.*; import org.objectweb.asm.commons.*; public class MethodTimerAdapter extends ClassVisitor { public MethodTimerAdapter(ClassVisitor cv) { super(Opcodes.ASM9, cv); } @Override public MethodVisitor visitMethod(int access, String name, String descriptor, String signature, String[] exceptions) { MethodVisitor mv = super.visitMethod(access, name, descriptor, signature, exceptions); // 忽略构造函数和抽象方法 if (mv != null \u0026\u0026 !name.equals(\"\") \u0026\u0026 (access \u0026 Opcodes.ACC_ABSTRACT) == 0) { return new MethodTimerVisitor(mv, access, name, descriptor); } return mv; } } class MethodTimerVisitor extends AdviceAdapter { private int startTimeVar; private String methodName; protected MethodTimerVisitor(MethodVisitor mv, int access, String name, String descriptor) { super(Opcodes.ASM9, mv, access, name, descriptor); this.methodName = name; } @Override protected void onMethodEnter() { // 在方法开始记录时间 // long startTime = System.currentTimeMillis(); startTimeVar = newLocal(Type.LONG_TYPE); mv.visitMethodInsn(INVOKESTATIC, \"java/lang/System\", \"currentTimeMillis\", \"()J\", false); mv.visitVarInsn(LSTORE, startTimeVar); } @Override protected void onMethodExit(int opcode) { // 在方法结束计算耗时 // long cost = System.currentTimeMillis() - startTime; // System.out.println(\"Method \" + methodName + \" cost: \" + cost); mv.visitMethodInsn(INVOKESTATIC, \"java/lang/System\", \"currentTimeMillis\", \"()J\", false); mv.visitVarInsn(LLOAD, startTimeVar); mv.visitInsn(LSUB); int costVar = newLocal(Type.LONG_TYPE); mv.visitVarInsn(LSTORE, costVar); mv.visitFieldInsn(GETSTATIC, \"java/lang/System\", \"out\", \"Ljava/io/PrintStream;\"); mv.visitTypeInsn(NEW, \"java/lang/StringBuilder\"); mv.visitInsn(DUP); mv.visitMethodInsn(INVOKESPECIAL, \"java/lang/StringBuilder\", \"\", \"()V\", false); mv.visitLdcInsn(\"Method \" + methodName + \" cost: \"); mv.visitMethodInsn(INVOKEVIRTUAL, \"java/lang/StringBuilder\", \"append\", \"(Ljava/lang/String;)Ljava/lang/StringBuilder;\", false); mv.visitVarInsn(LLOAD, costVar); mv.visitMethodInsn(INVOKEVIRTUAL, \"java/lang/StringBuilder\", \"append\", \"(J)Ljava/lang/StringBuilder;\", false); mv.visitMethodInsn(INVOKEVIRTUAL, \"java/lang/StringBuilder\", \"toString\", \"()Ljava/lang/String;\", false); mv.visitMethodInsn(INVOKEVIRTUAL, \"java/io/PrintStream\", \"println\", \"(Ljava/lang/String;)V\", false); } } 3.4.3 使用示例 // 读取原始类 FileInputStream fis = new FileInputStream(\"TargetClass.class\"); ClassReader cr = new ClassReader(fis); // 创建 ClassWriter ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS); // 应用自定义 Visitor ClassVisitor cv = new MethodTimerAdapter(cw); cr.accept(cv, ClassReader.EXPAND_FRAMES); // 写出修改后的类 byte[] bytes = cw.toByteArray(); FileOutputStream fos = new FileOutputStream(\"TargetClass.class\"); fos.write(bytes); fos.close(); 3.5 Tree API 介绍 Tree API 将 class 文件表示为对象树,类似 DOM API,适合需要多次遍历或复杂修改的场景。\n3.5.1 主要类 ClassNode: 表示类 MethodNode: 表示方法 FieldNode: 表示字段 InsnList: 指令列表 AbstractInsnNode: 指令节点 3.5.2 使用示例 import org.objectweb.asm.tree.*; // 读取类 ClassReader cr = new ClassReader(\"com.example.TargetClass\"); ClassNode classNode = new ClassNode(); cr.accept(classNode, 0); // 遍历方法 for (MethodNode method : classNode.methods) { System.out.println(\"Method: \" + method.name); // 遍历指令 for (AbstractInsnNode insn : method.instructions) { if (insn instanceof MethodInsnNode) { MethodInsnNode methodInsn = (MethodInsnNode) insn; System.out.println(\" Calls: \" + methodInsn.owner + \".\" + methodInsn.name); } } } // 写回字节码 ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS); classNode.accept(cw); byte[] bytes = cw.toByteArray(); 3.5.3 Core API vs Tree API 对比 特性 Core API Tree API 内存占用 低（流式处理） 高（加载整个类） 性能 快 较慢 适用场景 简单修改、单次遍历 复杂修改、多次遍历 易用性 需理解访问者模式 更直观 推荐: 优先使用 Core API,仅在必要时使用 Tree API。\n3.6 常用工具类 3.6.1 ASMifier 将 class 文件转换为生成该字节码的 ASM 代码：\njava -classpath asm-all.jar org.objectweb.asm.util.ASMifier TargetClass.class 这对于学习如何使用 ASM 非常有帮助。\n3.6.2 TraceClassVisitor 打印类的详细信息：\nClassReader cr = new ClassReader(\"TargetClass\"); TraceClassVisitor tcv = new TraceClassVisitor(new PrintWriter(System.out)); cr.accept(tcv, 0); 3.6.3 CheckClassAdapter 验证生成的字节码是否合法：\nClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_FRAMES); ClassVisitor cv = new CheckClassAdapter(cw); // 使用 cv 进行字节码操作 // 如果字节码非法,会抛出异常 4. Android 字节码实践 4.1 Kotlin 字节码特性 4.1.1 Lambda 表达式 Kotlin Lambda 会生成额外的类:\n// Kotlin 代码 val lambda = { x: Int -\u003e x * 2 } 生成的 class:\nMyClass.class MyClass$lambda$1.class // Lambda 对应的类 4.1.2 inline 函数 inline 函数会在编译时内联到调用处,不会生成额外的方法调用:\ninline fun log(message: String) { println(message) } // 调用处会直接展开为 println(\"message\") 注意: 对 inline 函数进行字节码注入需要特别小心。\n4.1.3 协程 协程会生成状态机,字节码比较复杂:\nsuspend fun fetchData(): String { delay(1000) return \"data\" } 生成的字节码包含状态机逻辑,修改时需要理解 Continuation 机制。\n4.1.4 属性访问 Kotlin 属性会生成 getter/setter:\nvar name: String = \"\" // 生成: getName(), setName(String) 字节码操作时需要注意访问的是方法而非字段。\n4.2 完整示例: 方法耗时统计 class MethodTimerVisitor( mv: MethodVisitor, access: Int, private val methodName: String, descriptor: String ) : AdviceAdapter(Opcodes.ASM9, mv, access, methodName, descriptor) { private var startTimeVar = 0 override fun onMethodEnter() { // long startTime = System.currentTimeMillis(); startTimeVar = newLocal(Type.LONG_TYPE) mv.visitMethodInsn( INVOKESTATIC, \"java/lang/System\", \"currentTimeMillis\", \"()J\", false ) mv.visitVarInsn(LSTORE, startTimeVar) } override fun onMethodExit(opcode: Int) { // long cost = System.currentTimeMillis() - startTime; mv.visitMethodInsn( INVOKESTATIC, \"java/lang/System\", \"currentTimeMillis\", \"()J\", false ) mv.visitVarInsn(LLOAD, startTimeVar) mv.visitInsn(LSUB) val costVar = newLocal(Type.LONG_TYPE) mv.visitVarInsn(LSTORE, costVar) // Log.d(\"Perf\", methodName + \" cost: \" + cost); mv.visitLdcInsn(\"Perf\") mv.visitLdcInsn(\"$methodName cost: \") mv.visitVarInsn(LLOAD, costVar) mv.visitMethodInsn( INVOKESTATIC, \"java/lang/String\", \"valueOf\", \"(J)Ljava/lang/String;\", false ) mv.visitMethodInsn( INVOKEVIRTUAL, \"java/lang/String\", \"concat\", \"(Ljava/lang/String;)Ljava/lang/String;\", false ) mv.visitMethodInsn( INVOKESTATIC, \"android/util/Log\", \"d\", \"(Ljava/lang/String;Ljava/lang/String;)I\", false ) mv.visitInsn(POP) } } 5. 常见问题与最佳实践 5.1 常见坑点 5.1.1 ClassLoader 问题 问题: 在 Gradle Plugin 中修改字节码时,ClassPool 找不到类\n解决:\nClassPool pool = ClassPool.getDefault(); // 添加编译路径 pool.appendClassPath(compilePath); // 添加 Android SDK 路径 pool.appendClassPath(androidJarPath); 5.1.2 Stack Map Frame 错误 问题: 修改字节码后出现 VerifyError 或 Stack Map Frame 错误\n原因: Java 7+ 要求 Stack Map Frame 信息,手动插入字节码可能破坏\n解决:\n// 让 ASM 自动计算 ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_FRAMES); 5.1.3 Kotlin Companion Object 问题: 访问 Kotlin companion object 时找不到静态字段\n原因: Kotlin companion object 编译为内部类 Companion\n解决:\n// Kotlin 代码 class MyClass { companion object { const val TAG = \"MyClass\" } } // 字节码中实际为 // MyClass$Companion.TAG (静态字段在 Companion 类中) 访问时使用:\nmv.visitFieldInsn( GETSTATIC, \"com/example/MyClass$Companion\", // 注意 $Companion \"TAG\", \"Ljava/lang/String;\" ); 5.1.4 内部类和匿名类 问题: 内部类名称包含 $ 符号,导致类名匹配失败\n解决:\n// 过滤时使用正确的类名格式 fun isInstrumentable(className: String): Boolean { // 跳过匿名类 if (className.contains(\"$\") \u0026\u0026 className.substringAfterLast(\"$\").toIntOrNull() != null) { return false } return true } 5.2 性能优化 5.2.1 只处理需要的类 // 过滤不需要处理的类 fun shouldProcess(className: String): Boolean { return when { className.startsWith(\"android.\") -\u003e false className.startsWith(\"androidx.\") -\u003e false className.startsWith(\"kotlin.\") -\u003e false className.startsWith(\"java.\") -\u003e false className.contains(\"R\\$\") -\u003e false // R 资源类 className.endsWith(\"BuildConfig\") -\u003e false else -\u003e true } } 5.2.2 避免重复处理 // 记录已处理的类 private val processedClasses = mutableSetOf\u003cString\u003e() fun processClass(className: String, classBytes: ByteArray): ByteArray { if (className in processedClasses) { return classBytes // 直接返回,不处理 } processedClasses.add(className) // 处理字节码... return modifiedBytes } 5.2.3 使用 COMPUTE_MAXS 而非 COMPUTE_FRAMES 如果只是简单插入代码,使用 COMPUTE_MAXS 更快:\n// 性能更好(如果不改变栈帧结构) ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS); // 更安全但更慢 ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_FRAMES); 5.3 最佳实践 5.3.1 字节码验证 插桩后务必验证字节码:\n// 方法 1: 使用 CheckClassAdapter ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_FRAMES); ClassVisitor cv = new CheckClassAdapter(cw); // ... 进行字节码操作 // 方法 2: 运行测试 ./gradlew testDebugUnitTest ./gradlew connectedDebugAndroidTest 5.3.2 日志记录 记录插桩信息便于调试:\nclass MyClassVisitor(cv: ClassVisitor) : ClassVisitor(Opcodes.ASM9, cv) { private var className = \"\" override fun visit(version: Int, access: Int, name: String, ...) { className = name println(\"Processing class: $className\") super.visit(version, access, name, ...) } override fun visitMethod(...): MethodVisitor { println(\" Processing method: $className.$name\") return super.visitMethod(...) } } 5.3.3 单元测试 为字节码插桩编写测试:\nclass BytecodeTest { @Test fun testMethodTimer() { // 1. 加载原始 class val classBytes = loadClassBytes(\"TargetClass.class\") // 2. 应用插桩 val cr = ClassReader(classBytes) val cw = ClassWriter(ClassWriter.COMPUTE_FRAMES) val cv = MethodTimerVisitor(cw) cr.accept(cv, ClassReader.EXPAND_FRAMES) // 3. 加载修改后的类 val modifiedClass = loadClass(cw.toByteArray()) // 4. 验证行为 val instance = modifiedClass.newInstance() val method = modifiedClass.getMethod(\"targetMethod\") method.invoke(instance) // 5. 验证日志输出 // ... } } 5.4 调试技巧 5.4.1 对比字节码差异 # 1. 备份原始 class cp TargetClass.class TargetClass.class.bak # 2. 应用插桩后查看差异 javap -c -v TargetClass.class.bak \u003e original.txt javap -c -v TargetClass.class \u003e modified.txt diff original.txt modified.txt 5.4.2 使用 ASMifier 学习 # 查看如何用 ASM 生成目标字节码 java -classpath asm-all.jar \\ org.objectweb.asm.util.ASMifier \\ TargetClass.class 5.4.3 打印字节码 // 在插桩过程中打印字节码 ClassReader cr = ClassReader(classBytes) TraceClassVisitor tcv = TraceClassVisitor( MyClassVisitor(cw), PrintWriter(System.out) ) cr.accept(tcv, 0) 5.5 Javassist vs ASM 选择指南 场景 推荐工具 原因 简单代码注入 Javassist API 简单,开发快 性能敏感 ASM 性能是 Javassist 的 10+ 倍 复杂字节码操作 ASM 更灵活,功能更强 学习成本优先 Javassist 学习曲线平缓 生产环境 ASM 性能更好,更稳定 推荐: 优先使用 ASM,性能和灵活性更好。\n6. 参考资源 6.1 官方文档 ASM 官方文档 Javassist 官方文档 JVM 规范 6.2 实用工具 工具 用途 链接 ASM Bytecode Viewer AS 插件,查看字节码 插件市场 jclasslib 字节码查看器 GitHub dex2jar dex 转 jar GitHub JD-GUI Java 反编译器 官网 Jadx Android APK 反编译 GitHub 6.3 开源项目参考 booster - 滴滴 Android 质量优化框架 Hunter - 字节码插桩框架 matrix - 腾讯 APM 框架 ByteX - 字节跳动字节码插件平台 6.4 学习资源 ASM 官方教程 字节码指令集速查 ",
+  "wordCount" : "1890",
+  "inLanguage": "en",
+  "datePublished": "2026-01-15T14:41:00+08:00",
+  "dateModified": "2026-01-15T14:41:00+08:00",
+  "author":[{
+    "@type": "Person",
+    "name": "夏天的小西瓜"
+  }],
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "/posts/jvm/bytecode_guide/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "缥缈夏鸢",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "/favicon.ico"
+    }
+  }
+}
+</script>
+</head>
+
+<body class="" id="top">
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.body.classList.add('dark');
+    } else if (localStorage.getItem("pref-theme") === "light") {
+        document.body.classList.remove('dark')
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.body.classList.add('dark');
+    }
+
+</script>
+
+<header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="/" accesskey="h" title="缥缈夏鸢 (Alt + H)">缥缈夏鸢</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" accesskey="t" title="(Alt + T)">
+                    <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu">
+            <li>
+                <a href="/" title="首页">
+                    <span>首页</span>
+                </a>
+            </li>
+            <li>
+                <a href="/posts/" title="文章">
+                    <span>文章</span>
+                </a>
+            </li>
+            <li>
+                <a href="/categories/" title="分类">
+                    <span>分类</span>
+                </a>
+            </li>
+            <li>
+                <a href="/tags/" title="标签">
+                    <span>标签</span>
+                </a>
+            </li>
+            <li>
+                <a href="/archives/" title="归档">
+                    <span>归档</span>
+                </a>
+            </li>
+            <li>
+                <a href="/about/" title="关于">
+                    <span>关于</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <div class="breadcrumbs"><a href="/">Home</a>&nbsp;»&nbsp;<a href="/posts/">Posts</a></div>
+    <h1 class="post-title entry-hint-parent">
+      字节码技术入门
+    </h1>
+    <div class="post-meta"><span title='2026-01-15 14:41:00 +0800 CST'>January 15, 2026</span>&nbsp;·&nbsp;9 min&nbsp;·&nbsp;1890 words&nbsp;·&nbsp;夏天的小西瓜
+
+</div>
+  </header> <aside id="toc-container" class="toc-container wide">
+    <div class="toc">
+        <details  open>
+            <summary accesskey="c" title="(Alt + C)">
+                <span class="details">Table of Contents</span>
+            </summary>
+
+            <div class="inner"><ul>
+                    <li>
+                        <a href="#1-%e5%ad%97%e8%8a%82%e7%a0%81%e5%9f%ba%e7%a1%80%e7%9f%a5%e8%af%86" aria-label="1. 字节码基础知识">1. 字节码基础知识</a><ul>
+                            
+                    <li>
+                        <a href="#11-%e4%bb%80%e4%b9%88%e6%98%af%e5%ad%97%e8%8a%82%e7%a0%81" aria-label="1.1 什么是字节码">1.1 什么是字节码</a></li>
+                    <li>
+                        <a href="#12-class-%e6%96%87%e4%bb%b6%e7%bb%93%e6%9e%84" aria-label="1.2 Class 文件结构">1.2 Class 文件结构</a></li>
+                    <li>
+                        <a href="#13-%e5%b8%b8%e7%94%a8%e5%ad%97%e8%8a%82%e7%a0%81%e6%8c%87%e4%bb%a4" aria-label="1.3 常用字节码指令">1.3 常用字节码指令</a></li>
+                    <li>
+                        <a href="#14-%e6%96%b9%e6%b3%95%e6%8f%8f%e8%bf%b0%e7%ac%a6" aria-label="1.4 方法描述符">1.4 方法描述符</a></li>
+                    <li>
+                        <a href="#15-%e6%93%8d%e4%bd%9c%e6%95%b0%e6%a0%88%e4%b8%8e%e5%b1%80%e9%83%a8%e5%8f%98%e9%87%8f%e8%a1%a8" aria-label="1.5 操作数栈与局部变量表">1.5 操作数栈与局部变量表</a></li>
+                    <li>
+                        <a href="#16-%e5%bc%82%e5%b8%b8%e5%a4%84%e7%90%86%e5%ad%97%e8%8a%82%e7%a0%81" aria-label="1.6 异常处理字节码">1.6 异常处理字节码</a></li>
+                    <li>
+                        <a href="#17-%e6%9f%a5%e7%9c%8b%e5%ad%97%e8%8a%82%e7%a0%81" aria-label="1.7 查看字节码">1.7 查看字节码</a><ul>
+                            
+                    <li>
+                        <a href="#171-%e4%bd%bf%e7%94%a8-javap" aria-label="1.7.1 使用 javap">1.7.1 使用 javap</a></li></ul>
+                    </li></ul>
+                    </li>
+                    <li>
+                        <a href="#2-javassist-%e4%bd%bf%e7%94%a8%e6%8c%87%e5%8d%97" aria-label="2. Javassist 使用指南">2. Javassist 使用指南</a><ul>
+                            
+                    <li>
+                        <a href="#21-%e7%ae%80%e4%bb%8b" aria-label="2.1 简介">2.1 简介</a></li>
+                    <li>
+                        <a href="#22-%e6%b7%bb%e5%8a%a0%e4%be%9d%e8%b5%96" aria-label="2.2 添加依赖">2.2 添加依赖</a></li>
+                    <li>
+                        <a href="#23-%e5%9f%ba%e7%a1%80%e4%bd%bf%e7%94%a8" aria-label="2.3 基础使用">2.3 基础使用</a><ul>
+                            
+                    <li>
+                        <a href="#231-%e5%88%9b%e5%bb%ba%e7%b1%bb" aria-label="2.3.1 创建类">2.3.1 创建类</a></li>
+                    <li>
+                        <a href="#232-%e4%bf%ae%e6%94%b9%e5%b7%b2%e6%9c%89%e7%b1%bb" aria-label="2.3.2 修改已有类">2.3.2 修改已有类</a></li>
+                    <li>
+                        <a href="#233-%e8%ae%bf%e9%97%ae%e6%96%b9%e6%b3%95%e5%8f%82%e6%95%b0" aria-label="2.3.3 访问方法参数">2.3.3 访问方法参数</a></li>
+                    <li>
+                        <a href="#234-%e4%bf%ae%e6%94%b9%e8%bf%94%e5%9b%9e%e5%80%bc" aria-label="2.3.4 修改返回值">2.3.4 修改返回值</a></li></ul>
+                    </li>
+                    <li>
+                        <a href="#24-%e5%bc%82%e5%b8%b8%e5%a4%84%e7%90%86" aria-label="2.4 异常处理">2.4 异常处理</a><ul>
+                            
+                    <li>
+                        <a href="#241-%e6%b7%bb%e5%8a%a0-try-catch-%e5%9d%97" aria-label="2.4.1 添加 try-catch 块">2.4.1 添加 try-catch 块</a></li>
+                    <li>
+                        <a href="#242-%e5%9c%a8-finally-%e5%9d%97%e4%b8%ad%e6%89%a7%e8%a1%8c%e4%bb%a3%e7%a0%81" aria-label="2.4.2 在 finally 块中执行代码">2.4.2 在 finally 块中执行代码</a></li></ul>
+                    </li>
+                    <li>
+                        <a href="#25-%e5%ae%9e%e8%b7%b5%e7%a4%ba%e4%be%8b-%e6%96%b9%e6%b3%95%e6%89%a7%e8%a1%8c%e6%97%a5%e5%bf%97" aria-label="2.5 实践示例: 方法执行日志">2.5 实践示例: 方法执行日志</a></li></ul>
+                    </li>
+                    <li>
+                        <a href="#3-asm-%e4%bd%bf%e7%94%a8%e6%8c%87%e5%8d%97" aria-label="3. ASM 使用指南">3. ASM 使用指南</a><ul>
+                            
+                    <li>
+                        <a href="#31-%e7%ae%80%e4%bb%8b" aria-label="3.1 简介">3.1 简介</a></li>
+                    <li>
+                        <a href="#32-%e6%b7%bb%e5%8a%a0%e4%be%9d%e8%b5%96" aria-label="3.2 添加依赖">3.2 添加依赖</a></li>
+                    <li>
+                        <a href="#33-%e6%a0%b8%e5%bf%83-api" aria-label="3.3 核心 API">3.3 核心 API</a><ul>
+                            
+                    <li>
+                        <a href="#331-core-api%e6%8e%a8%e8%8d%90" aria-label="3.3.1 Core API（推荐）">3.3.1 Core API（推荐）</a></li></ul>
+                    </li>
+                    <li>
+                        <a href="#34-%e5%9f%ba%e7%a1%80%e4%bd%bf%e7%94%a8" aria-label="3.4 基础使用">3.4 基础使用</a><ul>
+                            
+                    <li>
+                        <a href="#341-%e8%af%bb%e5%8f%96%e7%b1%bb%e4%bf%a1%e6%81%af" aria-label="3.4.1 读取类信息">3.4.1 读取类信息</a></li>
+                    <li>
+                        <a href="#342-%e4%bf%ae%e6%94%b9%e6%96%b9%e6%b3%95%e6%8f%92%e5%85%a5%e4%bb%a3%e7%a0%81" aria-label="3.4.2 修改方法（插入代码）">3.4.2 修改方法（插入代码）</a></li>
+                    <li>
+                        <a href="#343-%e4%bd%bf%e7%94%a8%e7%a4%ba%e4%be%8b" aria-label="3.4.3 使用示例">3.4.3 使用示例</a></li></ul>
+                    </li>
+                    <li>
+                        <a href="#35-tree-api-%e4%bb%8b%e7%bb%8d" aria-label="3.5 Tree API 介绍">3.5 Tree API 介绍</a><ul>
+                            
+                    <li>
+                        <a href="#351-%e4%b8%bb%e8%a6%81%e7%b1%bb" aria-label="3.5.1 主要类">3.5.1 主要类</a></li>
+                    <li>
+                        <a href="#352-%e4%bd%bf%e7%94%a8%e7%a4%ba%e4%be%8b" aria-label="3.5.2 使用示例">3.5.2 使用示例</a></li>
+                    <li>
+                        <a href="#353-core-api-vs-tree-api-%e5%af%b9%e6%af%94" aria-label="3.5.3 Core API vs Tree API 对比">3.5.3 Core API vs Tree API 对比</a></li></ul>
+                    </li>
+                    <li>
+                        <a href="#36-%e5%b8%b8%e7%94%a8%e5%b7%a5%e5%85%b7%e7%b1%bb" aria-label="3.6 常用工具类">3.6 常用工具类</a><ul>
+                            
+                    <li>
+                        <a href="#361-asmifier" aria-label="3.6.1 ASMifier">3.6.1 ASMifier</a></li>
+                    <li>
+                        <a href="#362-traceclassvisitor" aria-label="3.6.2 TraceClassVisitor">3.6.2 TraceClassVisitor</a></li>
+                    <li>
+                        <a href="#363-checkclassadapter" aria-label="3.6.3 CheckClassAdapter">3.6.3 CheckClassAdapter</a></li></ul>
+                    </li></ul>
+                    </li>
+                    <li>
+                        <a href="#4-android-%e5%ad%97%e8%8a%82%e7%a0%81%e5%ae%9e%e8%b7%b5" aria-label="4. Android 字节码实践">4. Android 字节码实践</a><ul>
+                            
+                    <li>
+                        <a href="#41-kotlin-%e5%ad%97%e8%8a%82%e7%a0%81%e7%89%b9%e6%80%a7" aria-label="4.1 Kotlin 字节码特性">4.1 Kotlin 字节码特性</a><ul>
+                            
+                    <li>
+                        <a href="#411-lambda-%e8%a1%a8%e8%be%be%e5%bc%8f" aria-label="4.1.1 Lambda 表达式">4.1.1 Lambda 表达式</a></li>
+                    <li>
+                        <a href="#412-inline-%e5%87%bd%e6%95%b0" aria-label="4.1.2 inline 函数">4.1.2 inline 函数</a></li>
+                    <li>
+                        <a href="#413-%e5%8d%8f%e7%a8%8b" aria-label="4.1.3 协程">4.1.3 协程</a></li>
+                    <li>
+                        <a href="#414-%e5%b1%9e%e6%80%a7%e8%ae%bf%e9%97%ae" aria-label="4.1.4 属性访问">4.1.4 属性访问</a></li></ul>
+                    </li>
+                    <li>
+                        <a href="#42-%e5%ae%8c%e6%95%b4%e7%a4%ba%e4%be%8b-%e6%96%b9%e6%b3%95%e8%80%97%e6%97%b6%e7%bb%9f%e8%ae%a1" aria-label="4.2 完整示例: 方法耗时统计">4.2 完整示例: 方法耗时统计</a></li></ul>
+                    </li>
+                    <li>
+                        <a href="#5-%e5%b8%b8%e8%a7%81%e9%97%ae%e9%a2%98%e4%b8%8e%e6%9c%80%e4%bd%b3%e5%ae%9e%e8%b7%b5" aria-label="5. 常见问题与最佳实践">5. 常见问题与最佳实践</a><ul>
+                            
+                    <li>
+                        <a href="#51-%e5%b8%b8%e8%a7%81%e5%9d%91%e7%82%b9" aria-label="5.1 常见坑点">5.1 常见坑点</a><ul>
+                            
+                    <li>
+                        <a href="#511-classloader-%e9%97%ae%e9%a2%98" aria-label="5.1.1 ClassLoader 问题">5.1.1 ClassLoader 问题</a></li>
+                    <li>
+                        <a href="#512-stack-map-frame-%e9%94%99%e8%af%af" aria-label="5.1.2 Stack Map Frame 错误">5.1.2 Stack Map Frame 错误</a></li>
+                    <li>
+                        <a href="#513-kotlin-companion-object" aria-label="5.1.3 Kotlin Companion Object">5.1.3 Kotlin Companion Object</a></li>
+                    <li>
+                        <a href="#514-%e5%86%85%e9%83%a8%e7%b1%bb%e5%92%8c%e5%8c%bf%e5%90%8d%e7%b1%bb" aria-label="5.1.4 内部类和匿名类">5.1.4 内部类和匿名类</a></li></ul>
+                    </li>
+                    <li>
+                        <a href="#52-%e6%80%a7%e8%83%bd%e4%bc%98%e5%8c%96" aria-label="5.2 性能优化">5.2 性能优化</a><ul>
+                            
+                    <li>
+                        <a href="#521-%e5%8f%aa%e5%a4%84%e7%90%86%e9%9c%80%e8%a6%81%e7%9a%84%e7%b1%bb" aria-label="5.2.1 只处理需要的类">5.2.1 只处理需要的类</a></li>
+                    <li>
+                        <a href="#522-%e9%81%bf%e5%85%8d%e9%87%8d%e5%a4%8d%e5%a4%84%e7%90%86" aria-label="5.2.2 避免重复处理">5.2.2 避免重复处理</a></li>
+                    <li>
+                        <a href="#523-%e4%bd%bf%e7%94%a8-compute_maxs-%e8%80%8c%e9%9d%9e-compute_frames" aria-label="5.2.3 使用 COMPUTE_MAXS 而非 COMPUTE_FRAMES">5.2.3 使用 COMPUTE_MAXS 而非 COMPUTE_FRAMES</a></li></ul>
+                    </li>
+                    <li>
+                        <a href="#53-%e6%9c%80%e4%bd%b3%e5%ae%9e%e8%b7%b5" aria-label="5.3 最佳实践">5.3 最佳实践</a><ul>
+                            
+                    <li>
+                        <a href="#531-%e5%ad%97%e8%8a%82%e7%a0%81%e9%aa%8c%e8%af%81" aria-label="5.3.1 字节码验证">5.3.1 字节码验证</a></li>
+                    <li>
+                        <a href="#532-%e6%97%a5%e5%bf%97%e8%ae%b0%e5%bd%95" aria-label="5.3.2 日志记录">5.3.2 日志记录</a></li>
+                    <li>
+                        <a href="#533-%e5%8d%95%e5%85%83%e6%b5%8b%e8%af%95" aria-label="5.3.3 单元测试">5.3.3 单元测试</a></li></ul>
+                    </li>
+                    <li>
+                        <a href="#54-%e8%b0%83%e8%af%95%e6%8a%80%e5%b7%a7" aria-label="5.4 调试技巧">5.4 调试技巧</a><ul>
+                            
+                    <li>
+                        <a href="#541-%e5%af%b9%e6%af%94%e5%ad%97%e8%8a%82%e7%a0%81%e5%b7%ae%e5%bc%82" aria-label="5.4.1 对比字节码差异">5.4.1 对比字节码差异</a></li>
+                    <li>
+                        <a href="#542-%e4%bd%bf%e7%94%a8-asmifier-%e5%ad%a6%e4%b9%a0" aria-label="5.4.2 使用 ASMifier 学习">5.4.2 使用 ASMifier 学习</a></li>
+                    <li>
+                        <a href="#543-%e6%89%93%e5%8d%b0%e5%ad%97%e8%8a%82%e7%a0%81" aria-label="5.4.3 打印字节码">5.4.3 打印字节码</a></li></ul>
+                    </li>
+                    <li>
+                        <a href="#55-javassist-vs-asm-%e9%80%89%e6%8b%a9%e6%8c%87%e5%8d%97" aria-label="5.5 Javassist vs ASM 选择指南">5.5 Javassist vs ASM 选择指南</a></li></ul>
+                    </li>
+                    <li>
+                        <a href="#6-%e5%8f%82%e8%80%83%e8%b5%84%e6%ba%90" aria-label="6. 参考资源">6. 参考资源</a><ul>
+                            
+                    <li>
+                        <a href="#61-%e5%ae%98%e6%96%b9%e6%96%87%e6%a1%a3" aria-label="6.1 官方文档">6.1 官方文档</a></li>
+                    <li>
+                        <a href="#62-%e5%ae%9e%e7%94%a8%e5%b7%a5%e5%85%b7" aria-label="6.2 实用工具">6.2 实用工具</a></li>
+                    <li>
+                        <a href="#63-%e5%bc%80%e6%ba%90%e9%a1%b9%e7%9b%ae%e5%8f%82%e8%80%83" aria-label="6.3 开源项目参考">6.3 开源项目参考</a></li>
+                    <li>
+                        <a href="#64-%e5%ad%a6%e4%b9%a0%e8%b5%84%e6%ba%90" aria-label="6.4 学习资源">6.4 学习资源</a>
+                    </li>
+                </ul>
+                </li>
+                </ul>
+            </div>
+        </details>
+    </div>
+</aside>
+<script>
+    let activeElement;
+    let elements;
+    window.addEventListener('DOMContentLoaded', function (event) {
+        checkTocPosition();
+
+        elements = document.querySelectorAll('h1[id],h2[id],h3[id],h4[id],h5[id],h6[id]');
+         
+         activeElement = elements[0];
+         const id = encodeURI(activeElement.getAttribute('id')).toLowerCase();
+         document.querySelector(`.inner ul li a[href="#${id}"]`).classList.add('active');
+     }, false);
+
+    window.addEventListener('resize', function(event) {
+        checkTocPosition();
+    }, false);
+
+    window.addEventListener('scroll', () => {
+        
+        activeElement = Array.from(elements).find((element) => {
+            if ((getOffsetTop(element) - window.pageYOffset) > 0 && 
+                (getOffsetTop(element) - window.pageYOffset) < window.innerHeight/2) {
+                return element;
+            }
+        }) || activeElement
+
+        elements.forEach(element => {
+             const id = encodeURI(element.getAttribute('id')).toLowerCase();
+             if (element === activeElement){
+                 document.querySelector(`.inner ul li a[href="#${id}"]`).classList.add('active');
+             } else {
+                 document.querySelector(`.inner ul li a[href="#${id}"]`).classList.remove('active');
+             }
+         })
+     }, false);
+
+    const main = parseInt(getComputedStyle(document.body).getPropertyValue('--article-width'), 10);
+    const toc = parseInt(getComputedStyle(document.body).getPropertyValue('--toc-width'), 10);
+    const gap = parseInt(getComputedStyle(document.body).getPropertyValue('--gap'), 10);
+
+    function checkTocPosition() {
+        const width = document.body.scrollWidth;
+
+        if (width - main - (toc * 2) - (gap * 4) > 0) {
+            document.getElementById("toc-container").classList.add("wide");
+        } else {
+            document.getElementById("toc-container").classList.remove("wide");
+        }
+    }
+
+    function getOffsetTop(element) {
+        if (!element.getClientRects().length) {
+            return 0;
+        }
+        let rect = element.getBoundingClientRect();
+        let win = element.ownerDocument.defaultView;
+        return rect.top + win.pageYOffset;   
+    }
+</script>
+
+  <div class="post-content"><blockquote>
+<p>本文档介绍 Android 开发中的字节码操作技术，包括字节码基础、Javassist、ASM 框架的使用。</p>
+</blockquote>
+<h2 id="1-字节码基础知识">1. 字节码基础知识<a hidden class="anchor" aria-hidden="true" href="#1-字节码基础知识">#</a></h2>
+<h3 id="11-什么是字节码">1.1 什么是字节码<a hidden class="anchor" aria-hidden="true" href="#11-什么是字节码">#</a></h3>
+<p>Java 字节码（Bytecode）是 Java 源代码编译后的中间表示形式，存储在 <code>.class</code> 文件中。JVM（Java Virtual Machine）执行的就是字节码，而不是源代码。</p>
+<p><strong>特点</strong>:</p>
+<ul>
+<li>平台无关性：Write Once, Run Anywhere</li>
+<li>介于高级语言和机器码之间</li>
+<li>可被工具读取、修改、生成</li>
+</ul>
+<h3 id="12-class-文件结构">1.2 Class 文件结构<a hidden class="anchor" aria-hidden="true" href="#12-class-文件结构">#</a></h3>
+<p>一个 <code>.class</code> 文件的基本结构：</p>
+<pre tabindex="0"><code>ClassFile {
+    u4             magic;                    // 魔数 0xCAFEBABE
+    u2             minor_version;            // 次版本号
+    u2             major_version;            // 主版本号
+    u2             constant_pool_count;      // 常量池计数
+    cp_info        constant_pool[];          // 常量池
+    u2             access_flags;             // 访问标志
+    u2             this_class;               // 当前类
+    u2             super_class;              // 父类
+    u2             interfaces_count;         // 接口计数
+    u2             interfaces[];             // 接口表
+    u2             fields_count;             // 字段计数
+    field_info     fields[];                 // 字段表
+    u2             methods_count;            // 方法计数
+    method_info    methods[];                // 方法表
+    u2             attributes_count;         // 属性计数
+    attribute_info attributes[];             // 属性表
+}
+</code></pre><h3 id="13-常用字节码指令">1.3 常用字节码指令<a hidden class="anchor" aria-hidden="true" href="#13-常用字节码指令">#</a></h3>
+<table>
+  <thead>
+      <tr>
+          <th>指令</th>
+          <th>说明</th>
+          <th>示例</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>aload_0</code></td>
+          <td>加载局部变量表第 0 个引用到栈顶</td>
+          <td>加载 <code>this</code></td>
+      </tr>
+      <tr>
+          <td><code>invokespecial</code></td>
+          <td>调用实例初始化方法、私有方法</td>
+          <td>构造函数调用</td>
+      </tr>
+      <tr>
+          <td><code>invokevirtual</code></td>
+          <td>调用实例方法（虚方法）</td>
+          <td>普通方法调用</td>
+      </tr>
+      <tr>
+          <td><code>invokestatic</code></td>
+          <td>调用静态方法</td>
+          <td><code>Math.max()</code></td>
+      </tr>
+      <tr>
+          <td><code>invokeinterface</code></td>
+          <td>调用接口方法</td>
+          <td>接口方法调用</td>
+      </tr>
+      <tr>
+          <td><code>return</code></td>
+          <td>从方法返回 void</td>
+          <td><code>void</code> 方法结束</td>
+      </tr>
+      <tr>
+          <td><code>areturn</code></td>
+          <td>从方法返回引用类型</td>
+          <td>返回对象</td>
+      </tr>
+      <tr>
+          <td><code>getfield</code></td>
+          <td>获取实例字段值</td>
+          <td><code>obj.field</code></td>
+      </tr>
+      <tr>
+          <td><code>putfield</code></td>
+          <td>设置实例字段值</td>
+          <td><code>obj.field = value</code></td>
+      </tr>
+      <tr>
+          <td><code>getstatic</code></td>
+          <td>获取静态字段值</td>
+          <td><code>Class.STATIC_FIELD</code></td>
+      </tr>
+      <tr>
+          <td><code>putstatic</code></td>
+          <td>设置静态字段值</td>
+          <td><code>Class.STATIC_FIELD = value</code></td>
+      </tr>
+      <tr>
+          <td><code>new</code></td>
+          <td>创建对象实例</td>
+          <td><code>new Object()</code></td>
+      </tr>
+  </tbody>
+</table>
+<h3 id="14-方法描述符">1.4 方法描述符<a hidden class="anchor" aria-hidden="true" href="#14-方法描述符">#</a></h3>
+<p>方法描述符用于描述方法的参数和返回值类型：</p>
+<table>
+  <thead>
+      <tr>
+          <th>类型</th>
+          <th>描述符</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>void</code></td>
+          <td><code>V</code></td>
+      </tr>
+      <tr>
+          <td><code>int</code></td>
+          <td><code>I</code></td>
+      </tr>
+      <tr>
+          <td><code>long</code></td>
+          <td><code>J</code></td>
+      </tr>
+      <tr>
+          <td><code>float</code></td>
+          <td><code>F</code></td>
+      </tr>
+      <tr>
+          <td><code>double</code></td>
+          <td><code>D</code></td>
+      </tr>
+      <tr>
+          <td><code>boolean</code></td>
+          <td><code>Z</code></td>
+      </tr>
+      <tr>
+          <td><code>char</code></td>
+          <td><code>C</code></td>
+      </tr>
+      <tr>
+          <td><code>byte</code></td>
+          <td><code>B</code></td>
+      </tr>
+      <tr>
+          <td><code>short</code></td>
+          <td><code>S</code></td>
+      </tr>
+      <tr>
+          <td><code>Object</code></td>
+          <td><code>Ljava/lang/Object;</code></td>
+      </tr>
+      <tr>
+          <td><code>String[]</code></td>
+          <td><code>[Ljava/lang/String;</code></td>
+      </tr>
+  </tbody>
+</table>
+<p><strong>示例</strong>:</p>
+<pre tabindex="0"><code>void method()                     -&gt; ()V
+int method(String str)            -&gt; (Ljava/lang/String;)I
+void method(int a, long b)        -&gt; (IJ)V
+Object method(int[] arr)          -&gt; ([I)Ljava/lang/Object;
+</code></pre><h3 id="15-操作数栈与局部变量表">1.5 操作数栈与局部变量表<a hidden class="anchor" aria-hidden="true" href="#15-操作数栈与局部变量表">#</a></h3>
+<p><strong>操作数栈（Operand Stack）</strong>:</p>
+<ul>
+<li>用于方法执行时存储中间计算结果</li>
+<li>后进先出（LIFO）结构</li>
+<li>深度在编译时确定</li>
+</ul>
+<p><strong>局部变量表（Local Variable Table）</strong>:</p>
+<ul>
+<li>存储方法参数和局部变量</li>
+<li>索引从 0 开始</li>
+<li>实例方法的索引 0 是 <code>this</code></li>
+<li><code>long</code> 和 <code>double</code> 占用 2 个槽位</li>
+</ul>
+<p><strong>示例</strong>:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">public</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="nf">calculate</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">a</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">b</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">sum</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">b</span><span class="p">;</span><span class="w">     </span><span class="c1">// 局部变量表: [this, a, b, sum]</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sum</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">2</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">result</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></div><h3 id="16-异常处理字节码">1.6 异常处理字节码<a hidden class="anchor" aria-hidden="true" href="#16-异常处理字节码">#</a></h3>
+<p><strong>异常表（Exception Table）</strong>:</p>
+<pre tabindex="0"><code>Exception table:
+   from    to  target type
+     0     5     8   Class java/io/IOException
+</code></pre><p><strong>try-catch 示例</strong>:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="k">try</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">riskyOperation</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w"> </span><span class="k">catch</span><span class="w"> </span><span class="p">(</span><span class="n">IOException</span><span class="w"> </span><span class="n">e</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">handleError</span><span class="p">(</span><span class="n">e</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></div><p>对应字节码会包含异常处理跳转逻辑。</p>
+<h3 id="17-查看字节码">1.7 查看字节码<a hidden class="anchor" aria-hidden="true" href="#17-查看字节码">#</a></h3>
+<h4 id="171-使用-javap">1.7.1 使用 javap<a hidden class="anchor" aria-hidden="true" href="#171-使用-javap">#</a></h4>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># 编译 Java 文件</span>
+</span></span><span class="line"><span class="cl">javac Example.java
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 查看字节码</span>
+</span></span><span class="line"><span class="cl">javap -c Example.class
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 查看详细信息（包括常量池、局部变量表）</span>
+</span></span><span class="line"><span class="cl">javap -v Example.class
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 查看私有成员</span>
+</span></span><span class="line"><span class="cl">javap -p -v Example.class
+</span></span></code></pre></div><h2 id="2-javassist-使用指南">2. Javassist 使用指南<a hidden class="anchor" aria-hidden="true" href="#2-javassist-使用指南">#</a></h2>
+<h3 id="21-简介">2.1 简介<a hidden class="anchor" aria-hidden="true" href="#21-简介">#</a></h3>
+<p>Javassist（Java Programming Assistant）是一个用于编辑 Java 字节码的类库，提供了高层级的 API，使得字节码操作更加简单。</p>
+<p><strong>特点</strong>:</p>
+<ul>
+<li>✅ API 简单易用，接近 Java 语法</li>
+<li>✅ 无需深入理解字节码指令</li>
+<li>✅ 适合快速实现简单的字节码修改</li>
+<li>⚠️ 性能不如 ASM</li>
+<li>⚠️ 灵活性有限</li>
+</ul>
+<h3 id="22-添加依赖">2.2 添加依赖<a hidden class="anchor" aria-hidden="true" href="#22-添加依赖">#</a></h3>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-gradle" data-lang="gradle"><span class="line"><span class="cl"><span class="n">dependencies</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">implementation</span> <span class="s1">&#39;org.javassist:javassist:3.29.2-GA&#39;</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></div><h3 id="23-基础使用">2.3 基础使用<a hidden class="anchor" aria-hidden="true" href="#23-基础使用">#</a></h3>
+<h4 id="231-创建类">2.3.1 创建类<a hidden class="anchor" aria-hidden="true" href="#231-创建类">#</a></h4>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kn">import</span><span class="w"> </span><span class="nn">javassist.*</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">ClassPool</span><span class="w"> </span><span class="n">pool</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ClassPool</span><span class="p">.</span><span class="na">getDefault</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">CtClass</span><span class="w"> </span><span class="n">ctClass</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">pool</span><span class="p">.</span><span class="na">makeClass</span><span class="p">(</span><span class="s">&#34;com.example.DynamicClass&#34;</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="c1">// 添加字段</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">CtField</span><span class="w"> </span><span class="n">field</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">CtField</span><span class="p">(</span><span class="n">CtClass</span><span class="p">.</span><span class="na">intType</span><span class="p">,</span><span class="w"> </span><span class="s">&#34;count&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">ctClass</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">field</span><span class="p">.</span><span class="na">setModifiers</span><span class="p">(</span><span class="n">Modifier</span><span class="p">.</span><span class="na">PRIVATE</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">ctClass</span><span class="p">.</span><span class="na">addField</span><span class="p">(</span><span class="n">field</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="c1">// 添加方法</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">CtMethod</span><span class="w"> </span><span class="n">method</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">CtNewMethod</span><span class="p">.</span><span class="na">make</span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s">&#34;public int getCount() { return count; }&#34;</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">ctClass</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">ctClass</span><span class="p">.</span><span class="na">addMethod</span><span class="p">(</span><span class="n">method</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="c1">// 生成 Class 对象</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">Class</span><span class="o">&lt;?&gt;</span><span class="w"> </span><span class="n">clazz</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ctClass</span><span class="p">.</span><span class="na">toClass</span><span class="p">();</span><span class="w">
+</span></span></span></code></pre></div><h4 id="232-修改已有类">2.3.2 修改已有类<a hidden class="anchor" aria-hidden="true" href="#232-修改已有类">#</a></h4>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">ClassPool</span><span class="w"> </span><span class="n">pool</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ClassPool</span><span class="p">.</span><span class="na">getDefault</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">CtClass</span><span class="w"> </span><span class="n">ctClass</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">pool</span><span class="p">.</span><span class="na">get</span><span class="p">(</span><span class="s">&#34;com.example.TargetClass&#34;</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="c1">// 获取方法</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">CtMethod</span><span class="w"> </span><span class="n">method</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ctClass</span><span class="p">.</span><span class="na">getDeclaredMethod</span><span class="p">(</span><span class="s">&#34;targetMethod&#34;</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="c1">// 在方法开始插入代码</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">method</span><span class="p">.</span><span class="na">insertBefore</span><span class="p">(</span><span class="s">&#34;System.out.println(\&#34;Method started\&#34;);&#34;</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="c1">// 在方法结束插入代码</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">method</span><span class="p">.</span><span class="na">insertAfter</span><span class="p">(</span><span class="s">&#34;System.out.println(\&#34;Method ended\&#34;);&#34;</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="c1">// 替换方法体</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">method</span><span class="p">.</span><span class="na">setBody</span><span class="p">(</span><span class="s">&#34;{ return 42; }&#34;</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="c1">// 保存修改后的类</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">ctClass</span><span class="p">.</span><span class="na">writeFile</span><span class="p">(</span><span class="s">&#34;/output/path&#34;</span><span class="p">);</span><span class="w">
+</span></span></span></code></pre></div><h4 id="233-访问方法参数">2.3.3 访问方法参数<a hidden class="anchor" aria-hidden="true" href="#233-访问方法参数">#</a></h4>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="c1">// $0, $1, $2... 表示 this 和参数</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">method</span><span class="p">.</span><span class="na">insertBefore</span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s">&#34;System.out.println(\&#34;Param1: \&#34; + $1 + \&#34;, Param2: \&#34; + $2);&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="c1">// $args 表示参数数组</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">method</span><span class="p">.</span><span class="na">insertBefore</span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s">&#34;System.out.println(\&#34;Args: \&#34; + java.util.Arrays.toString($args));&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="c1">// $$ 表示所有参数</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">method</span><span class="p">.</span><span class="na">insertBefore</span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s">&#34;logger.log($$);&#34;</span><span class="w">  </span><span class="c1">// 等价于 logger.log($1, $2, $3, ...)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">);</span><span class="w">
+</span></span></span></code></pre></div><h4 id="234-修改返回值">2.3.4 修改返回值<a hidden class="anchor" aria-hidden="true" href="#234-修改返回值">#</a></h4>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="c1">// $_ 表示返回值</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">method</span><span class="p">.</span><span class="na">insertAfter</span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s">&#34;if ($_ == null) { $_ = new Object(); }&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="c1">// $r 表示返回值类型</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">method</span><span class="p">.</span><span class="na">insertAfter</span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s">&#34;$_ = ($r) transform($_);&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">);</span><span class="w">
+</span></span></span></code></pre></div><h3 id="24-异常处理">2.4 异常处理<a hidden class="anchor" aria-hidden="true" href="#24-异常处理">#</a></h3>
+<h4 id="241-添加-try-catch-块">2.4.1 添加 try-catch 块<a hidden class="anchor" aria-hidden="true" href="#241-添加-try-catch-块">#</a></h4>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">CtMethod</span><span class="w"> </span><span class="n">method</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ctClass</span><span class="p">.</span><span class="na">getDeclaredMethod</span><span class="p">(</span><span class="s">&#34;targetMethod&#34;</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="c1">// 添加 try-catch 包裹</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">method</span><span class="p">.</span><span class="na">addCatch</span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s">&#34;{ System.out.println(\&#34;Caught: \&#34; + $e); throw $e; }&#34;</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">pool</span><span class="p">.</span><span class="na">get</span><span class="p">(</span><span class="s">&#34;java.lang.Exception&#34;</span><span class="p">),</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s">&#34;$e&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">);</span><span class="w">
+</span></span></span></code></pre></div><h4 id="242-在-finally-块中执行代码">2.4.2 在 finally 块中执行代码<a hidden class="anchor" aria-hidden="true" href="#242-在-finally-块中执行代码">#</a></h4>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="c1">// 使用 insertAfter 并设置 asFinally = true</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">method</span><span class="p">.</span><span class="na">insertAfter</span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s">&#34;System.out.println(\&#34;Finally block\&#34;);&#34;</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kc">true</span><span class="w">  </span><span class="c1">// asFinally = true</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">);</span><span class="w">
+</span></span></span></code></pre></div><h3 id="25-实践示例-方法执行日志">2.5 实践示例: 方法执行日志<a hidden class="anchor" aria-hidden="true" href="#25-实践示例-方法执行日志">#</a></h3>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">ClassPool</span><span class="w"> </span><span class="n">pool</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ClassPool</span><span class="p">.</span><span class="na">getDefault</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">CtClass</span><span class="w"> </span><span class="n">ctClass</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">pool</span><span class="p">.</span><span class="na">get</span><span class="p">(</span><span class="s">&#34;com.example.TargetClass&#34;</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">CtMethod</span><span class="o">[]</span><span class="w"> </span><span class="n">methods</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ctClass</span><span class="p">.</span><span class="na">getDeclaredMethods</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="n">CtMethod</span><span class="w"> </span><span class="n">method</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">methods</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">// 跳过构造函数和抽象方法</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">method</span><span class="p">.</span><span class="na">isEmpty</span><span class="p">()</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">Modifier</span><span class="p">.</span><span class="na">isAbstract</span><span class="p">(</span><span class="n">method</span><span class="p">.</span><span class="na">getModifiers</span><span class="p">()))</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">continue</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">String</span><span class="w"> </span><span class="n">methodName</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">method</span><span class="p">.</span><span class="na">getName</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">// 方法开始记录</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">method</span><span class="p">.</span><span class="na">insertBefore</span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="s">&#34;System.out.println(\&#34;→ Entering: &#34;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">methodName</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s">&#34;\&#34;);&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">// 方法结束记录（包括异常退出）</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">method</span><span class="p">.</span><span class="na">insertAfter</span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="s">&#34;System.out.println(\&#34;← Exiting: &#34;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">methodName</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s">&#34;\&#34;);&#34;</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="kc">true</span><span class="w">  </span><span class="c1">// asFinally = true</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">ctClass</span><span class="p">.</span><span class="na">writeFile</span><span class="p">(</span><span class="s">&#34;./output&#34;</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">ctClass</span><span class="p">.</span><span class="na">detach</span><span class="p">();</span><span class="w">
+</span></span></span></code></pre></div><h2 id="3-asm-使用指南">3. ASM 使用指南<a hidden class="anchor" aria-hidden="true" href="#3-asm-使用指南">#</a></h2>
+<h3 id="31-简介">3.1 简介<a hidden class="anchor" aria-hidden="true" href="#31-简介">#</a></h3>
+<p>ASM 是一个 Java 字节码操作和分析框架，直接操作字节码，性能极高。</p>
+<p><strong>特点</strong>:</p>
+<ul>
+<li>✅ 性能极高（比 Javassist 快 10 倍以上）</li>
+<li>✅ 灵活性强，可以完成任何字节码操作</li>
+<li>✅ 官方推荐，广泛应用于各种框架</li>
+<li>⚠️ 学习曲线陡峭</li>
+<li>⚠️ 需要理解字节码指令</li>
+</ul>
+<h3 id="32-添加依赖">3.2 添加依赖<a hidden class="anchor" aria-hidden="true" href="#32-添加依赖">#</a></h3>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-gradle" data-lang="gradle"><span class="line"><span class="cl"><span class="n">dependencies</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">implementation</span> <span class="s1">&#39;org.ow2.asm:asm:9.6&#39;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">implementation</span> <span class="s1">&#39;org.ow2.asm:asm-commons:9.6&#39;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">implementation</span> <span class="s1">&#39;org.ow2.asm:asm-util:9.6&#39;</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></div><h3 id="33-核心-api">3.3 核心 API<a hidden class="anchor" aria-hidden="true" href="#33-核心-api">#</a></h3>
+<p>ASM 提供两种 API：</p>
+<ul>
+<li><strong>Core API</strong>: 基于访问者模式，事件驱动</li>
+<li><strong>Tree API</strong>: 基于对象模型，类似 DOM</li>
+</ul>
+<h4 id="331-core-api推荐">3.3.1 Core API（推荐）<a hidden class="anchor" aria-hidden="true" href="#331-core-api推荐">#</a></h4>
+<p><strong>主要类</strong>:</p>
+<ul>
+<li><code>ClassReader</code>: 读取 class 文件</li>
+<li><code>ClassWriter</code>: 生成 class 文件</li>
+<li><code>ClassVisitor</code>: 访问类结构</li>
+<li><code>MethodVisitor</code>: 访问方法</li>
+<li><code>FieldVisitor</code>: 访问字段</li>
+</ul>
+<p><strong>处理流程</strong>:</p>
+<pre tabindex="0"><code>ClassReader → ClassVisitor → ClassWriter
+               ↓
+          MethodVisitor
+</code></pre><h3 id="34-基础使用">3.4 基础使用<a hidden class="anchor" aria-hidden="true" href="#34-基础使用">#</a></h3>
+<h4 id="341-读取类信息">3.4.1 读取类信息<a hidden class="anchor" aria-hidden="true" href="#341-读取类信息">#</a></h4>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kn">import</span><span class="w"> </span><span class="nn">org.objectweb.asm.*</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">ClassReader</span><span class="w"> </span><span class="n">classReader</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">ClassReader</span><span class="p">(</span><span class="s">&#34;com.example.TargetClass&#34;</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">classReader</span><span class="p">.</span><span class="na">accept</span><span class="p">(</span><span class="k">new</span><span class="w"> </span><span class="n">ClassVisitor</span><span class="p">(</span><span class="n">Opcodes</span><span class="p">.</span><span class="na">ASM9</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nd">@Override</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">visit</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">version</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">access</span><span class="p">,</span><span class="w"> </span><span class="n">String</span><span class="w"> </span><span class="n">name</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                     </span><span class="n">String</span><span class="w"> </span><span class="n">signature</span><span class="p">,</span><span class="w"> </span><span class="n">String</span><span class="w"> </span><span class="n">superName</span><span class="p">,</span><span class="w"> </span><span class="n">String</span><span class="o">[]</span><span class="w"> </span><span class="n">interfaces</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="s">&#34;Class: &#34;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">name</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="s">&#34;SuperClass: &#34;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">superName</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nd">@Override</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="n">MethodVisitor</span><span class="w"> </span><span class="nf">visitMethod</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">access</span><span class="p">,</span><span class="w"> </span><span class="n">String</span><span class="w"> </span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="n">String</span><span class="w"> </span><span class="n">descriptor</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                                     </span><span class="n">String</span><span class="w"> </span><span class="n">signature</span><span class="p">,</span><span class="w"> </span><span class="n">String</span><span class="o">[]</span><span class="w"> </span><span class="n">exceptions</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="s">&#34;Method: &#34;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">descriptor</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="kd">super</span><span class="p">.</span><span class="na">visitMethod</span><span class="p">(</span><span class="n">access</span><span class="p">,</span><span class="w"> </span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="n">descriptor</span><span class="p">,</span><span class="w"> </span><span class="n">signature</span><span class="p">,</span><span class="w"> </span><span class="n">exceptions</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">},</span><span class="w"> </span><span class="n">ClassReader</span><span class="p">.</span><span class="na">SKIP_DEBUG</span><span class="p">);</span><span class="w">
+</span></span></span></code></pre></div><h4 id="342-修改方法插入代码">3.4.2 修改方法（插入代码）<a hidden class="anchor" aria-hidden="true" href="#342-修改方法插入代码">#</a></h4>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kn">import</span><span class="w"> </span><span class="nn">org.objectweb.asm.*</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kn">import</span><span class="w"> </span><span class="nn">org.objectweb.asm.commons.*</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">MethodTimerAdapter</span><span class="w"> </span><span class="kd">extends</span><span class="w"> </span><span class="n">ClassVisitor</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="nf">MethodTimerAdapter</span><span class="p">(</span><span class="n">ClassVisitor</span><span class="w"> </span><span class="n">cv</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="kd">super</span><span class="p">(</span><span class="n">Opcodes</span><span class="p">.</span><span class="na">ASM9</span><span class="p">,</span><span class="w"> </span><span class="n">cv</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nd">@Override</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="n">MethodVisitor</span><span class="w"> </span><span class="nf">visitMethod</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">access</span><span class="p">,</span><span class="w"> </span><span class="n">String</span><span class="w"> </span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="n">String</span><span class="w"> </span><span class="n">descriptor</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                                     </span><span class="n">String</span><span class="w"> </span><span class="n">signature</span><span class="p">,</span><span class="w"> </span><span class="n">String</span><span class="o">[]</span><span class="w"> </span><span class="n">exceptions</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">MethodVisitor</span><span class="w"> </span><span class="n">mv</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kd">super</span><span class="p">.</span><span class="na">visitMethod</span><span class="p">(</span><span class="n">access</span><span class="p">,</span><span class="w"> </span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="n">descriptor</span><span class="p">,</span><span class="w"> </span><span class="n">signature</span><span class="p">,</span><span class="w"> </span><span class="n">exceptions</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="c1">// 忽略构造函数和抽象方法</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">mv</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="kc">null</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="o">!</span><span class="n">name</span><span class="p">.</span><span class="na">equals</span><span class="p">(</span><span class="s">&#34;&lt;init&gt;&#34;</span><span class="p">)</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="p">(</span><span class="n">access</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">Opcodes</span><span class="p">.</span><span class="na">ACC_ABSTRACT</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">MethodTimerVisitor</span><span class="p">(</span><span class="n">mv</span><span class="p">,</span><span class="w"> </span><span class="n">access</span><span class="p">,</span><span class="w"> </span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="n">descriptor</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">mv</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">class</span> <span class="nc">MethodTimerVisitor</span><span class="w"> </span><span class="kd">extends</span><span class="w"> </span><span class="n">AdviceAdapter</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">private</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">startTimeVar</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">private</span><span class="w"> </span><span class="n">String</span><span class="w"> </span><span class="n">methodName</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">protected</span><span class="w"> </span><span class="nf">MethodTimerVisitor</span><span class="p">(</span><span class="n">MethodVisitor</span><span class="w"> </span><span class="n">mv</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">access</span><span class="p">,</span><span class="w"> </span><span class="n">String</span><span class="w"> </span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="n">String</span><span class="w"> </span><span class="n">descriptor</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="kd">super</span><span class="p">(</span><span class="n">Opcodes</span><span class="p">.</span><span class="na">ASM9</span><span class="p">,</span><span class="w"> </span><span class="n">mv</span><span class="p">,</span><span class="w"> </span><span class="n">access</span><span class="p">,</span><span class="w"> </span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="n">descriptor</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">this</span><span class="p">.</span><span class="na">methodName</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">name</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nd">@Override</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">protected</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">onMethodEnter</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="c1">// 在方法开始记录时间</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="c1">// long startTime = System.currentTimeMillis();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">startTimeVar</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">newLocal</span><span class="p">(</span><span class="n">Type</span><span class="p">.</span><span class="na">LONG_TYPE</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">mv</span><span class="p">.</span><span class="na">visitMethodInsn</span><span class="p">(</span><span class="n">INVOKESTATIC</span><span class="p">,</span><span class="w"> </span><span class="s">&#34;java/lang/System&#34;</span><span class="p">,</span><span class="w"> </span><span class="s">&#34;currentTimeMillis&#34;</span><span class="p">,</span><span class="w"> </span><span class="s">&#34;()J&#34;</span><span class="p">,</span><span class="w"> </span><span class="kc">false</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">mv</span><span class="p">.</span><span class="na">visitVarInsn</span><span class="p">(</span><span class="n">LSTORE</span><span class="p">,</span><span class="w"> </span><span class="n">startTimeVar</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nd">@Override</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">protected</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">onMethodExit</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">opcode</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="c1">// 在方法结束计算耗时</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="c1">// long cost = System.currentTimeMillis() - startTime;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="c1">// System.out.println(&#34;Method &#34; + methodName + &#34; cost: &#34; + cost);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">mv</span><span class="p">.</span><span class="na">visitMethodInsn</span><span class="p">(</span><span class="n">INVOKESTATIC</span><span class="p">,</span><span class="w"> </span><span class="s">&#34;java/lang/System&#34;</span><span class="p">,</span><span class="w"> </span><span class="s">&#34;currentTimeMillis&#34;</span><span class="p">,</span><span class="w"> </span><span class="s">&#34;()J&#34;</span><span class="p">,</span><span class="w"> </span><span class="kc">false</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">mv</span><span class="p">.</span><span class="na">visitVarInsn</span><span class="p">(</span><span class="n">LLOAD</span><span class="p">,</span><span class="w"> </span><span class="n">startTimeVar</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">mv</span><span class="p">.</span><span class="na">visitInsn</span><span class="p">(</span><span class="n">LSUB</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="kt">int</span><span class="w"> </span><span class="n">costVar</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">newLocal</span><span class="p">(</span><span class="n">Type</span><span class="p">.</span><span class="na">LONG_TYPE</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">mv</span><span class="p">.</span><span class="na">visitVarInsn</span><span class="p">(</span><span class="n">LSTORE</span><span class="p">,</span><span class="w"> </span><span class="n">costVar</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">mv</span><span class="p">.</span><span class="na">visitFieldInsn</span><span class="p">(</span><span class="n">GETSTATIC</span><span class="p">,</span><span class="w"> </span><span class="s">&#34;java/lang/System&#34;</span><span class="p">,</span><span class="w"> </span><span class="s">&#34;out&#34;</span><span class="p">,</span><span class="w"> </span><span class="s">&#34;Ljava/io/PrintStream;&#34;</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">mv</span><span class="p">.</span><span class="na">visitTypeInsn</span><span class="p">(</span><span class="n">NEW</span><span class="p">,</span><span class="w"> </span><span class="s">&#34;java/lang/StringBuilder&#34;</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">mv</span><span class="p">.</span><span class="na">visitInsn</span><span class="p">(</span><span class="n">DUP</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">mv</span><span class="p">.</span><span class="na">visitMethodInsn</span><span class="p">(</span><span class="n">INVOKESPECIAL</span><span class="p">,</span><span class="w"> </span><span class="s">&#34;java/lang/StringBuilder&#34;</span><span class="p">,</span><span class="w"> </span><span class="s">&#34;&lt;init&gt;&#34;</span><span class="p">,</span><span class="w"> </span><span class="s">&#34;()V&#34;</span><span class="p">,</span><span class="w"> </span><span class="kc">false</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">mv</span><span class="p">.</span><span class="na">visitLdcInsn</span><span class="p">(</span><span class="s">&#34;Method &#34;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">methodName</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s">&#34; cost: &#34;</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">mv</span><span class="p">.</span><span class="na">visitMethodInsn</span><span class="p">(</span><span class="n">INVOKEVIRTUAL</span><span class="p">,</span><span class="w"> </span><span class="s">&#34;java/lang/StringBuilder&#34;</span><span class="p">,</span><span class="w"> </span><span class="s">&#34;append&#34;</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="s">&#34;(Ljava/lang/String;)Ljava/lang/StringBuilder;&#34;</span><span class="p">,</span><span class="w"> </span><span class="kc">false</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">mv</span><span class="p">.</span><span class="na">visitVarInsn</span><span class="p">(</span><span class="n">LLOAD</span><span class="p">,</span><span class="w"> </span><span class="n">costVar</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">mv</span><span class="p">.</span><span class="na">visitMethodInsn</span><span class="p">(</span><span class="n">INVOKEVIRTUAL</span><span class="p">,</span><span class="w"> </span><span class="s">&#34;java/lang/StringBuilder&#34;</span><span class="p">,</span><span class="w"> </span><span class="s">&#34;append&#34;</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="s">&#34;(J)Ljava/lang/StringBuilder;&#34;</span><span class="p">,</span><span class="w"> </span><span class="kc">false</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">mv</span><span class="p">.</span><span class="na">visitMethodInsn</span><span class="p">(</span><span class="n">INVOKEVIRTUAL</span><span class="p">,</span><span class="w"> </span><span class="s">&#34;java/lang/StringBuilder&#34;</span><span class="p">,</span><span class="w"> </span><span class="s">&#34;toString&#34;</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="s">&#34;()Ljava/lang/String;&#34;</span><span class="p">,</span><span class="w"> </span><span class="kc">false</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">mv</span><span class="p">.</span><span class="na">visitMethodInsn</span><span class="p">(</span><span class="n">INVOKEVIRTUAL</span><span class="p">,</span><span class="w"> </span><span class="s">&#34;java/io/PrintStream&#34;</span><span class="p">,</span><span class="w"> </span><span class="s">&#34;println&#34;</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="s">&#34;(Ljava/lang/String;)V&#34;</span><span class="p">,</span><span class="w"> </span><span class="kc">false</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></div><h4 id="343-使用示例">3.4.3 使用示例<a hidden class="anchor" aria-hidden="true" href="#343-使用示例">#</a></h4>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="c1">// 读取原始类</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">FileInputStream</span><span class="w"> </span><span class="n">fis</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">FileInputStream</span><span class="p">(</span><span class="s">&#34;TargetClass.class&#34;</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">ClassReader</span><span class="w"> </span><span class="n">cr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">ClassReader</span><span class="p">(</span><span class="n">fis</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="c1">// 创建 ClassWriter</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">ClassWriter</span><span class="w"> </span><span class="n">cw</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">ClassWriter</span><span class="p">(</span><span class="n">ClassWriter</span><span class="p">.</span><span class="na">COMPUTE_MAXS</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="c1">// 应用自定义 Visitor</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">ClassVisitor</span><span class="w"> </span><span class="n">cv</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">MethodTimerAdapter</span><span class="p">(</span><span class="n">cw</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">cr</span><span class="p">.</span><span class="na">accept</span><span class="p">(</span><span class="n">cv</span><span class="p">,</span><span class="w"> </span><span class="n">ClassReader</span><span class="p">.</span><span class="na">EXPAND_FRAMES</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="c1">// 写出修改后的类</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kt">byte</span><span class="o">[]</span><span class="w"> </span><span class="n">bytes</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">cw</span><span class="p">.</span><span class="na">toByteArray</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">FileOutputStream</span><span class="w"> </span><span class="n">fos</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">FileOutputStream</span><span class="p">(</span><span class="s">&#34;TargetClass.class&#34;</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">fos</span><span class="p">.</span><span class="na">write</span><span class="p">(</span><span class="n">bytes</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">fos</span><span class="p">.</span><span class="na">close</span><span class="p">();</span><span class="w">
+</span></span></span></code></pre></div><h3 id="35-tree-api-介绍">3.5 Tree API 介绍<a hidden class="anchor" aria-hidden="true" href="#35-tree-api-介绍">#</a></h3>
+<p>Tree API 将 class 文件表示为对象树,类似 DOM API,适合需要多次遍历或复杂修改的场景。</p>
+<h4 id="351-主要类">3.5.1 主要类<a hidden class="anchor" aria-hidden="true" href="#351-主要类">#</a></h4>
+<ul>
+<li><code>ClassNode</code>: 表示类</li>
+<li><code>MethodNode</code>: 表示方法</li>
+<li><code>FieldNode</code>: 表示字段</li>
+<li><code>InsnList</code>: 指令列表</li>
+<li><code>AbstractInsnNode</code>: 指令节点</li>
+</ul>
+<h4 id="352-使用示例">3.5.2 使用示例<a hidden class="anchor" aria-hidden="true" href="#352-使用示例">#</a></h4>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kn">import</span><span class="w"> </span><span class="nn">org.objectweb.asm.tree.*</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="c1">// 读取类</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">ClassReader</span><span class="w"> </span><span class="n">cr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">ClassReader</span><span class="p">(</span><span class="s">&#34;com.example.TargetClass&#34;</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">ClassNode</span><span class="w"> </span><span class="n">classNode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">ClassNode</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">cr</span><span class="p">.</span><span class="na">accept</span><span class="p">(</span><span class="n">classNode</span><span class="p">,</span><span class="w"> </span><span class="n">0</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="c1">// 遍历方法</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="n">MethodNode</span><span class="w"> </span><span class="n">method</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">classNode</span><span class="p">.</span><span class="na">methods</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="s">&#34;Method: &#34;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">method</span><span class="p">.</span><span class="na">name</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">// 遍历指令</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="n">AbstractInsnNode</span><span class="w"> </span><span class="n">insn</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">method</span><span class="p">.</span><span class="na">instructions</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">insn</span><span class="w"> </span><span class="k">instanceof</span><span class="w"> </span><span class="n">MethodInsnNode</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">MethodInsnNode</span><span class="w"> </span><span class="n">methodInsn</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">MethodInsnNode</span><span class="p">)</span><span class="w"> </span><span class="n">insn</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="s">&#34;  Calls: &#34;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">methodInsn</span><span class="p">.</span><span class="na">owner</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s">&#34;.&#34;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">methodInsn</span><span class="p">.</span><span class="na">name</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="c1">// 写回字节码</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">ClassWriter</span><span class="w"> </span><span class="n">cw</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">ClassWriter</span><span class="p">(</span><span class="n">ClassWriter</span><span class="p">.</span><span class="na">COMPUTE_MAXS</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">classNode</span><span class="p">.</span><span class="na">accept</span><span class="p">(</span><span class="n">cw</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kt">byte</span><span class="o">[]</span><span class="w"> </span><span class="n">bytes</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">cw</span><span class="p">.</span><span class="na">toByteArray</span><span class="p">();</span><span class="w">
+</span></span></span></code></pre></div><h4 id="353-core-api-vs-tree-api-对比">3.5.3 Core API vs Tree API 对比<a hidden class="anchor" aria-hidden="true" href="#353-core-api-vs-tree-api-对比">#</a></h4>
+<table>
+  <thead>
+      <tr>
+          <th>特性</th>
+          <th>Core API</th>
+          <th>Tree API</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><strong>内存占用</strong></td>
+          <td>低（流式处理）</td>
+          <td>高（加载整个类）</td>
+      </tr>
+      <tr>
+          <td><strong>性能</strong></td>
+          <td>快</td>
+          <td>较慢</td>
+      </tr>
+      <tr>
+          <td><strong>适用场景</strong></td>
+          <td>简单修改、单次遍历</td>
+          <td>复杂修改、多次遍历</td>
+      </tr>
+      <tr>
+          <td><strong>易用性</strong></td>
+          <td>需理解访问者模式</td>
+          <td>更直观</td>
+      </tr>
+  </tbody>
+</table>
+<p><strong>推荐</strong>: 优先使用 Core API,仅在必要时使用 Tree API。</p>
+<h3 id="36-常用工具类">3.6 常用工具类<a hidden class="anchor" aria-hidden="true" href="#36-常用工具类">#</a></h3>
+<h4 id="361-asmifier">3.6.1 ASMifier<a hidden class="anchor" aria-hidden="true" href="#361-asmifier">#</a></h4>
+<p>将 class 文件转换为生成该字节码的 ASM 代码：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">java -classpath asm-all.jar org.objectweb.asm.util.ASMifier TargetClass.class
+</span></span></code></pre></div><p>这对于学习如何使用 ASM 非常有帮助。</p>
+<h4 id="362-traceclassvisitor">3.6.2 TraceClassVisitor<a hidden class="anchor" aria-hidden="true" href="#362-traceclassvisitor">#</a></h4>
+<p>打印类的详细信息：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">ClassReader</span><span class="w"> </span><span class="n">cr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">ClassReader</span><span class="p">(</span><span class="s">&#34;TargetClass&#34;</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">TraceClassVisitor</span><span class="w"> </span><span class="n">tcv</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">TraceClassVisitor</span><span class="p">(</span><span class="k">new</span><span class="w"> </span><span class="n">PrintWriter</span><span class="p">(</span><span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">));</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">cr</span><span class="p">.</span><span class="na">accept</span><span class="p">(</span><span class="n">tcv</span><span class="p">,</span><span class="w"> </span><span class="n">0</span><span class="p">);</span><span class="w">
+</span></span></span></code></pre></div><h4 id="363-checkclassadapter">3.6.3 CheckClassAdapter<a hidden class="anchor" aria-hidden="true" href="#363-checkclassadapter">#</a></h4>
+<p>验证生成的字节码是否合法：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">ClassWriter</span><span class="w"> </span><span class="n">cw</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">ClassWriter</span><span class="p">(</span><span class="n">ClassWriter</span><span class="p">.</span><span class="na">COMPUTE_FRAMES</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">ClassVisitor</span><span class="w"> </span><span class="n">cv</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">CheckClassAdapter</span><span class="p">(</span><span class="n">cw</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="c1">// 使用 cv 进行字节码操作</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="c1">// 如果字节码非法,会抛出异常</span><span class="w">
+</span></span></span></code></pre></div><h2 id="4-android-字节码实践">4. Android 字节码实践<a hidden class="anchor" aria-hidden="true" href="#4-android-字节码实践">#</a></h2>
+<h3 id="41-kotlin-字节码特性">4.1 Kotlin 字节码特性<a hidden class="anchor" aria-hidden="true" href="#41-kotlin-字节码特性">#</a></h3>
+<h4 id="411-lambda-表达式">4.1.1 Lambda 表达式<a hidden class="anchor" aria-hidden="true" href="#411-lambda-表达式">#</a></h4>
+<p>Kotlin Lambda 会生成额外的类:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-kotlin" data-lang="kotlin"><span class="line"><span class="cl"><span class="c1">// Kotlin 代码
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="k">val</span> <span class="py">lambda</span> <span class="p">=</span> <span class="p">{</span> <span class="n">x</span><span class="p">:</span> <span class="n">Int</span> <span class="o">-&gt;</span> <span class="n">x</span> <span class="p">*</span> <span class="m">2</span> <span class="p">}</span>
+</span></span></code></pre></div><p>生成的 class:</p>
+<pre tabindex="0"><code>MyClass.class
+MyClass$lambda$1.class  // Lambda 对应的类
+</code></pre><h4 id="412-inline-函数">4.1.2 inline 函数<a hidden class="anchor" aria-hidden="true" href="#412-inline-函数">#</a></h4>
+<p><code>inline</code> 函数会在编译时内联到调用处,不会生成额外的方法调用:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-kotlin" data-lang="kotlin"><span class="line"><span class="cl"><span class="k">inline</span> <span class="k">fun</span> <span class="nf">log</span><span class="p">(</span><span class="n">message</span><span class="p">:</span> <span class="n">String</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">println</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">// 调用处会直接展开为
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="n">println</span><span class="p">(</span><span class="s2">&#34;message&#34;</span><span class="p">)</span>
+</span></span></code></pre></div><p><strong>注意</strong>: 对 inline 函数进行字节码注入需要特别小心。</p>
+<h4 id="413-协程">4.1.3 协程<a hidden class="anchor" aria-hidden="true" href="#413-协程">#</a></h4>
+<p>协程会生成状态机,字节码比较复杂:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-kotlin" data-lang="kotlin"><span class="line"><span class="cl"><span class="k">suspend</span> <span class="k">fun</span> <span class="nf">fetchData</span><span class="p">():</span> <span class="n">String</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">delay</span><span class="p">(</span><span class="m">1000</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="s2">&#34;data&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>生成的字节码包含状态机逻辑,修改时需要理解 <code>Continuation</code> 机制。</p>
+<h4 id="414-属性访问">4.1.4 属性访问<a hidden class="anchor" aria-hidden="true" href="#414-属性访问">#</a></h4>
+<p>Kotlin 属性会生成 getter/setter:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-kotlin" data-lang="kotlin"><span class="line"><span class="cl"><span class="k">var</span> <span class="py">name</span><span class="p">:</span> <span class="n">String</span> <span class="p">=</span> <span class="s2">&#34;&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="c1">// 生成: getName(), setName(String)
+</span></span></span></code></pre></div><p>字节码操作时需要注意访问的是方法而非字段。</p>
+<h3 id="42-完整示例-方法耗时统计">4.2 完整示例: 方法耗时统计<a hidden class="anchor" aria-hidden="true" href="#42-完整示例-方法耗时统计">#</a></h3>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-kotlin" data-lang="kotlin"><span class="line"><span class="cl"><span class="k">class</span> <span class="nc">MethodTimerVisitor</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">    <span class="n">mv</span><span class="p">:</span> <span class="n">MethodVisitor</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">access</span><span class="p">:</span> <span class="n">Int</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="k">private</span> <span class="k">val</span> <span class="py">methodName</span><span class="p">:</span> <span class="n">String</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">descriptor</span><span class="p">:</span> <span class="n">String</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span> <span class="p">:</span> <span class="n">AdviceAdapter</span><span class="p">(</span><span class="nc">Opcodes</span><span class="p">.</span><span class="n">ASM9</span><span class="p">,</span> <span class="n">mv</span><span class="p">,</span> <span class="n">access</span><span class="p">,</span> <span class="n">methodName</span><span class="p">,</span> <span class="n">descriptor</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">private</span> <span class="k">var</span> <span class="py">startTimeVar</span> <span class="p">=</span> <span class="m">0</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">override</span> <span class="k">fun</span> <span class="nf">onMethodEnter</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// long startTime = System.currentTimeMillis();
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="n">startTimeVar</span> <span class="p">=</span> <span class="n">newLocal</span><span class="p">(</span><span class="nc">Type</span><span class="p">.</span><span class="n">LONG_TYPE</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="n">mv</span><span class="p">.</span><span class="n">visitMethodInsn</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">            <span class="n">INVOKESTATIC</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">            <span class="s2">&#34;java/lang/System&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">            <span class="s2">&#34;currentTimeMillis&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">            <span class="s2">&#34;()J&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">            <span class="k">false</span>
+</span></span><span class="line"><span class="cl">        <span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="n">mv</span><span class="p">.</span><span class="n">visitVarInsn</span><span class="p">(</span><span class="n">LSTORE</span><span class="p">,</span> <span class="n">startTimeVar</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">override</span> <span class="k">fun</span> <span class="nf">onMethodExit</span><span class="p">(</span><span class="n">opcode</span><span class="p">:</span> <span class="n">Int</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// long cost = System.currentTimeMillis() - startTime;
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="n">mv</span><span class="p">.</span><span class="n">visitMethodInsn</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">            <span class="n">INVOKESTATIC</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">            <span class="s2">&#34;java/lang/System&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">            <span class="s2">&#34;currentTimeMillis&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">            <span class="s2">&#34;()J&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">            <span class="k">false</span>
+</span></span><span class="line"><span class="cl">        <span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="n">mv</span><span class="p">.</span><span class="n">visitVarInsn</span><span class="p">(</span><span class="n">LLOAD</span><span class="p">,</span> <span class="n">startTimeVar</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="n">mv</span><span class="p">.</span><span class="n">visitInsn</span><span class="p">(</span><span class="n">LSUB</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="k">val</span> <span class="py">costVar</span> <span class="p">=</span> <span class="n">newLocal</span><span class="p">(</span><span class="nc">Type</span><span class="p">.</span><span class="n">LONG_TYPE</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="n">mv</span><span class="p">.</span><span class="n">visitVarInsn</span><span class="p">(</span><span class="n">LSTORE</span><span class="p">,</span> <span class="n">costVar</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="c1">// Log.d(&#34;Perf&#34;, methodName + &#34; cost: &#34; + cost);
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="n">mv</span><span class="p">.</span><span class="n">visitLdcInsn</span><span class="p">(</span><span class="s2">&#34;Perf&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="n">mv</span><span class="p">.</span><span class="n">visitLdcInsn</span><span class="p">(</span><span class="s2">&#34;</span><span class="si">$methodName</span><span class="s2"> cost: &#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="n">mv</span><span class="p">.</span><span class="n">visitVarInsn</span><span class="p">(</span><span class="n">LLOAD</span><span class="p">,</span> <span class="n">costVar</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="n">mv</span><span class="p">.</span><span class="n">visitMethodInsn</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">            <span class="n">INVOKESTATIC</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">            <span class="s2">&#34;java/lang/String&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">            <span class="s2">&#34;valueOf&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">            <span class="s2">&#34;(J)Ljava/lang/String;&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">            <span class="k">false</span>
+</span></span><span class="line"><span class="cl">        <span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="n">mv</span><span class="p">.</span><span class="n">visitMethodInsn</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">            <span class="n">INVOKEVIRTUAL</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">            <span class="s2">&#34;java/lang/String&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">            <span class="s2">&#34;concat&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">            <span class="s2">&#34;(Ljava/lang/String;)Ljava/lang/String;&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">            <span class="k">false</span>
+</span></span><span class="line"><span class="cl">        <span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="n">mv</span><span class="p">.</span><span class="n">visitMethodInsn</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">            <span class="n">INVOKESTATIC</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">            <span class="s2">&#34;android/util/Log&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">            <span class="s2">&#34;d&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">            <span class="s2">&#34;(Ljava/lang/String;Ljava/lang/String;)I&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">            <span class="k">false</span>
+</span></span><span class="line"><span class="cl">        <span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="n">mv</span><span class="p">.</span><span class="n">visitInsn</span><span class="p">(</span><span class="n">POP</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><h2 id="5-常见问题与最佳实践">5. 常见问题与最佳实践<a hidden class="anchor" aria-hidden="true" href="#5-常见问题与最佳实践">#</a></h2>
+<h3 id="51-常见坑点">5.1 常见坑点<a hidden class="anchor" aria-hidden="true" href="#51-常见坑点">#</a></h3>
+<h4 id="511-classloader-问题">5.1.1 ClassLoader 问题<a hidden class="anchor" aria-hidden="true" href="#511-classloader-问题">#</a></h4>
+<p><strong>问题</strong>: 在 Gradle Plugin 中修改字节码时,<code>ClassPool</code> 找不到类</p>
+<p><strong>解决</strong>:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">ClassPool</span><span class="w"> </span><span class="n">pool</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ClassPool</span><span class="p">.</span><span class="na">getDefault</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="c1">// 添加编译路径</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">pool</span><span class="p">.</span><span class="na">appendClassPath</span><span class="p">(</span><span class="n">compilePath</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="c1">// 添加 Android SDK 路径</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">pool</span><span class="p">.</span><span class="na">appendClassPath</span><span class="p">(</span><span class="n">androidJarPath</span><span class="p">);</span><span class="w">
+</span></span></span></code></pre></div><h4 id="512-stack-map-frame-错误">5.1.2 Stack Map Frame 错误<a hidden class="anchor" aria-hidden="true" href="#512-stack-map-frame-错误">#</a></h4>
+<p><strong>问题</strong>: 修改字节码后出现 <code>VerifyError</code> 或 Stack Map Frame 错误</p>
+<p><strong>原因</strong>: Java 7+ 要求 Stack Map Frame 信息,手动插入字节码可能破坏</p>
+<p><strong>解决</strong>:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="c1">// 让 ASM 自动计算</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">ClassWriter</span><span class="w"> </span><span class="n">cw</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">ClassWriter</span><span class="p">(</span><span class="n">ClassWriter</span><span class="p">.</span><span class="na">COMPUTE_FRAMES</span><span class="p">);</span><span class="w">
+</span></span></span></code></pre></div><h4 id="513-kotlin-companion-object">5.1.3 Kotlin Companion Object<a hidden class="anchor" aria-hidden="true" href="#513-kotlin-companion-object">#</a></h4>
+<p><strong>问题</strong>: 访问 Kotlin <code>companion object</code> 时找不到静态字段</p>
+<p><strong>原因</strong>: Kotlin companion object 编译为内部类 <code>Companion</code></p>
+<p><strong>解决</strong>:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-kotlin" data-lang="kotlin"><span class="line"><span class="cl"><span class="c1">// Kotlin 代码
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="k">class</span> <span class="nc">MyClass</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">companion</span> <span class="k">object</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">const</span> <span class="k">val</span> <span class="py">TAG</span> <span class="p">=</span> <span class="s2">&#34;MyClass&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">// 字节码中实际为
+</span></span></span><span class="line"><span class="cl"><span class="c1">// MyClass$Companion.TAG (静态字段在 Companion 类中)
+</span></span></span></code></pre></div><p>访问时使用:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">mv</span><span class="p">.</span><span class="na">visitFieldInsn</span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">GETSTATIC</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s">&#34;com/example/MyClass$Companion&#34;</span><span class="p">,</span><span class="w">  </span><span class="c1">// 注意 $Companion</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s">&#34;TAG&#34;</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s">&#34;Ljava/lang/String;&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">);</span><span class="w">
+</span></span></span></code></pre></div><h4 id="514-内部类和匿名类">5.1.4 内部类和匿名类<a hidden class="anchor" aria-hidden="true" href="#514-内部类和匿名类">#</a></h4>
+<p><strong>问题</strong>: 内部类名称包含 <code>$</code> 符号,导致类名匹配失败</p>
+<p><strong>解决</strong>:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-kotlin" data-lang="kotlin"><span class="line"><span class="cl"><span class="c1">// 过滤时使用正确的类名格式
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="k">fun</span> <span class="nf">isInstrumentable</span><span class="p">(</span><span class="n">className</span><span class="p">:</span> <span class="n">String</span><span class="p">):</span> <span class="n">Boolean</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 跳过匿名类
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="k">if</span> <span class="p">(</span><span class="n">className</span><span class="p">.</span><span class="n">contains</span><span class="p">(</span><span class="s2">&#34;$&#34;</span><span class="p">)</span> <span class="o">&amp;&amp;</span> <span class="n">className</span><span class="p">.</span><span class="n">substringAfterLast</span><span class="p">(</span><span class="s2">&#34;$&#34;</span><span class="p">).</span><span class="n">toIntOrNull</span><span class="p">()</span> <span class="o">!=</span> <span class="k">null</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="k">false</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="k">true</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><h3 id="52-性能优化">5.2 性能优化<a hidden class="anchor" aria-hidden="true" href="#52-性能优化">#</a></h3>
+<h4 id="521-只处理需要的类">5.2.1 只处理需要的类<a hidden class="anchor" aria-hidden="true" href="#521-只处理需要的类">#</a></h4>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-kotlin" data-lang="kotlin"><span class="line"><span class="cl"><span class="c1">// 过滤不需要处理的类
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="k">fun</span> <span class="nf">shouldProcess</span><span class="p">(</span><span class="n">className</span><span class="p">:</span> <span class="n">String</span><span class="p">):</span> <span class="n">Boolean</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="k">when</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">className</span><span class="p">.</span><span class="n">startsWith</span><span class="p">(</span><span class="s2">&#34;android.&#34;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="k">false</span>
+</span></span><span class="line"><span class="cl">        <span class="n">className</span><span class="p">.</span><span class="n">startsWith</span><span class="p">(</span><span class="s2">&#34;androidx.&#34;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="k">false</span>
+</span></span><span class="line"><span class="cl">        <span class="n">className</span><span class="p">.</span><span class="n">startsWith</span><span class="p">(</span><span class="s2">&#34;kotlin.&#34;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="k">false</span>
+</span></span><span class="line"><span class="cl">        <span class="n">className</span><span class="p">.</span><span class="n">startsWith</span><span class="p">(</span><span class="s2">&#34;java.&#34;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="k">false</span>
+</span></span><span class="line"><span class="cl">        <span class="n">className</span><span class="p">.</span><span class="n">contains</span><span class="p">(</span><span class="s2">&#34;R</span><span class="se">\$</span><span class="s2">&#34;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="k">false</span>  <span class="c1">// R 资源类
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="n">className</span><span class="p">.</span><span class="n">endsWith</span><span class="p">(</span><span class="s2">&#34;BuildConfig&#34;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="k">false</span>
+</span></span><span class="line"><span class="cl">        <span class="k">else</span> <span class="o">-&gt;</span> <span class="k">true</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><h4 id="522-避免重复处理">5.2.2 避免重复处理<a hidden class="anchor" aria-hidden="true" href="#522-避免重复处理">#</a></h4>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-kotlin" data-lang="kotlin"><span class="line"><span class="cl"><span class="c1">// 记录已处理的类
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="k">private</span> <span class="k">val</span> <span class="py">processedClasses</span> <span class="p">=</span> <span class="n">mutableSetOf</span><span class="p">&lt;</span><span class="n">String</span><span class="p">&gt;()</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">fun</span> <span class="nf">processClass</span><span class="p">(</span><span class="n">className</span><span class="p">:</span> <span class="n">String</span><span class="p">,</span> <span class="n">classBytes</span><span class="p">:</span> <span class="n">ByteArray</span><span class="p">):</span> <span class="n">ByteArray</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="n">className</span> <span class="k">in</span> <span class="n">processedClasses</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="n">classBytes</span>  <span class="c1">// 直接返回,不处理
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="n">processedClasses</span><span class="p">.</span><span class="n">add</span><span class="p">(</span><span class="n">className</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// 处理字节码...
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="k">return</span> <span class="n">modifiedBytes</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><h4 id="523-使用-compute_maxs-而非-compute_frames">5.2.3 使用 COMPUTE_MAXS 而非 COMPUTE_FRAMES<a hidden class="anchor" aria-hidden="true" href="#523-使用-compute_maxs-而非-compute_frames">#</a></h4>
+<p>如果只是简单插入代码,使用 <code>COMPUTE_MAXS</code> 更快:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="c1">// 性能更好(如果不改变栈帧结构)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">ClassWriter</span><span class="w"> </span><span class="n">cw</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">ClassWriter</span><span class="p">(</span><span class="n">ClassWriter</span><span class="p">.</span><span class="na">COMPUTE_MAXS</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="c1">// 更安全但更慢</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">ClassWriter</span><span class="w"> </span><span class="n">cw</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">ClassWriter</span><span class="p">(</span><span class="n">ClassWriter</span><span class="p">.</span><span class="na">COMPUTE_FRAMES</span><span class="p">);</span><span class="w">
+</span></span></span></code></pre></div><h3 id="53-最佳实践">5.3 最佳实践<a hidden class="anchor" aria-hidden="true" href="#53-最佳实践">#</a></h3>
+<h4 id="531-字节码验证">5.3.1 字节码验证<a hidden class="anchor" aria-hidden="true" href="#531-字节码验证">#</a></h4>
+<p>插桩后务必验证字节码:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-kotlin" data-lang="kotlin"><span class="line"><span class="cl"><span class="c1">// 方法 1: 使用 CheckClassAdapter
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="n">ClassWriter</span> <span class="n">cw</span> <span class="p">=</span> <span class="n">new</span> <span class="n">ClassWriter</span><span class="p">(</span><span class="nc">ClassWriter</span><span class="p">.</span><span class="n">COMPUTE_FRAMES</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="n">ClassVisitor</span> <span class="n">cv</span> <span class="p">=</span> <span class="n">new</span> <span class="n">CheckClassAdapter</span><span class="p">(</span><span class="n">cw</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="c1">// ... 进行字节码操作
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl"><span class="c1">// 方法 2: 运行测试
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="p">./</span><span class="n">gradlew</span> <span class="n">testDebugUnitTest</span>
+</span></span><span class="line"><span class="cl"><span class="p">./</span><span class="n">gradlew</span> <span class="n">connectedDebugAndroidTest</span>
+</span></span></code></pre></div><h4 id="532-日志记录">5.3.2 日志记录<a hidden class="anchor" aria-hidden="true" href="#532-日志记录">#</a></h4>
+<p>记录插桩信息便于调试:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-kotlin" data-lang="kotlin"><span class="line"><span class="cl"><span class="k">class</span> <span class="nc">MyClassVisitor</span><span class="p">(</span><span class="n">cv</span><span class="p">:</span> <span class="n">ClassVisitor</span><span class="p">)</span> <span class="p">:</span> <span class="n">ClassVisitor</span><span class="p">(</span><span class="nc">Opcodes</span><span class="p">.</span><span class="n">ASM9</span><span class="p">,</span> <span class="n">cv</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">private</span> <span class="k">var</span> <span class="py">className</span> <span class="p">=</span> <span class="s2">&#34;&#34;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">override</span> <span class="k">fun</span> <span class="nf">visit</span><span class="p">(</span><span class="n">version</span><span class="p">:</span> <span class="n">Int</span><span class="p">,</span> <span class="n">access</span><span class="p">:</span> <span class="n">Int</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="n">String</span><span class="p">,</span> <span class="o">..</span><span class="p">.)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">className</span> <span class="p">=</span> <span class="n">name</span>
+</span></span><span class="line"><span class="cl">        <span class="n">println</span><span class="p">(</span><span class="s2">&#34;Processing class: </span><span class="si">$className</span><span class="s2">&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="k">super</span><span class="p">.</span><span class="n">visit</span><span class="p">(</span><span class="n">version</span><span class="p">,</span> <span class="n">access</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="o">..</span><span class="p">.)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">override</span> <span class="k">fun</span> <span class="nf">visitMethod</span><span class="p">(</span><span class="o">..</span><span class="p">.):</span> <span class="n">MethodVisitor</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">println</span><span class="p">(</span><span class="s2">&#34;  Processing method: </span><span class="si">$className</span><span class="s2">.</span><span class="si">$name</span><span class="s2">&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="k">super</span><span class="p">.</span><span class="n">visitMethod</span><span class="p">(</span><span class="o">..</span><span class="p">.)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><h4 id="533-单元测试">5.3.3 单元测试<a hidden class="anchor" aria-hidden="true" href="#533-单元测试">#</a></h4>
+<p>为字节码插桩编写测试:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-kotlin" data-lang="kotlin"><span class="line"><span class="cl"><span class="k">class</span> <span class="nc">BytecodeTest</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nd">@Test</span>
+</span></span><span class="line"><span class="cl">    <span class="k">fun</span> <span class="nf">testMethodTimer</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// 1. 加载原始 class
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="k">val</span> <span class="py">classBytes</span> <span class="p">=</span> <span class="n">loadClassBytes</span><span class="p">(</span><span class="s2">&#34;TargetClass.class&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="c1">// 2. 应用插桩
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="k">val</span> <span class="py">cr</span> <span class="p">=</span> <span class="n">ClassReader</span><span class="p">(</span><span class="n">classBytes</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="k">val</span> <span class="py">cw</span> <span class="p">=</span> <span class="n">ClassWriter</span><span class="p">(</span><span class="nc">ClassWriter</span><span class="p">.</span><span class="n">COMPUTE_FRAMES</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="k">val</span> <span class="py">cv</span> <span class="p">=</span> <span class="n">MethodTimerVisitor</span><span class="p">(</span><span class="n">cw</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="n">cr</span><span class="p">.</span><span class="n">accept</span><span class="p">(</span><span class="n">cv</span><span class="p">,</span> <span class="nc">ClassReader</span><span class="p">.</span><span class="n">EXPAND_FRAMES</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="c1">// 3. 加载修改后的类
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="k">val</span> <span class="py">modifiedClass</span> <span class="p">=</span> <span class="n">loadClass</span><span class="p">(</span><span class="n">cw</span><span class="p">.</span><span class="n">toByteArray</span><span class="p">())</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="c1">// 4. 验证行为
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="k">val</span> <span class="py">instance</span> <span class="p">=</span> <span class="n">modifiedClass</span><span class="p">.</span><span class="n">newInstance</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">        <span class="k">val</span> <span class="py">method</span> <span class="p">=</span> <span class="n">modifiedClass</span><span class="p">.</span><span class="n">getMethod</span><span class="p">(</span><span class="s2">&#34;targetMethod&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="n">method</span><span class="p">.</span><span class="n">invoke</span><span class="p">(</span><span class="n">instance</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="c1">// 5. 验证日志输出
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="c1">// ...
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><h3 id="54-调试技巧">5.4 调试技巧<a hidden class="anchor" aria-hidden="true" href="#54-调试技巧">#</a></h3>
+<h4 id="541-对比字节码差异">5.4.1 对比字节码差异<a hidden class="anchor" aria-hidden="true" href="#541-对比字节码差异">#</a></h4>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># 1. 备份原始 class</span>
+</span></span><span class="line"><span class="cl">cp TargetClass.class TargetClass.class.bak
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 2. 应用插桩后查看差异</span>
+</span></span><span class="line"><span class="cl">javap -c -v TargetClass.class.bak &gt; original.txt
+</span></span><span class="line"><span class="cl">javap -c -v TargetClass.class &gt; modified.txt
+</span></span><span class="line"><span class="cl">diff original.txt modified.txt
+</span></span></code></pre></div><h4 id="542-使用-asmifier-学习">5.4.2 使用 ASMifier 学习<a hidden class="anchor" aria-hidden="true" href="#542-使用-asmifier-学习">#</a></h4>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># 查看如何用 ASM 生成目标字节码</span>
+</span></span><span class="line"><span class="cl">java -classpath asm-all.jar <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>  org.objectweb.asm.util.ASMifier <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>  TargetClass.class
+</span></span></code></pre></div><h4 id="543-打印字节码">5.4.3 打印字节码<a hidden class="anchor" aria-hidden="true" href="#543-打印字节码">#</a></h4>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-kotlin" data-lang="kotlin"><span class="line"><span class="cl"><span class="c1">// 在插桩过程中打印字节码
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="n">ClassReader</span> <span class="n">cr</span> <span class="p">=</span> <span class="n">ClassReader</span><span class="p">(</span><span class="n">classBytes</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="n">TraceClassVisitor</span> <span class="n">tcv</span> <span class="p">=</span> <span class="n">TraceClassVisitor</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">    <span class="n">MyClassVisitor</span><span class="p">(</span><span class="n">cw</span><span class="p">),</span>
+</span></span><span class="line"><span class="cl">    <span class="n">PrintWriter</span><span class="p">(</span><span class="nc">System</span><span class="p">.</span><span class="k">out</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="n">cr</span><span class="p">.</span><span class="n">accept</span><span class="p">(</span><span class="n">tcv</span><span class="p">,</span> <span class="m">0</span><span class="p">)</span>
+</span></span></code></pre></div><h3 id="55-javassist-vs-asm-选择指南">5.5 Javassist vs ASM 选择指南<a hidden class="anchor" aria-hidden="true" href="#55-javassist-vs-asm-选择指南">#</a></h3>
+<table>
+  <thead>
+      <tr>
+          <th>场景</th>
+          <th>推荐工具</th>
+          <th>原因</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><strong>简单代码注入</strong></td>
+          <td>Javassist</td>
+          <td>API 简单,开发快</td>
+      </tr>
+      <tr>
+          <td><strong>性能敏感</strong></td>
+          <td>ASM</td>
+          <td>性能是 Javassist 的 10+ 倍</td>
+      </tr>
+      <tr>
+          <td><strong>复杂字节码操作</strong></td>
+          <td>ASM</td>
+          <td>更灵活,功能更强</td>
+      </tr>
+      <tr>
+          <td><strong>学习成本优先</strong></td>
+          <td>Javassist</td>
+          <td>学习曲线平缓</td>
+      </tr>
+      <tr>
+          <td><strong>生产环境</strong></td>
+          <td>ASM</td>
+          <td>性能更好,更稳定</td>
+      </tr>
+  </tbody>
+</table>
+<p><strong>推荐</strong>: 优先使用 ASM,性能和灵活性更好。</p>
+<h2 id="6-参考资源">6. 参考资源<a hidden class="anchor" aria-hidden="true" href="#6-参考资源">#</a></h2>
+<h3 id="61-官方文档">6.1 官方文档<a hidden class="anchor" aria-hidden="true" href="#61-官方文档">#</a></h3>
+<ul>
+<li><a href="https://asm.ow2.io/">ASM 官方文档</a></li>
+<li><a href="https://www.javassist.org/">Javassist 官方文档</a></li>
+<li><a href="https://docs.oracle.com/javase/specs/jvms/se17/html/index.html">JVM 规范</a></li>
+</ul>
+<h3 id="62-实用工具">6.2 实用工具<a hidden class="anchor" aria-hidden="true" href="#62-实用工具">#</a></h3>
+<table>
+  <thead>
+      <tr>
+          <th>工具</th>
+          <th>用途</th>
+          <th>链接</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><strong>ASM Bytecode Viewer</strong></td>
+          <td>AS 插件,查看字节码</td>
+          <td><a href="https://plugins.jetbrains.com/plugin/5918-asm-bytecode-viewer-support-kotlin">插件市场</a></td>
+      </tr>
+      <tr>
+          <td><strong>jclasslib</strong></td>
+          <td>字节码查看器</td>
+          <td><a href="https://github.com/ingokegel/jclasslib">GitHub</a></td>
+      </tr>
+      <tr>
+          <td><strong>dex2jar</strong></td>
+          <td>dex 转 jar</td>
+          <td><a href="https://github.com/pxb1988/dex2jar">GitHub</a></td>
+      </tr>
+      <tr>
+          <td><strong>JD-GUI</strong></td>
+          <td>Java 反编译器</td>
+          <td><a href="http://java-decompiler.github.io/">官网</a></td>
+      </tr>
+      <tr>
+          <td><strong>Jadx</strong></td>
+          <td>Android APK 反编译</td>
+          <td><a href="https://github.com/skylot/jadx">GitHub</a></td>
+      </tr>
+  </tbody>
+</table>
+<h3 id="63-开源项目参考">6.3 开源项目参考<a hidden class="anchor" aria-hidden="true" href="#63-开源项目参考">#</a></h3>
+<ul>
+<li><a href="https://github.com/didi/booster">booster</a> - 滴滴 Android 质量优化框架</li>
+<li><a href="https://github.com/Leaking/Hunter">Hunter</a> - 字节码插桩框架</li>
+<li><a href="https://github.com/Tencent/matrix">matrix</a> - 腾讯 APM 框架</li>
+<li><a href="https://github.com/bytedance/ByteX">ByteX</a> - 字节跳动字节码插件平台</li>
+</ul>
+<h3 id="64-学习资源">6.4 学习资源<a hidden class="anchor" aria-hidden="true" href="#64-学习资源">#</a></h3>
+<ul>
+<li><a href="https://asm.ow2.io/asm4-guide.pdf">ASM 官方教程</a></li>
+<li><a href="https://en.wikipedia.org/wiki/Java_bytecode_instruction_listings">字节码指令集速查</a></li>
+</ul>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="/tags/%E5%AD%97%E8%8A%82%E7%A0%81/">字节码</a></li>
+    </ul>
+<nav class="paginav">
+  <a class="next" href="/posts/tools/curl/">
+    <span class="title">Next »</span>
+    <br>
+    <span>curl入门</span>
+  </a>
+</nav>
+
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2026 <a href="/">缥缈夏鸢</a></span> · 
+
+    <span>
+        Powered by
+        <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+        <path d="M12 6H0l6-6z" />
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu')
+    if (menu) {
+        menu.scrollLeft = localStorage.getItem("menu-scroll-position");
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        if (document.body.className.includes("dark")) {
+            document.body.classList.remove('dark');
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            document.body.classList.add('dark');
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerHTML = 'copy';
+
+        function copyingDone() {
+            copybutton.innerHTML = 'copied!';
+            setTimeout(() => {
+                copybutton.innerHTML = 'copy';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+</body>
+
+</html>

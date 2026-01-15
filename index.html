@@ -211,6 +211,23 @@ window.onload = () => {
 
 <article class="post-entry"> 
   <header class="entry-header">
+    <h2 class="entry-hint-parent">字节码技术入门
+    </h2>
+  </header>
+  <div class="entry-content">
+    <p> 本文档介绍 Android 开发中的字节码操作技术，包括字节码基础、Javassist、ASM 框架的使用。
+1. 字节码基础知识 1.1 什么是字节码 Java 字节码（Bytecode）是 Java 源代码编译后的中间表示形式，存储在 .class 文件中。JVM（Java Virtual Machine）执行的就是字节码，而不是源代码。
+特点:
+平台无关性：Write Once, Run Anywhere 介于高级语言和机器码之间 可被工具读取、修改、生成 1.2 Class 文件结构 一个 .class 文件的基本结构：
+ClassFile { u4 magic; // 魔数 0xCAFEBABE u2 minor_version; // 次版本号 u2 major_version; // 主版本号 u2 constant_pool_count; // 常量池计数 cp_info constant_pool[]; // 常量池 u2 access_flags; // 访问标志 u2 this_class; // 当前类 u2 super_class; // 父类 u2 interfaces_count; // 接口计数 u2 interfaces[]; // 接口表 u2 fields_count; // 字段计数 field_info fields[]; // 字段表 u2 methods_count; // 方法计数 method_info methods[]; // 方法表 u2 attributes_count; // 属性计数 attribute_info attributes[]; // 属性表 } 1.3 常用字节码指令 指令 说明 示例 aload_0 加载局部变量表第 0 个引用到栈顶 加载 this invokespecial 调用实例初始化方法、私有方法 构造函数调用 invokevirtual 调用实例方法（虚方法） 普通方法调用 invokestatic 调用静态方法 Math.max() invokeinterface 调用接口方法 接口方法调用 return 从方法返回 void void 方法结束 areturn 从方法返回引用类型 返回对象 getfield 获取实例字段值 obj.field putfield 设置实例字段值 obj.field = value getstatic 获取静态字段值 Class.STATIC_FIELD putstatic 设置静态字段值 Class.STATIC_FIELD = value new 创建对象实例 new Object() 1.4 方法描述符 方法描述符用于描述方法的参数和返回值类型：
+...</p>
+  </div>
+  <footer class="entry-footer"><span title='2026-01-15 14:41:00 +0800 CST'>January 15, 2026</span>&nbsp;·&nbsp;9 min&nbsp;·&nbsp;1890 words&nbsp;·&nbsp;夏天的小西瓜</footer>
+  <a class="entry-link" aria-label="post link to 字节码技术入门" href="/posts/jvm/bytecode_guide/"></a>
+</article>
+
+<article class="post-entry"> 
+  <header class="entry-header">
     <h2 class="entry-hint-parent">curl入门
     </h2>
   </header>
@@ -218,9 +235,9 @@ window.onload = () => {
     <p>概述 curl（Client URL）是一个强大的命令行工具，用于在 Linux/Unix 系统中传输数据。它支持多种协议，包括 HTTP、HTTPS、FTP、SFTP 等，是开发者和系统管理员日常工作中不可或缺的工具。
 基本语法结构 curl 命令的基本语法格式如下：curl [options] [URL…]
 参数说明：
-options：各种可选参数，用于控制 curl 的行为 URL：要访问的一个或多个网址 常用选项参数详解 1. 基本请求控制 选项 说明 示例 -X 指定 HTTP 方法 curl -X POST https://example.com -d 发送 POST 数据 curl -d &#34;name=John&#34; https://example.com -G 将 -d 数据作为 GET 参数发送 curl -G -d &#34;q=keyword&#34; https://search.com -H 添加请求头 curl -H &#34;Content-Type: application/json&#34; https://api.com 2. 输出控制 选项 说明 示例 -o 将输出保存到文件 curl -o output.file https://example.com -O 使用远程文件名保存 curl -O https://example.com/file.zip -s 静默模式（不显示进度） curl -s https://api.com/data.json -v 显示详细通信过程 curl -v https://example.com 3. 认证与安全 选项 说明 示例 -u 用户名密码认证 curl -u user:pass https://secure.com -k 忽略 SSL 证书验证 curl -k https://self-signed.com --cacert 指定 CA 证书 curl --cacert cert.pem https://secure.com 4. 其他实用选项 选项 说明 示例 -L 跟随重定向 curl -L https://short.url -I 只获取响应头与状态码 curl -I https://example.com --limit-rate 限制传输速度（单位可以是 K、M） curl --limit-rate 100K https://largefile.com 常见HTTP操作 1. 指定请求方法 # GET（默认） curl https://api.example.com/users # POST curl -X POST https://api.example.com/users # PUT curl -X PUT https://api.example.com/users/123 # DELETE curl -X DELETE https://api.example.com/users/123 # PATCH curl -X PATCH https://api.example.com/users/123 2. Header、Cookie 与认证 # 1. 添加/修改请求头。多次 -H 会添加多个 header。 curl https://api.example.com/users \ -H &#34;Accept: application/json&#34; \ -H &#34;X-Request-Id: 123456&#34; # 2. Content-Type 使用 ## JSON类型 curl -X POST https://api.example.com/users \ -H &#34;Content-Type: application/json&#34; \ -d &#39;{&#34;name&#34;:&#34;Tom&#34;,&#34;age&#34;:18}&#39; ## 表单类型 curl -X POST https://api.example.com/login \ -H &#34;Content-Type: application/x-www-form-urlencoded&#34; \ -d &#34;username=tom&amp;password=123456&#34; # 3. Basic Auth ## 显式写用户名密码 curl -u user:pass https://api.example.com/secure 3. 表单、JSON、文件上传 # 1. 表单数据（application/x-www-form-urlencoded） curl -X POST https://api.example.com/login \ -d &#34;username=tom&amp;password=123456&#34; # 2. JSON 请求体（application/json） curl -X POST https://api.example.com/users \ -H &#34;Content-Type: application/json&#34; \ -d &#39;{&#34;name&#34;:&#34;Tom&#34;,&#34;age&#34;:18}&#39; ## 如果 JSON 较复杂，可以放到文件中： curl -X POST https://api.example.com/users \ -H &#34;Content-Type: application/json&#34; \ -d @user.json # 3. multipart/form-data 文件上传 ## 上传单个文件 curl -X POST https://api.example.com/upload \ -F &#34;file=@/path/to/file.png&#34; ## 带额外字段 curl -X POST https://api.example.com/upload \ -F &#34;file=@/path/to/file.png&#34; \ -F &#34;userId=123&#34; \ -F &#34;description=avatar&#34; 4. 保存文件、断点续传、限速 # 1. 下载并显示进度条。使用远程文件名保存 curl -O https://example.com/file.zip # 2. 断点续传（范围下载） ## -C - 表示从已下载的大小继续。假设 file.zip 已下载了一部分 curl -C - -O https://example.com/file.zip ## 手动指定范围。只下载文件前 1024 字节 curl -r 0-1023 -o part1.bin https://example.com/file.bin # 3. 限速下载/上传（带宽控制） ## 最大下载速度限制为 100 KB/s，也支持 M：--limit-rate 1M curl --limit-rate 100K -O https://example.com/file.zip 5. 代理、超时设置 # 1. 代理 ## HTTP 代理 curl -x http://127.0.0.1:8080 https://example.com ## 带认证的代理 curl -x http://user:pass@proxy.example.com:8080 https://example.com # 2. 超时设置 ## 整体超时时间（秒） curl --max-time 10 https://slow.example.com ## 连接超时 curl --connect-timeout 5 https://slow.example.com </p>
+options：各种可选参数，用于控制 curl 的行为 URL：要访问的一个或多个网址 常用选项参数详解 1. 基本请求控制 选项 说明 示例 -X 指定 HTTP 方法 curl -X POST https://example.com -d 发送 POST 数据 curl -d &#34;name=John&#34; https://example.com -G 将 -d 数据作为 GET 参数发送 curl -G -d &#34;q=keyword&#34; https://search.com -H 添加请求头 curl -H &#34;Content-Type: application/json&#34; https://api.com 2. 输出控制 选项 说明 示例 -o 将输出保存到文件 curl -o output.file https://example.com -O 使用远程文件名保存 curl -O https://example.com/file.zip -s 静默模式（不显示进度） curl -s https://api.com/data.json -v 显示详细通信过程 curl -v https://example.com 3. 认证与安全 选项 说明 示例 -u 用户名密码认证 curl -u user:pass https://secure.com -k 忽略 SSL 证书验证 curl -k https://self-signed.com --cacert 指定 CA 证书 curl --cacert cert.pem https://secure.com 4. 其他实用选项 选项 说明 示例 -L 跟随重定向 curl -L https://short.url -I 只获取响应头与状态码 curl -I https://example.com --limit-rate 限制传输速度（单位可以是 K、M） curl --limit-rate 100K https://largefile.com 常见HTTP操作 1. 指定请求方法 # GET（默认） curl https://api.example.com/users # POST curl -X POST https://api.example.com/users # PUT curl -X PUT https://api.example.com/users/123 # DELETE curl -X DELETE https://api.example.com/users/123 # PATCH curl -X PATCH https://api.example.com/users/123 2. Header、Cookie 与认证 # 1. 添加/修改请求头。多次 -H 会添加多个 header。 curl https://api.example.com/users \ -H &#34;Accept: application/json&#34; \ -H &#34;X-Request-Id: 123456&#34; # 2. Content-Type 使用 ## JSON类型 curl -X POST https://api.example.com/users \ -H &#34;Content-Type: application/json&#34; \ -d &#39;{&#34;name&#34;:&#34;Tom&#34;,&#34;age&#34;:18}&#39; ## 表单类型 curl -X POST https://api.example.com/login \ -H &#34;Content-Type: application/x-www-form-urlencoded&#34; \ -d &#34;username=tom&amp;password=123456&#34; # 3. Basic Auth ## 显式写用户名密码 curl -u user:pass https://api.example.com/secure 3. 表单、JSON、文件上传 # 1. 表单数据（application/x-www-form-urlencoded） curl -X POST https://api.example.com/login \ -d &#34;username=tom&amp;password=123456&#34; # 2. JSON 请求体（application/json） curl -X POST https://api.example.com/users \ -H &#34;Content-Type: application/json&#34; \ -d &#39;{&#34;name&#34;:&#34;Tom&#34;,&#34;age&#34;:18}&#39; ## 如果 JSON 较复杂，可以放到文件中： curl -X POST https://api.example.com/users \ -H &#34;Content-Type: application/json&#34; \ -d @user.json # 3. multipart/form-data 文件上传 ## 上传单个文件 curl -X POST https://api.example.com/upload \ -F &#34;file=@/path/to/file.png&#34; ## 带额外字段 curl -X POST https://api.example.com/upload \ -F &#34;file=@/path/to/file.png&#34; \ -F &#34;userId=123&#34; \ -F &#34;description=avatar&#34; 4. 保存文件、断点续传、限速 # 1. 下载并显示进度条。使用远程文件名保存 curl -O https://example.com/file.zip # 2. 断点续传（范围下载） ## -C - 表示从已下载的大小继续。假设 file.zip 已下载了一部分 curl -C - -O https://example.com/file.zip ## 手动指定范围。只下载文件前 1024 字节 curl -r 0-1023 -o part1.bin https://example.com/file.bin # 3. 限速下载/上传（带宽控制） ## 最大下载速度限制为 100 KB/s，也支持 M：--limit-rate 1M curl --limit-rate 100K -O https://example.com/file.zip 5. 代理、超时设置、美化JSON # 1. 代理 ## HTTP 代理 curl -x http://127.0.0.1:8080 https://example.com ## 带认证的代理 curl -x http://user:pass@proxy.example.com:8080 https://example.com # 2. 超时设置 ## 整体超时时间（秒） curl --max-time 10 https://slow.example.com ## 连接超时 curl --connect-timeout 5 https://slow.example.com # 3. 美化JSON。使用 jq 美化输出 curl -s https://example.com/json | jq . </p>
   </div>
-  <footer class="entry-footer"><span title='2026-01-13 11:22:04 +0800 CST'>January 13, 2026</span>&nbsp;·&nbsp;2 min&nbsp;·&nbsp;370 words&nbsp;·&nbsp;夏天的小西瓜</footer>
+  <footer class="entry-footer"><span title='2026-01-13 11:22:04 +0800 CST'>January 13, 2026</span>&nbsp;·&nbsp;2 min&nbsp;·&nbsp;381 words&nbsp;·&nbsp;夏天的小西瓜</footer>
   <a class="entry-link" aria-label="post link to curl入门" href="/posts/tools/curl/"></a>
 </article>
 
@@ -375,26 +392,6 @@ graph LR system(操作系统) boot(/boot) init(init进程) run(运行级别) etc
   </div>
   <footer class="entry-footer"><span title='2024-11-15 14:38:57 +0800 CST'>November 15, 2024</span>&nbsp;·&nbsp;4 min&nbsp;·&nbsp;843 words&nbsp;·&nbsp;夏天的小西瓜</footer>
   <a class="entry-link" aria-label="post link to Linux使用介绍" href="/posts/os/linux/"></a>
-</article>
-
-<article class="post-entry"> 
-  <header class="entry-header">
-    <h2 class="entry-hint-parent">Git入门介绍
-    </h2>
-  </header>
-  <div class="entry-content">
-    <p>1. 概述 Git的本地区域可以划分为如下几个部分：
-工作目录（Working Directory） 暂存目录（也叫做索引，Index) 本地仓库（Repository） 2. 基本用法 2.0 常用操作 查找某个字串：git grep -nir [word-regexp]
-基于当前分支创建新分支，并创建对应远程分支与之关联
-基于当前分支创建并切换分支：git checkout -b [branch] 创建新的远程分支：git push origin [branch] 本地分支与远程分支相互关联：git branch --set-upstream-to=origin/&lt;remote_branch&gt; &lt;local_branch&gt; 为当前工程配置本地的用户名和邮箱：
-git config --local user.name &#34;user&#34; git config --local user.email &#34;user@example.com&#34; 全局的文件过滤配置：git config --global core.excludesfile [全局的.gitignore文件]
-全局的钩子目录配置：git config --global core.hookspath [全局的钩子目录位置.git/hooks]
-迁移仓库内所有分支及tag到另一个远程空仓库里
-1.本地创建远程分支：git branch -r | grep -v &#39;\-&gt;&#39; | while read remote; do git branch --track &#34;${remote#origin/}&#34; &#34;$remote&#34;; done 2.将本地所有分支与远程保持同步: git fetch --all &amp;&amp; git pull --all 3.移除之前的origin：git remote remove origin 4.绑定现有的origin：git remote add origin [new_repo.git] 5.提交所有分支代码: git push -u origin --all &amp;&amp; git push -u origin --tags 为release分支进行tag操作
-...</p>
-  </div>
-  <footer class="entry-footer"><span title='2024-11-15 14:30:04 +0800 CST'>November 15, 2024</span>&nbsp;·&nbsp;3 min&nbsp;·&nbsp;534 words&nbsp;·&nbsp;夏天的小西瓜</footer>
-  <a class="entry-link" aria-label="post link to Git入门介绍" href="/posts/tools/git/"></a>
 </article>
 <footer class="page-footer">
   <nav class="pagination">
