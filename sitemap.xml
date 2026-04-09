@@ -107,5 +107,7 @@
     <loc>/archives/</loc>
   </url><url>
     <loc>/about/</loc>
+  </url><url>
+    <loc>/search/</loc>
   </url>
 </urlset>
