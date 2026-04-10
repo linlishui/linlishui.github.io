@@ -189,24 +189,24 @@ window.onload = () => {
   </header>
   <div class="entry-content">
     <p>TypeScript 是在 JavaScript 基础上增加了类型能力的语言。对初学者来说，先不用纠结太多概念，先把最常见的基础写法掌握住就够了。
-一、基础类型 TypeScript 可以直接给变量标注类型：
+基础类型 TypeScript 可以直接给变量标注类型：
 const name: string = &#34;Tom&#34;; const age: number = 18; const passed: boolean = true; 常见基础类型有：
 string：字符串 number：数字 boolean：布尔值 undefined null 如果类型和赋值不一致，TypeScript 会直接报错。
-const age: number = &#34;18&#34;; // 报错 数组类型 数组有两种常见写法：
+const age: number = &#34;18&#34;; // 报错 1. 数组类型 数组有两种常见写法：
 const ids: number[] = [1, 2, 3]; const names: Array&lt;string&gt; = [&#34;Tom&#34;, &#34;Jerry&#34;]; 这两种写法都表示“数组中元素的类型是固定的”。
 例如：
 const scores: number[] = [95, 88, 76]; const cities: string[] = [&#34;Shanghai&#34;, &#34;Beijing&#34;, &#34;Shenzhen&#34;]; 如果往 scores 里放字符串，TypeScript 会报错：
-const scores: number[] = [95, 88, &#34;76&#34;]; // 报错 string 类型 string 表示字符串类型，也就是文本内容。
+const scores: number[] = [95, 88, &#34;76&#34;]; // 报错 2. string 类型 string 表示字符串类型，也就是文本内容。
 const username: string = &#34;Tom&#34;; const message: string = &#34;Hello TypeScript&#34;; 一般只要变量里存的是一段文本，就可以考虑使用 string。
 例如下面这些值都属于字符串：
 const city: string = &#34;Shanghai&#34;; const phone: string = &#34;13800138000&#34;; const id: string = &#34;user_1001&#34;; 注意：即使内容看起来像数字，只要你希望它按文本处理，也应该使用 string，例如手机号、订单号、身份证号。
-理解 undefined 与 null undefined 和 null 都表示“没有值”，但它们的使用场景不完全一样。
+3. 理解 undefined 与 null undefined 和 null 都表示“没有值”，但它们的使用场景不完全一样。
 undefined：通常表示“还没有值”或“这个字段不存在” null：通常表示“这里明确是空值” 例如：
 let nickname: string | undefined = undefined; let avatar: string | null = null; 可以先这样理解：
 undefined 更像“没提供” null 更像“有这个位置，但现在为空” 在 TypeScript 里，它们通常会和联合类型一起使用：
 ...</p>
   </div>
-  <footer class="entry-footer"><span title='2026-04-09 19:10:00 +0800 CST'>April 9, 2026</span>&nbsp;·&nbsp;4 min&nbsp;·&nbsp;772 words&nbsp;·&nbsp;夏天的小西瓜</footer>
+  <footer class="entry-footer"><span title='2026-04-09 19:10:00 +0800 CST'>April 9, 2026</span>&nbsp;·&nbsp;4 min&nbsp;·&nbsp;787 words&nbsp;·&nbsp;夏天的小西瓜</footer>
   <a class="entry-link" aria-label="post link to TypeScript基础用法" href="/posts/typescript/typescript_intro/"></a>
 </article>
     </main>

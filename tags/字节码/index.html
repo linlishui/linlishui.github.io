@@ -189,13 +189,13 @@ window.onload = () => {
   </header>
   <div class="entry-content">
     <p> 本文档介绍 Android 开发中的字节码操作技术，包括字节码基础、Javassist、ASM 框架的使用。
-1. 字节码基础知识 1.1 什么是字节码 Java 字节码（Bytecode）是 Java 源代码编译后的中间表示形式，存储在 .class 文件中。JVM（Java Virtual Machine）执行的就是字节码，而不是源代码。
+字节码基础知识 1. 什么是字节码 Java 字节码（Bytecode）是 Java 源代码编译后的中间表示形式，存储在 .class 文件中。JVM（Java Virtual Machine）执行的就是字节码，而不是源代码。
 特点:
-平台无关性：Write Once, Run Anywhere 介于高级语言和机器码之间 可被工具读取、修改、生成 1.2 Class 文件结构 一个 .class 文件的基本结构：
-ClassFile { u4 magic; // 魔数 0xCAFEBABE u2 minor_version; // 次版本号 u2 major_version; // 主版本号 u2 constant_pool_count; // 常量池计数 cp_info constant_pool[]; // 常量池 u2 access_flags; // 访问标志 u2 this_class; // 当前类 u2 super_class; // 父类 u2 interfaces_count; // 接口计数 u2 interfaces[]; // 接口表 u2 fields_count; // 字段计数 field_info fields[]; // 字段表 u2 methods_count; // 方法计数 method_info methods[]; // 方法表 u2 attributes_count; // 属性计数 attribute_info attributes[]; // 属性表 } 1.3 常用字节码指令 指令 说明 示例 aload_0 加载局部变量表第 0 个引用到栈顶 加载 this invokespecial 调用实例初始化方法、私有方法 构造函数调用 invokevirtual 调用实例方法（虚方法） 普通方法调用 invokestatic 调用静态方法 Math.max() invokeinterface 调用接口方法 接口方法调用 return 从方法返回 void void 方法结束 areturn 从方法返回引用类型 返回对象 getfield 获取实例字段值 obj.field putfield 设置实例字段值 obj.field = value getstatic 获取静态字段值 Class.STATIC_FIELD putstatic 设置静态字段值 Class.STATIC_FIELD = value new 创建对象实例 new Object() 1.4 方法描述符 方法描述符用于描述方法的参数和返回值类型：
+平台无关性：Write Once, Run Anywhere 介于高级语言和机器码之间 可被工具读取、修改、生成 2. Class 文件结构 一个 .class 文件的基本结构：
+ClassFile { u4 magic; // 魔数 0xCAFEBABE u2 minor_version; // 次版本号 u2 major_version; // 主版本号 u2 constant_pool_count; // 常量池计数 cp_info constant_pool[]; // 常量池 u2 access_flags; // 访问标志 u2 this_class; // 当前类 u2 super_class; // 父类 u2 interfaces_count; // 接口计数 u2 interfaces[]; // 接口表 u2 fields_count; // 字段计数 field_info fields[]; // 字段表 u2 methods_count; // 方法计数 method_info methods[]; // 方法表 u2 attributes_count; // 属性计数 attribute_info attributes[]; // 属性表 } 3. 常用字节码指令 指令 说明 示例 aload_0 加载局部变量表第 0 个引用到栈顶 加载 this invokespecial 调用实例初始化方法、私有方法 构造函数调用 invokevirtual 调用实例方法（虚方法） 普通方法调用 invokestatic 调用静态方法 Math.max() invokeinterface 调用接口方法 接口方法调用 return 从方法返回 void void 方法结束 areturn 从方法返回引用类型 返回对象 getfield 获取实例字段值 obj.field putfield 设置实例字段值 obj.field = value getstatic 获取静态字段值 Class.STATIC_FIELD putstatic 设置静态字段值 Class.STATIC_FIELD = value new 创建对象实例 new Object() 4. 方法描述符 方法描述符用于描述方法的参数和返回值类型：
 ...</p>
   </div>
-  <footer class="entry-footer"><span title='2026-01-15 14:41:00 +0800 CST'>January 15, 2026</span>&nbsp;·&nbsp;9 min&nbsp;·&nbsp;1890 words&nbsp;·&nbsp;夏天的小西瓜</footer>
+  <footer class="entry-footer"><span title='2026-01-15 14:41:00 +0800 CST'>January 15, 2026</span>&nbsp;·&nbsp;9 min&nbsp;·&nbsp;1850 words&nbsp;·&nbsp;夏天的小西瓜</footer>
   <a class="entry-link" aria-label="post link to 字节码技术入门" href="/posts/jvm/bytecode_guide/"></a>
 </article>
     </main>

@@ -13,8 +13,8 @@
       <link>/posts/tools/vim/</link>
       <pubDate>Fri, 30 May 2025 14:41:49 +0800</pubDate>
       <guid>/posts/tools/vim/</guid>
-      <description>&lt;h3 id=&#34;vim基本操作&#34;&gt;Vim基本操作&lt;/h3&gt;
-&lt;h4 id=&#34;1-移动光标&#34;&gt;1. 移动光标&lt;/h4&gt;
+      <description>&lt;h2 id=&#34;vim基本操作&#34;&gt;Vim基本操作&lt;/h2&gt;
+&lt;h3 id=&#34;1-移动光标&#34;&gt;1. 移动光标&lt;/h3&gt;
 &lt;table&gt;
   &lt;thead&gt;
       &lt;tr&gt;
@@ -92,7 +92,7 @@
 &lt;blockquote&gt;
 &lt;p&gt;注意：许多vi的命令前面都可以缀上数字，前缀数字可以控制该命令执行的次数，比如5j可以使得光标向下移动5行&lt;/p&gt;
 &lt;/blockquote&gt;
-&lt;h4 id=&#34;2-基本编辑&#34;&gt;2. 基本编辑&lt;/h4&gt;
+&lt;h3 id=&#34;2-基本编辑&#34;&gt;2. 基本编辑&lt;/h3&gt;
 &lt;table&gt;
   &lt;thead&gt;
       &lt;tr&gt;
@@ -127,7 +127,7 @@
       &lt;/tr&gt;
   &lt;/tbody&gt;
 &lt;/table&gt;
-&lt;h4 id=&#34;3-删除和撤销&#34;&gt;3. 删除和撤销&lt;/h4&gt;
+&lt;h3 id=&#34;3-删除和撤销&#34;&gt;3. 删除和撤销&lt;/h3&gt;
 &lt;table&gt;
   &lt;thead&gt;
       &lt;tr&gt;

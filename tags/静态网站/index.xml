@@ -13,7 +13,7 @@
       <link>/posts/hugo_intro/</link>
       <pubDate>Thu, 14 Nov 2024 10:43:59 +0800</pubDate>
       <guid>/posts/hugo_intro/</guid>
-      <description>&lt;h3 id=&#34;安装hugo&#34;&gt;安装Hugo&lt;/h3&gt;
+      <description>&lt;h2 id=&#34;安装hugo&#34;&gt;安装Hugo&lt;/h2&gt;
 &lt;p&gt;不同系统环境安装命令：&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# Ubuntu 环境&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;## apt方式。下载版本可能会旧一些&lt;/span&gt;
@@ -28,7 +28,7 @@
 &lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;brew install hugo
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;查看HUGO版本确认安装成功：&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;hugo version
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;快速开始&#34;&gt;快速开始&lt;/h3&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;快速开始&#34;&gt;快速开始&lt;/h2&gt;
 &lt;p&gt;可参考文档：&lt;a href=&#34;https://hugo.opendocs.io/getting-started/quick-start/&#34;&gt;Hugo快速入门&lt;/a&gt;&lt;/p&gt;
 &lt;ol&gt;
 &lt;li&gt;hugo 创建站点：&lt;/li&gt;

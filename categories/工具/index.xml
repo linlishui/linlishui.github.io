@@ -249,7 +249,7 @@
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;cp&#34;&gt;#!/bin/bash
 &lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;cp&#34;&gt;&lt;/span&gt;&lt;span class=&#34;c1&#34;&gt;# 脚本注释&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nb&#34;&gt;echo&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;Hello World&amp;#34;&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;参数&#34;&gt;参数&lt;/h3&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;1-参数&#34;&gt;1. 参数&lt;/h3&gt;
 &lt;p&gt;脚本参数小知识&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;cp&#34;&gt;#!/bin/bash
 &lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;cp&#34;&gt;&lt;/span&gt;
@@ -288,7 +288,7 @@
 &lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nb&#34;&gt;echo&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;文件名: &lt;/span&gt;&lt;span class=&#34;nv&#34;&gt;$filename&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nb&#34;&gt;echo&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;操作: &lt;/span&gt;&lt;span class=&#34;nv&#34;&gt;$action&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nb&#34;&gt;echo&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;详细模式: &lt;/span&gt;&lt;span class=&#34;nv&#34;&gt;$verbose&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;变量&#34;&gt;变量&lt;/h3&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;2-变量&#34;&gt;2. 变量&lt;/h3&gt;
 &lt;p&gt;&lt;strong&gt;变量操作&lt;/strong&gt;&lt;/p&gt;</description>
     </item>
     <item>
@@ -296,8 +296,8 @@
       <link>/posts/tools/vim/</link>
       <pubDate>Fri, 30 May 2025 14:41:49 +0800</pubDate>
       <guid>/posts/tools/vim/</guid>
-      <description>&lt;h3 id=&#34;vim基本操作&#34;&gt;Vim基本操作&lt;/h3&gt;
-&lt;h4 id=&#34;1-移动光标&#34;&gt;1. 移动光标&lt;/h4&gt;
+      <description>&lt;h2 id=&#34;vim基本操作&#34;&gt;Vim基本操作&lt;/h2&gt;
+&lt;h3 id=&#34;1-移动光标&#34;&gt;1. 移动光标&lt;/h3&gt;
 &lt;table&gt;
   &lt;thead&gt;
       &lt;tr&gt;
@@ -375,7 +375,7 @@
 &lt;blockquote&gt;
 &lt;p&gt;注意：许多vi的命令前面都可以缀上数字，前缀数字可以控制该命令执行的次数，比如5j可以使得光标向下移动5行&lt;/p&gt;
 &lt;/blockquote&gt;
-&lt;h4 id=&#34;2-基本编辑&#34;&gt;2. 基本编辑&lt;/h4&gt;
+&lt;h3 id=&#34;2-基本编辑&#34;&gt;2. 基本编辑&lt;/h3&gt;
 &lt;table&gt;
   &lt;thead&gt;
       &lt;tr&gt;
@@ -410,7 +410,7 @@
       &lt;/tr&gt;
   &lt;/tbody&gt;
 &lt;/table&gt;
-&lt;h4 id=&#34;3-删除和撤销&#34;&gt;3. 删除和撤销&lt;/h4&gt;
+&lt;h3 id=&#34;3-删除和撤销&#34;&gt;3. 删除和撤销&lt;/h3&gt;
 &lt;table&gt;
   &lt;thead&gt;
       &lt;tr&gt;
@@ -457,39 +457,39 @@
       <link>/posts/tools/charles/</link>
       <pubDate>Wed, 22 Jan 2025 17:27:21 +0800</pubDate>
       <guid>/posts/tools/charles/</guid>
-      <description>&lt;h3 id=&#34;下载与安装&#34;&gt;下载与安装&lt;/h3&gt;
+      <description>&lt;h2 id=&#34;下载与安装&#34;&gt;下载与安装&lt;/h2&gt;
 &lt;p&gt;Charles官网下载安装包，下载成功后根据指示安装即可&lt;/p&gt;
 &lt;p&gt;官网地址： &lt;a href=&#34;https://www.charlesproxy.com/&#34;&gt;www.charlesproxy.com&lt;/a&gt;&lt;/p&gt;
 &lt;p&gt;Charles激活码：&lt;/p&gt;
 &lt;p&gt;Registered Name: &lt;code&gt;https://zhile.io&lt;/code&gt;&lt;/p&gt;
 &lt;p&gt;License Key: &lt;code&gt;48891cf209c6d32bf4&lt;/code&gt;&lt;/p&gt;
-&lt;h3 id=&#34;http代理设置&#34;&gt;HTTP代理设置&lt;/h3&gt;
-&lt;h4 id=&#34;1-设置pc端代理端口号&#34;&gt;1. 设置PC端代理端口号&lt;/h4&gt;
+&lt;h2 id=&#34;http代理设置&#34;&gt;HTTP代理设置&lt;/h2&gt;
+&lt;h3 id=&#34;1-设置pc端代理端口号&#34;&gt;1. 设置PC端代理端口号&lt;/h3&gt;
 &lt;p&gt;在&lt;code&gt;Proxy -&amp;gt; Proxy settings&lt;/code&gt;可设置HTTP Proxy的端口号。&lt;/p&gt;
-&lt;h4 id=&#34;2-设置手机端代理端口号&#34;&gt;2. 设置手机端代理端口号&lt;/h4&gt;
+&lt;h3 id=&#34;2-设置手机端代理端口号&#34;&gt;2. 设置手机端代理端口号&lt;/h3&gt;
 &lt;p&gt;在应用内的&lt;code&gt;Help -&amp;gt; Local IP Address&lt;/code&gt;上查看本机的IP地址（en0等标识）&lt;/p&gt;
-&lt;h4 id=&#34;3-android手机代理设置&#34;&gt;3. Android手机代理设置&lt;/h4&gt;
+&lt;h3 id=&#34;3-android手机代理设置&#34;&gt;3. Android手机代理设置&lt;/h3&gt;
 &lt;p&gt;设置-WLAN，进入已连接WiFi手动设置（端口需与PC端设置端口号一致）&lt;/p&gt;
 &lt;p&gt;编辑网络，选择手动代理，输入PC端的IP地址 + Charles配置的端口号。&lt;/p&gt;
 &lt;p&gt;当手机进行数据请求时，Charles 将弹出是否允许连接此代理(选择允许 allow)，之后便可进行HTTP抓包。&lt;/p&gt;
-&lt;h3 id=&#34;https代理设置&#34;&gt;HTTPS代理设置&lt;/h3&gt;
+&lt;h2 id=&#34;https代理设置&#34;&gt;HTTPS代理设置&lt;/h2&gt;
 &lt;p&gt;HTTP的代理设置是抓取不了HTTPS，故需要进行HTTPS代理设置。&lt;/p&gt;
 &lt;p&gt;手机上需要安装Charles SSL证书认证，证书下载地址：&lt;code&gt;http://charlesproxy.com/getssl&lt;/code&gt;&lt;/p&gt;
 &lt;blockquote&gt;
 &lt;p&gt;建议使用Chrome浏览器，其它浏览器有可能报错。&lt;/p&gt;
 &lt;/blockquote&gt;
 &lt;p&gt;其它下载地址推荐：https://www.charlesproxy.com/assets/legacy-ssl/charles.crt&lt;/p&gt;
-&lt;h4 id=&#34;1-charles配置ssl&#34;&gt;1. Charles配置SSL&lt;/h4&gt;
+&lt;h3 id=&#34;1-charles配置ssl&#34;&gt;1. Charles配置SSL&lt;/h3&gt;
 &lt;p&gt;选中&lt;code&gt;Proxy -&amp;gt; SSL Proxying Setting&lt;/code&gt;选项，开启SSL代理，并添加或移除信任地址（默认端口号443）。&lt;/p&gt;
 &lt;blockquote&gt;
 &lt;p&gt;如果拦截所有，则配置主机&lt;code&gt;*&lt;/code&gt;，端口号 &lt;strong&gt;443&lt;/strong&gt;&lt;/p&gt;
 &lt;/blockquote&gt;
-&lt;h4 id=&#34;2-android手机安装证书&#34;&gt;2. Android手机安装证书&lt;/h4&gt;
+&lt;h3 id=&#34;2-android手机安装证书&#34;&gt;2. Android手机安装证书&lt;/h3&gt;
 &lt;p&gt;在手机浏览器输入上面的证书下载地址，证书下载成功后，进入&lt;code&gt;设置-安全-加密与凭据-安装证书-CA证书&lt;/code&gt;，选择已下载的证书进行安装。&lt;/p&gt;
 &lt;blockquote&gt;
 &lt;p&gt;不同安卓手机设置里面选择不同，可自行查找系统安全进入证书安装&lt;/p&gt;
 &lt;/blockquote&gt;
-&lt;h4 id=&#34;3-android系统证书配置&#34;&gt;3. Android系统证书配置&lt;/h4&gt;
+&lt;h3 id=&#34;3-android系统证书配置&#34;&gt;3. Android系统证书配置&lt;/h3&gt;
 &lt;p&gt;上面的方式配置出来的证书是用户类型，如果需要抓取应用release类型的网络日志，则需要配置成系统证书。&lt;/p&gt;
 &lt;p&gt;具体步骤如下：&lt;/p&gt;
 &lt;ol&gt;
@@ -509,7 +509,7 @@
       <pubDate>Mon, 23 Dec 2024 17:09:22 +0800</pubDate>
       <guid>/posts/tools/openvpn/</guid>
       <description>&lt;p&gt;本文将基于Ubuntu系统环境快速搭建OpenVPN用于端对端的安全传输通道访问。&lt;/p&gt;
-&lt;h3 id=&#34;1-安装软件&#34;&gt;1. 安装软件&lt;/h3&gt;
+&lt;h2 id=&#34;安装软件&#34;&gt;安装软件&lt;/h2&gt;
 &lt;p&gt;安装相关的软件(openvpn与easy-rsa)，执行命令：&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;sudo apt update
 &lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;sudo apt install openvpn easy-rsa
@@ -519,7 +519,7 @@
 
 easy-rsa/focal,focal,now 3.0.6-1 all [installed]
   Simple shell based CA utility
-&lt;/code&gt;&lt;/pre&gt;&lt;h3 id=&#34;2-制作证书&#34;&gt;2. 制作证书&lt;/h3&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;h2 id=&#34;制作证书&#34;&gt;制作证书&lt;/h2&gt;
 &lt;p&gt;OpenVPN 的证书分为三部分：CA证书、Server端证书、Client端证书。下面我们通过easy-rsa分别对其进行制作。&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;制作证书&lt;/strong&gt;：&lt;/p&gt;
 &lt;ul&gt;
@@ -551,15 +551,15 @@ easy-rsa/focal,focal,now 3.0.6-1 all [installed]
       <link>/posts/tools/git/</link>
       <pubDate>Fri, 15 Nov 2024 14:30:04 +0800</pubDate>
       <guid>/posts/tools/git/</guid>
-      <description>&lt;h3 id=&#34;1-概述&#34;&gt;1. 概述&lt;/h3&gt;
+      <description>&lt;h2 id=&#34;概述&#34;&gt;概述&lt;/h2&gt;
 &lt;p&gt;Git的本地区域可以划分为如下几个部分：&lt;/p&gt;
 &lt;ol&gt;
 &lt;li&gt;工作目录（Working Directory）&lt;/li&gt;
 &lt;li&gt;暂存目录（也叫做索引，Index)&lt;/li&gt;
 &lt;li&gt;本地仓库（Repository）&lt;/li&gt;
 &lt;/ol&gt;
-&lt;h3 id=&#34;2-基本用法&#34;&gt;2. 基本用法&lt;/h3&gt;
-&lt;h4 id=&#34;20-常用操作&#34;&gt;2.0 常用操作&lt;/h4&gt;
+&lt;h2 id=&#34;基本用法&#34;&gt;基本用法&lt;/h2&gt;
+&lt;h3 id=&#34;1-常用操作&#34;&gt;1. 常用操作&lt;/h3&gt;
 &lt;ul&gt;
 &lt;li&gt;
 &lt;p&gt;查找某个字串：&lt;code&gt;git grep -nir [word-regexp]&lt;/code&gt;&lt;/p&gt;
@@ -630,7 +630,7 @@ git config --local user.email &amp;#34;user@example.com&amp;#34;
       <link>/posts/hugo_intro/</link>
       <pubDate>Thu, 14 Nov 2024 10:43:59 +0800</pubDate>
       <guid>/posts/hugo_intro/</guid>
-      <description>&lt;h3 id=&#34;安装hugo&#34;&gt;安装Hugo&lt;/h3&gt;
+      <description>&lt;h2 id=&#34;安装hugo&#34;&gt;安装Hugo&lt;/h2&gt;
 &lt;p&gt;不同系统环境安装命令：&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# Ubuntu 环境&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;## apt方式。下载版本可能会旧一些&lt;/span&gt;
@@ -645,7 +645,7 @@ git config --local user.email &amp;#34;user@example.com&amp;#34;
 &lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;brew install hugo
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;查看HUGO版本确认安装成功：&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;hugo version
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;快速开始&#34;&gt;快速开始&lt;/h3&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;快速开始&#34;&gt;快速开始&lt;/h2&gt;
 &lt;p&gt;可参考文档：&lt;a href=&#34;https://hugo.opendocs.io/getting-started/quick-start/&#34;&gt;Hugo快速入门&lt;/a&gt;&lt;/p&gt;
 &lt;ol&gt;
 &lt;li&gt;hugo 创建站点：&lt;/li&gt;

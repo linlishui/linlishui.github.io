@@ -437,8 +437,8 @@ NestedScrollingChild2接口方法：">
     }
 </script>
 
-  <div class="post-content"><h3 id="nestedscrollingchild">NestedScrollingChild<a hidden class="anchor" aria-hidden="true" href="#nestedscrollingchild">#</a></h3>
-<h4 id="1-接口版本对比">1. 接口版本对比<a hidden class="anchor" aria-hidden="true" href="#1-接口版本对比">#</a></h4>
+  <div class="post-content"><h2 id="nestedscrollingchild">NestedScrollingChild<a hidden class="anchor" aria-hidden="true" href="#nestedscrollingchild">#</a></h2>
+<h3 id="1-接口版本对比">1. 接口版本对比<a hidden class="anchor" aria-hidden="true" href="#1-接口版本对比">#</a></h3>
 <table>
   <thead>
       <tr>
@@ -465,7 +465,7 @@ NestedScrollingChild2接口方法：">
       </tr>
   </tbody>
 </table>
-<h4 id="2-接口方法列表">2. 接口方法列表<a hidden class="anchor" aria-hidden="true" href="#2-接口方法列表">#</a></h4>
+<h3 id="2-接口方法列表">2. 接口方法列表<a hidden class="anchor" aria-hidden="true" href="#2-接口方法列表">#</a></h3>
 <p>NestedScrollingChild接口方法：</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">public</span><span class="w"> </span><span class="kd">interface</span> <span class="nc">NestedScrollingChild</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="c1">// 启用/禁用嵌套滚动</span><span class="w">
@@ -512,7 +512,7 @@ NestedScrollingChild2接口方法：">
 </span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="nd">@Nullable</span><span class="w"> </span><span class="kt">int</span><span class="o">[]</span><span class="w"> </span><span class="n">offsetInWindow</span><span class="p">,</span><span class="w"> </span><span class="nd">@ViewCompat.NestedScrollType</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">type</span><span class="p">,</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="nd">@NonNull</span><span class="w"> </span><span class="kt">int</span><span class="o">[]</span><span class="w"> </span><span class="n">consumed</span><span class="p">);</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
-</span></span></span></code></pre></div><h4 id="3-关键实现说明">3. 关键实现说明<a hidden class="anchor" aria-hidden="true" href="#3-关键实现说明">#</a></h4>
+</span></span></span></code></pre></div><h3 id="3-关键实现说明">3. 关键实现说明<a hidden class="anchor" aria-hidden="true" href="#3-关键实现说明">#</a></h3>
 <p><strong>核心方法解析</strong></p>
 <table>
   <thead>
@@ -585,8 +585,8 @@ NestedScrollingChild2接口方法：">
 
     Child->>Parent: stopNestedScroll(type)
 </pre>
-<h3 id="nestedscrollingparent">NestedScrollingParent<a hidden class="anchor" aria-hidden="true" href="#nestedscrollingparent">#</a></h3>
-<h4 id="1-接口版本对比-1">1. 接口版本对比<a hidden class="anchor" aria-hidden="true" href="#1-接口版本对比-1">#</a></h4>
+<h2 id="nestedscrollingparent">NestedScrollingParent<a hidden class="anchor" aria-hidden="true" href="#nestedscrollingparent">#</a></h2>
+<h3 id="1-接口版本对比-1">1. 接口版本对比<a hidden class="anchor" aria-hidden="true" href="#1-接口版本对比-1">#</a></h3>
 <table>
   <thead>
       <tr>
@@ -613,7 +613,7 @@ NestedScrollingChild2接口方法：">
       </tr>
   </tbody>
 </table>
-<h4 id="2-接口方法列表-1">2. 接口方法列表<a hidden class="anchor" aria-hidden="true" href="#2-接口方法列表-1">#</a></h4>
+<h3 id="2-接口方法列表-1">2. 接口方法列表<a hidden class="anchor" aria-hidden="true" href="#2-接口方法列表-1">#</a></h3>
 <p>NestedScrollingParent 接口方法：</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">public</span><span class="w"> </span><span class="kd">interface</span> <span class="nc">NestedScrollingParent</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="c1">// 是否响应子类嵌套滑动请求</span><span class="w">
@@ -656,7 +656,7 @@ NestedScrollingChild2接口方法：">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="kt">void</span><span class="w"> </span><span class="nf">onNestedScroll</span><span class="p">(</span><span class="nd">@NonNull</span><span class="w"> </span><span class="n">View</span><span class="w"> </span><span class="n">target</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">dxConsumed</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">dyConsumed</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">dxUnconsumed</span><span class="p">,</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="kt">int</span><span class="w"> </span><span class="n">dyUnconsumed</span><span class="p">,</span><span class="w"> </span><span class="nd">@ViewCompat.NestedScrollType</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">type</span><span class="p">,</span><span class="w"> </span><span class="nd">@NonNull</span><span class="w"> </span><span class="kt">int</span><span class="o">[]</span><span class="w"> </span><span class="n">consumed</span><span class="p">);</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
-</span></span></span></code></pre></div><h4 id="3-关键实现说明-1">3. 关键实现说明<a hidden class="anchor" aria-hidden="true" href="#3-关键实现说明-1">#</a></h4>
+</span></span></span></code></pre></div><h3 id="3-关键实现说明-1">3. 关键实现说明<a hidden class="anchor" aria-hidden="true" href="#3-关键实现说明-1">#</a></h3>
 <p><strong>核心方法解析</strong></p>
 <table>
   <thead>
@@ -721,7 +721,7 @@ NestedScrollingChild2接口方法：">
       </tr>
   </tbody>
 </table>
-<h3 id="简要流程小结">简要流程小结<a hidden class="anchor" aria-hidden="true" href="#简要流程小结">#</a></h3>
+<h2 id="简要流程小结">简要流程小结<a hidden class="anchor" aria-hidden="true" href="#简要流程小结">#</a></h2>
 <p>以下是嵌套滑动机制的核心方法流转示意图，使用Mermaid语法表示：</p>
 <pre class="mermaid">sequenceDiagram
     autonumber

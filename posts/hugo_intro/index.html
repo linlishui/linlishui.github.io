@@ -435,7 +435,7 @@ git submodule update
     }
 </script>
 
-  <div class="post-content"><h3 id="安装hugo">安装Hugo<a hidden class="anchor" aria-hidden="true" href="#安装hugo">#</a></h3>
+  <div class="post-content"><h2 id="安装hugo">安装Hugo<a hidden class="anchor" aria-hidden="true" href="#安装hugo">#</a></h2>
 <p>不同系统环境安装命令：</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sh" data-lang="sh"><span class="line"><span class="cl"><span class="c1"># Ubuntu 环境</span>
 </span></span><span class="line"><span class="cl"><span class="c1">## apt方式。下载版本可能会旧一些</span>
@@ -450,7 +450,7 @@ git submodule update
 </span></span><span class="line"><span class="cl">brew install hugo
 </span></span></code></pre></div><p>查看HUGO版本确认安装成功：</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sh" data-lang="sh"><span class="line"><span class="cl">hugo version
-</span></span></code></pre></div><h3 id="快速开始">快速开始<a hidden class="anchor" aria-hidden="true" href="#快速开始">#</a></h3>
+</span></span></code></pre></div><h2 id="快速开始">快速开始<a hidden class="anchor" aria-hidden="true" href="#快速开始">#</a></h2>
 <p>可参考文档：<a href="https://hugo.opendocs.io/getting-started/quick-start/">Hugo快速入门</a></p>
 <ol>
 <li>hugo 创建站点：</li>
@@ -499,7 +499,7 @@ git submodule update
 <p>当进入到正式发布时，在调整确认config.yaml / config.toml 文件下的 <strong>baseURL</strong> 字段值后。
 执行以下命令即可正式发布：</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sh" data-lang="sh"><span class="line"><span class="cl">hugo
-</span></span></code></pre></div><h3 id="使用入门">使用入门<a hidden class="anchor" aria-hidden="true" href="#使用入门">#</a></h3>
+</span></span></code></pre></div><h2 id="使用入门">使用入门<a hidden class="anchor" aria-hidden="true" href="#使用入门">#</a></h2>
 <p>当前配置的目录菜单列表如下：</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl"><span class="nt">menu</span><span class="p">:</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">main</span><span class="p">:</span><span class="w">
@@ -526,7 +526,7 @@ git submodule update
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span>- <span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l">关于</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nt">url</span><span class="p">:</span><span class="w"> </span><span class="l">/about/</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nt">weight</span><span class="p">:</span><span class="w"> </span><span class="m">6</span><span class="w">
-</span></span></span></code></pre></div><h4 id="1-分类与标签">1. 分类与标签<a hidden class="anchor" aria-hidden="true" href="#1-分类与标签">#</a></h4>
+</span></span></span></code></pre></div><h3 id="1-分类与标签">1. 分类与标签<a hidden class="anchor" aria-hidden="true" href="#1-分类与标签">#</a></h3>
 <p>在 <code>config.yaml</code> 文件里打开分类与标签功能：</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl"><span class="nt">taxonomies</span><span class="p">:</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">tag</span><span class="p">:</span><span class="w"> </span><span class="l">tags</span><span class="w">
@@ -536,7 +536,7 @@ git submodule update
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span>- <span class="s2">&#34;未分类&#34;</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="nt">tags</span><span class="p">:</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span>- <span class="s2">&#34;未知&#34;</span><span class="w">
-</span></span></span></code></pre></div><h4 id="2-归档">2. 归档<a hidden class="anchor" aria-hidden="true" href="#2-归档">#</a></h4>
+</span></span></span></code></pre></div><h3 id="2-归档">2. 归档<a hidden class="anchor" aria-hidden="true" href="#2-归档">#</a></h3>
 <p>在 <code>content</code> 目录里创建 <code>archive.md</code>文件
 此时的目录树如下：</p>
 <pre tabindex="0"><code>.
@@ -554,19 +554,19 @@ git submodule update
 </span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="nt">url</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;/archives/&#34;</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="nt">summary</span><span class="p">:</span><span class="w"> </span><span class="l">archives</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="nn">---</span><span class="w">
-</span></span></span></code></pre></div><h4 id="3-静态资源">3. 静态资源<a hidden class="anchor" aria-hidden="true" href="#3-静态资源">#</a></h4>
+</span></span></span></code></pre></div><h3 id="3-静态资源">3. 静态资源<a hidden class="anchor" aria-hidden="true" href="#3-静态资源">#</a></h3>
 <p>Hugo 构建时会自动将 <strong>static</strong> 目录内容复制到 <strong>public</strong> 根目录。</p>
 <p>以引用图片为例，在 static 目录下新建子目录（如 images），使用绝对路径直接引用，路径需以 <strong>/</strong> 开头：</p>
 <pre tabindex="0"><code>引用方式：![图片描述](/images/demo.jpg)
 部署后的访问地址：https://your-domain.com/images/demo.jpg
-</code></pre><h4 id="4-mermaid图表">4. Mermaid图表<a hidden class="anchor" aria-hidden="true" href="#4-mermaid图表">#</a></h4>
+</code></pre><h3 id="4-mermaid图表">4. Mermaid图表<a hidden class="anchor" aria-hidden="true" href="#4-mermaid图表">#</a></h3>
 <p>Hugo 目前没有提供 Mermaid 图表的默认模板。可通过以下方法主动配置：</p>
 <p>创建 <code>layouts/_default/_markup/render-codeblock-mermaid.html</code>文件，在该文件添加以下内容：</p>
 <pre tabindex="0"><code>&lt;pre class=&#34;mermaid&#34;&gt;
   {{- .Inner | safeHTML }}
 &lt;/pre&gt;
 {{ .Page.Store.Set &#34;hasMermaid&#34; true }}
-</code></pre><h3 id="部署">部署<a hidden class="anchor" aria-hidden="true" href="#部署">#</a></h3>
+</code></pre><h2 id="部署">部署<a hidden class="anchor" aria-hidden="true" href="#部署">#</a></h2>
 <p>使用 <code>阿里云服务器</code>配合<code>nginx</code>实现Hugo部署。</p>
 <ol>
 <li>确认 Hugo 的baseURL配置：</li>

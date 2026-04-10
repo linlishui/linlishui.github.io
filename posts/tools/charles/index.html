@@ -442,39 +442,39 @@ HTTP的代理设置是抓取不了HTTPS，故需要进行HTTPS代理设置。
     }
 </script>
 
-  <div class="post-content"><h3 id="下载与安装">下载与安装<a hidden class="anchor" aria-hidden="true" href="#下载与安装">#</a></h3>
+  <div class="post-content"><h2 id="下载与安装">下载与安装<a hidden class="anchor" aria-hidden="true" href="#下载与安装">#</a></h2>
 <p>Charles官网下载安装包，下载成功后根据指示安装即可</p>
 <p>官网地址： <a href="https://www.charlesproxy.com/">www.charlesproxy.com</a></p>
 <p>Charles激活码：</p>
 <p>Registered Name: <code>https://zhile.io</code></p>
 <p>License Key: <code>48891cf209c6d32bf4</code></p>
-<h3 id="http代理设置">HTTP代理设置<a hidden class="anchor" aria-hidden="true" href="#http代理设置">#</a></h3>
-<h4 id="1-设置pc端代理端口号">1. 设置PC端代理端口号<a hidden class="anchor" aria-hidden="true" href="#1-设置pc端代理端口号">#</a></h4>
+<h2 id="http代理设置">HTTP代理设置<a hidden class="anchor" aria-hidden="true" href="#http代理设置">#</a></h2>
+<h3 id="1-设置pc端代理端口号">1. 设置PC端代理端口号<a hidden class="anchor" aria-hidden="true" href="#1-设置pc端代理端口号">#</a></h3>
 <p>在<code>Proxy -&gt; Proxy settings</code>可设置HTTP Proxy的端口号。</p>
-<h4 id="2-设置手机端代理端口号">2. 设置手机端代理端口号<a hidden class="anchor" aria-hidden="true" href="#2-设置手机端代理端口号">#</a></h4>
+<h3 id="2-设置手机端代理端口号">2. 设置手机端代理端口号<a hidden class="anchor" aria-hidden="true" href="#2-设置手机端代理端口号">#</a></h3>
 <p>在应用内的<code>Help -&gt; Local IP Address</code>上查看本机的IP地址（en0等标识）</p>
-<h4 id="3-android手机代理设置">3. Android手机代理设置<a hidden class="anchor" aria-hidden="true" href="#3-android手机代理设置">#</a></h4>
+<h3 id="3-android手机代理设置">3. Android手机代理设置<a hidden class="anchor" aria-hidden="true" href="#3-android手机代理设置">#</a></h3>
 <p>设置-WLAN，进入已连接WiFi手动设置（端口需与PC端设置端口号一致）</p>
 <p>编辑网络，选择手动代理，输入PC端的IP地址 + Charles配置的端口号。</p>
 <p>当手机进行数据请求时，Charles 将弹出是否允许连接此代理(选择允许 allow)，之后便可进行HTTP抓包。</p>
-<h3 id="https代理设置">HTTPS代理设置<a hidden class="anchor" aria-hidden="true" href="#https代理设置">#</a></h3>
+<h2 id="https代理设置">HTTPS代理设置<a hidden class="anchor" aria-hidden="true" href="#https代理设置">#</a></h2>
 <p>HTTP的代理设置是抓取不了HTTPS，故需要进行HTTPS代理设置。</p>
 <p>手机上需要安装Charles SSL证书认证，证书下载地址：<code>http://charlesproxy.com/getssl</code></p>
 <blockquote>
 <p>建议使用Chrome浏览器，其它浏览器有可能报错。</p>
 </blockquote>
 <p>其它下载地址推荐：https://www.charlesproxy.com/assets/legacy-ssl/charles.crt</p>
-<h4 id="1-charles配置ssl">1. Charles配置SSL<a hidden class="anchor" aria-hidden="true" href="#1-charles配置ssl">#</a></h4>
+<h3 id="1-charles配置ssl">1. Charles配置SSL<a hidden class="anchor" aria-hidden="true" href="#1-charles配置ssl">#</a></h3>
 <p>选中<code>Proxy -&gt; SSL Proxying Setting</code>选项，开启SSL代理，并添加或移除信任地址（默认端口号443）。</p>
 <blockquote>
 <p>如果拦截所有，则配置主机<code>*</code>，端口号 <strong>443</strong></p>
 </blockquote>
-<h4 id="2-android手机安装证书">2. Android手机安装证书<a hidden class="anchor" aria-hidden="true" href="#2-android手机安装证书">#</a></h4>
+<h3 id="2-android手机安装证书">2. Android手机安装证书<a hidden class="anchor" aria-hidden="true" href="#2-android手机安装证书">#</a></h3>
 <p>在手机浏览器输入上面的证书下载地址，证书下载成功后，进入<code>设置-安全-加密与凭据-安装证书-CA证书</code>，选择已下载的证书进行安装。</p>
 <blockquote>
 <p>不同安卓手机设置里面选择不同，可自行查找系统安全进入证书安装</p>
 </blockquote>
-<h4 id="3-android系统证书配置">3. Android系统证书配置<a hidden class="anchor" aria-hidden="true" href="#3-android系统证书配置">#</a></h4>
+<h3 id="3-android系统证书配置">3. Android系统证书配置<a hidden class="anchor" aria-hidden="true" href="#3-android系统证书配置">#</a></h3>
 <p>上面的方式配置出来的证书是用户类型，如果需要抓取应用release类型的网络日志，则需要配置成系统证书。</p>
 <p>具体步骤如下：</p>
 <ol>
@@ -488,7 +488,7 @@ HTTP的代理设置是抓取不了HTTPS，故需要进行HTTPS代理设置。
 <blockquote>
 <p>附上cer转换成pem的命令：<code>openssl x509 -inform DER -in [cer文件] -out [pem文件]</code></p>
 </blockquote>
-<h3 id="charles的使用">Charles的使用<a hidden class="anchor" aria-hidden="true" href="#charles的使用">#</a></h3>
+<h2 id="charles的使用">Charles的使用<a hidden class="anchor" aria-hidden="true" href="#charles的使用">#</a></h2>
 <p>浏览视图可分为：Structure 和 Sequence</p>
 <p>常用的操作有：</p>
 <ul>

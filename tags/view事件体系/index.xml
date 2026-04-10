@@ -13,8 +13,8 @@
       <link>/posts/android/nested_scroll_basic/</link>
       <pubDate>Wed, 14 May 2025 14:30:22 +0800</pubDate>
       <guid>/posts/android/nested_scroll_basic/</guid>
-      <description>&lt;h3 id=&#34;nestedscrollingchild&#34;&gt;NestedScrollingChild&lt;/h3&gt;
-&lt;h4 id=&#34;1-接口版本对比&#34;&gt;1. 接口版本对比&lt;/h4&gt;
+      <description>&lt;h2 id=&#34;nestedscrollingchild&#34;&gt;NestedScrollingChild&lt;/h2&gt;
+&lt;h3 id=&#34;1-接口版本对比&#34;&gt;1. 接口版本对比&lt;/h3&gt;
 &lt;table&gt;
   &lt;thead&gt;
       &lt;tr&gt;
@@ -41,7 +41,7 @@
       &lt;/tr&gt;
   &lt;/tbody&gt;
 &lt;/table&gt;
-&lt;h4 id=&#34;2-接口方法列表&#34;&gt;2. 接口方法列表&lt;/h4&gt;
+&lt;h3 id=&#34;2-接口方法列表&#34;&gt;2. 接口方法列表&lt;/h3&gt;
 &lt;p&gt;NestedScrollingChild接口方法：&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;kd&#34;&gt;public&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;kd&#34;&gt;interface&lt;/span&gt; &lt;span class=&#34;nc&#34;&gt;NestedScrollingChild&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;  &lt;/span&gt;&lt;span class=&#34;c1&#34;&gt;// 启用/禁用嵌套滚动&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
@@ -72,7 +72,7 @@
       <link>/posts/android/view_traversals/</link>
       <pubDate>Wed, 14 May 2025 13:10:56 +0800</pubDate>
       <guid>/posts/android/view_traversals/</guid>
-      <description>&lt;h3 id=&#34;概述&#34;&gt;概述&lt;/h3&gt;
+      <description>&lt;h2 id=&#34;概述&#34;&gt;概述&lt;/h2&gt;
 &lt;p&gt;在Android的知识体系中，&lt;strong&gt;View&lt;/strong&gt;扮演着很重要的角色，简单来理解，View是Android里Window的表现形式。&lt;/p&gt;
 &lt;p&gt;ViewRootImpl在整个View体系中起着中流砥柱的作用，它是控件树正常运作的动力所在，主要功能有：&lt;/p&gt;
 &lt;ul&gt;
@@ -81,8 +81,8 @@
 &lt;li&gt;完成View的绘制(measure，layout，draw)；&lt;/li&gt;
 &lt;li&gt;负责与WMS交互通信，调整窗口大小及布局。&lt;/li&gt;
 &lt;/ul&gt;
-&lt;h3 id=&#34;view工作流程&#34;&gt;View工作流程&lt;/h3&gt;
-&lt;h4 id=&#34;1-viewrootimplsetview&#34;&gt;1. ViewRootImpl.setView&lt;/h4&gt;
+&lt;h2 id=&#34;view工作流程&#34;&gt;View工作流程&lt;/h2&gt;
+&lt;h3 id=&#34;1-viewrootimplsetview&#34;&gt;1. ViewRootImpl.setView&lt;/h3&gt;
 &lt;p&gt;在WindowManagerGlobal.addView方法中，会创建ViewRootImpl对象，并通过setView方法将DecorView对象和WindowManager.LayoutParams等参数传入。View流程相关的代码如下：&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;kd&#34;&gt;public&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;kt&#34;&gt;void&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;nf&#34;&gt;setView&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;View&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;view&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;WindowManager&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;na&#34;&gt;LayoutParams&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;attrs&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;View&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;panelParentView&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;    &lt;/span&gt;&lt;span class=&#34;p&#34;&gt;...&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
@@ -94,7 +94,7 @@
 &lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;    &lt;/span&gt;&lt;span class=&#34;p&#34;&gt;...&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;通过内部的requestLayout()方法开启View的工作流程。&lt;/p&gt;
-&lt;h4 id=&#34;2-viewrootimplrequestlayout&#34;&gt;2. ViewRootImpl.requestLayout&lt;/h4&gt;
+&lt;h3 id=&#34;2-viewrootimplrequestlayout&#34;&gt;2. ViewRootImpl.requestLayout&lt;/h3&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nd&#34;&gt;@Override&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;&lt;/span&gt;&lt;span class=&#34;kd&#34;&gt;public&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;kt&#34;&gt;void&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;nf&#34;&gt;requestLayout&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;()&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;    &lt;/span&gt;&lt;span class=&#34;k&#34;&gt;if&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;!&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;mHandlingLayoutInLayoutRequest&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
@@ -122,7 +122,7 @@
       <pubDate>Tue, 13 May 2025 15:11:46 +0800</pubDate>
       <guid>/posts/android/view_basic/</guid>
       <description>&lt;p&gt;View是Android所有控件的基类，是一种界面层控件的抽象角色。在Android的设计中，ViewGroup也继承了View，这就意味着View本身就可以是单个控件也可以是由多个控件组成的一组控件，通过这种关系就形成了View树的结构。&lt;/p&gt;
-&lt;h3 id=&#34;view位置参数&#34;&gt;View位置参数&lt;/h3&gt;
+&lt;h2 id=&#34;view位置参数&#34;&gt;View位置参数&lt;/h2&gt;
 &lt;p&gt;View的位置主要由它的四个顶点来决定，分别对应于View的四个属性：&lt;strong&gt;top、left、right、bottom&lt;/strong&gt;，其中top是左上角纵坐标，left是左上角横坐标，right是右下角横坐标，bottom是右下角纵坐标。注意，这些坐标是相对于View的父容器来说的，它是一种相对坐标。&lt;/p&gt;
 &lt;p&gt;View的宽高和坐标的关系：&lt;code&gt;width = right -left; height = bottom - top;&lt;/code&gt;&lt;/p&gt;
 &lt;p&gt;从Android3.0开始，View增加参数：&lt;strong&gt;x、y、translationX、translationY&lt;/strong&gt;，其中x和y是View左上角的坐标，而translationX和translationY是View左上角相对于父容器的偏移量。这几个参数也是相对于父容器的坐标，并且&lt;strong&gt;translationX和translationY的默认值是0&lt;/strong&gt;。&lt;/p&gt;
@@ -130,7 +130,7 @@
 &lt;blockquote&gt;
 &lt;p&gt;在View在平移的过程中，top和left是原始左上角的位置信息，不会发生改变。发生改变的是x、y、translationX和translationY这四个参数。&lt;/p&gt;
 &lt;/blockquote&gt;
-&lt;h3 id=&#34;motionevent和touchslop&#34;&gt;MotionEvent和TouchSlop&lt;/h3&gt;
+&lt;h2 id=&#34;motionevent和touchslop&#34;&gt;MotionEvent和TouchSlop&lt;/h2&gt;
 &lt;p&gt;在手指接触屏幕后产生的一系列事件，该事件对象是&lt;strong&gt;MotionEvent&lt;/strong&gt;。&lt;/p&gt;
 &lt;p&gt;下面是常用的事件类型：&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;kd&#34;&gt;public&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;kd&#34;&gt;final&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;kd&#34;&gt;class&lt;/span&gt; &lt;span class=&#34;nc&#34;&gt;MotionEvent&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;kd&#34;&gt;extends&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;InputEvent&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;kd&#34;&gt;implements&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;Parcelable&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;

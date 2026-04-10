@@ -645,8 +645,8 @@ window.onload = () => {
     }
 </script>
 
-  <div class="post-content"><h3 id="vim基本操作">Vim基本操作<a hidden class="anchor" aria-hidden="true" href="#vim基本操作">#</a></h3>
-<h4 id="1-移动光标">1. 移动光标<a hidden class="anchor" aria-hidden="true" href="#1-移动光标">#</a></h4>
+  <div class="post-content"><h2 id="vim基本操作">Vim基本操作<a hidden class="anchor" aria-hidden="true" href="#vim基本操作">#</a></h2>
+<h3 id="1-移动光标">1. 移动光标<a hidden class="anchor" aria-hidden="true" href="#1-移动光标">#</a></h3>
 <table>
   <thead>
       <tr>
@@ -724,7 +724,7 @@ window.onload = () => {
 <blockquote>
 <p>注意：许多vi的命令前面都可以缀上数字，前缀数字可以控制该命令执行的次数，比如5j可以使得光标向下移动5行</p>
 </blockquote>
-<h4 id="2-基本编辑">2. 基本编辑<a hidden class="anchor" aria-hidden="true" href="#2-基本编辑">#</a></h4>
+<h3 id="2-基本编辑">2. 基本编辑<a hidden class="anchor" aria-hidden="true" href="#2-基本编辑">#</a></h3>
 <table>
   <thead>
       <tr>
@@ -759,7 +759,7 @@ window.onload = () => {
       </tr>
   </tbody>
 </table>
-<h4 id="3-删除和撤销">3. 删除和撤销<a hidden class="anchor" aria-hidden="true" href="#3-删除和撤销">#</a></h4>
+<h3 id="3-删除和撤销">3. 删除和撤销<a hidden class="anchor" aria-hidden="true" href="#3-删除和撤销">#</a></h3>
 <table>
   <thead>
       <tr>
@@ -801,7 +801,7 @@ window.onload = () => {
 <blockquote>
 <p>结合光标移动以及这里的删除和撤销，可以组合命令。如：dG，代表删除当前行到文件末尾（剪切）</p>
 </blockquote>
-<h4 id="4-剪切复制和粘贴">4. 剪切、复制和粘贴<a hidden class="anchor" aria-hidden="true" href="#4-剪切复制和粘贴">#</a></h4>
+<h3 id="4-剪切复制和粘贴">4. 剪切、复制和粘贴<a hidden class="anchor" aria-hidden="true" href="#4-剪切复制和粘贴">#</a></h3>
 <p>x和d键实质上是剪切键，两者功能略有差异。y是复制键，p是粘贴键</p>
 <table>
   <thead>
@@ -841,7 +841,7 @@ window.onload = () => {
       </tr>
   </tbody>
 </table>
-<h4 id="5-查找和替换">5. 查找和替换<a hidden class="anchor" aria-hidden="true" href="#5-查找和替换">#</a></h4>
+<h3 id="5-查找和替换">5. 查找和替换<a hidden class="anchor" aria-hidden="true" href="#5-查找和替换">#</a></h3>
 <table>
   <thead>
       <tr>
@@ -892,7 +892,7 @@ window.onload = () => {
       </tr>
   </tbody>
 </table>
-<h4 id="6-保存工作">6. 保存工作<a hidden class="anchor" aria-hidden="true" href="#6-保存工作">#</a></h4>
+<h3 id="6-保存工作">6. 保存工作<a hidden class="anchor" aria-hidden="true" href="#6-保存工作">#</a></h3>
 <table>
   <thead>
       <tr>
@@ -930,7 +930,7 @@ window.onload = () => {
 <blockquote>
 <p>可以通过ctrl+z挂起vim，然后需要进入的时候输入“fg”回到vim</p>
 </blockquote>
-<h4 id="7-其他操作">7. 其他操作<a hidden class="anchor" aria-hidden="true" href="#7-其他操作">#</a></h4>
+<h3 id="7-其他操作">7. 其他操作<a hidden class="anchor" aria-hidden="true" href="#7-其他操作">#</a></h3>
 <table>
   <thead>
       <tr>
@@ -961,15 +961,15 @@ window.onload = () => {
       </tr>
   </tbody>
 </table>
-<h3 id="高级操作">高级操作<a hidden class="anchor" aria-hidden="true" href="#高级操作">#</a></h3>
-<h4 id="1-读取二进制文件">1. 读取二进制文件<a hidden class="anchor" aria-hidden="true" href="#1-读取二进制文件">#</a></h4>
+<h2 id="高级操作">高级操作<a hidden class="anchor" aria-hidden="true" href="#高级操作">#</a></h2>
+<h3 id="1-读取二进制文件">1. 读取二进制文件<a hidden class="anchor" aria-hidden="true" href="#1-读取二进制文件">#</a></h3>
 <p>可以通过下面方式查看并修改二进制文件：</p>
 <ul>
 <li>打开二进制文件：<code>vim -b [target_file]</code></li>
 <li>以十六进制查看：<code> :%!xxd</code></li>
 <li>恢复之前的进制：<code>:%!xxd -r</code></li>
 </ul>
-<h3 id="vim键位图">Vim键位图<a hidden class="anchor" aria-hidden="true" href="#vim键位图">#</a></h3>
+<h2 id="vim键位图">Vim键位图<a hidden class="anchor" aria-hidden="true" href="#vim键位图">#</a></h2>
 <p><img alt="Vim键位图" loading="lazy" src="/resource/tools/vi-vim-cheat-sheet-sch.gif"></p>
 
 
