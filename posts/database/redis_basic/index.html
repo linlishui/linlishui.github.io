@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>Redis 基础用法 | 缥缈夏鸢</title>
+<meta name="keywords" content="Redis">
+<meta name="description" content="概述
+Redis 是常见的内存数据库，通常用来做缓存、计数、排行榜、分布式锁等高频读写场景。
+这篇文章聚焦最基础也最常用的内容，包括连接 Redis、常见数据类型、基本读写操作、过期时间，以及实战里常见的使用坑点。
+连接 Redis
+最常见的方式是使用命令行客户端：
+redis-cli
+如果要连接指定主机和端口：
+redis-cli -h 127.0.0.1 -p 6379
+如果服务设置了密码：
+redis-cli -h 127.0.0.1 -p 6379 -a your_password
+连接成功后，可以先做一个简单检查：
+PING
+返回 PONG 说明 Redis 服务可用。
+基本概念
+Redis 的数据以 key -&gt; value 的形式存储。和关系型数据库不同，它没有表结构，重点是根据业务场景选择合适的数据类型。
+开发里最常见的几类数据：
+
+String：最常用，适合缓存字符串、数字、JSON
+Hash：适合存对象结构
+List：适合消息队列、按顺序保存数据
+Set：适合去重
+ZSet：适合排行榜
+
+String 常用操作
+String 是 Redis 使用最频繁的数据类型。
+1. 写入和读取
+SET user:1001:name &#34;alice&#34;
+GET user:1001:name
+2. 覆盖写入
+SET user:1001:name &#34;bob&#34;
+SET 会直接覆盖旧值，这一点要特别注意。
+3. 数字自增
+SET page:view 100
+INCR page:view
+INCRBY page:view 10
+这类操作适合做访问量、点赞数、库存计数等场景。
+4. 删除 key
+DEL user:1001:name
+Hash 常用操作
+Hash 适合存一组相关字段，比如用户信息。">
+<meta name="author" content="夏天的小西瓜">
+<link rel="canonical" href="/posts/database/redis_basic/">
+<meta name="google-site-verification" content="XYZabc">
+<meta name="msvalidate.01" content="XYZabc">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.44278f16c6e7e77192a15a0565fb5b0f220c56128442fcfa6937b4d84456ecf0.css" integrity="sha256-RCePFsbn53GSoVoFZftbDyIMVhKEQvz6aTe02ERW7PA=" rel="preload stylesheet" as="style">
+<link rel="icon" href="/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="mask-icon" href="/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="en" href="/posts/database/redis_basic/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-track {
+                background: 0 0;
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-thumb {
+                border-color: var(--theme);
+            }
+        }
+
+    </style>
+</noscript><script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+<script>
+
+const config = {
+    startOnLoad:true,
+    
+    themeVariables: {
+        lineColor: "#ffffff"    
+    },
+    flowchart: {
+        useMaxWidth:false,
+        htmlLabels:true
+    }
+};
+mermaid.initialize(config);
+
+
+window.onload = () => {
+    window.mermaid.init(undefined, document.querySelectorAll('.language-mermaid'));
+}
+</script><meta property="og:url" content="/posts/database/redis_basic/">
+  <meta property="og:site_name" content="缥缈夏鸢">
+  <meta property="og:title" content="Redis 基础用法">
+  <meta property="og:description" content="概述 Redis 是常见的内存数据库，通常用来做缓存、计数、排行榜、分布式锁等高频读写场景。
+这篇文章聚焦最基础也最常用的内容，包括连接 Redis、常见数据类型、基本读写操作、过期时间，以及实战里常见的使用坑点。
+连接 Redis 最常见的方式是使用命令行客户端：
+redis-cli 如果要连接指定主机和端口：
+redis-cli -h 127.0.0.1 -p 6379 如果服务设置了密码：
+redis-cli -h 127.0.0.1 -p 6379 -a your_password 连接成功后，可以先做一个简单检查：
+PING 返回 PONG 说明 Redis 服务可用。
+基本概念 Redis 的数据以 key -&gt; value 的形式存储。和关系型数据库不同，它没有表结构，重点是根据业务场景选择合适的数据类型。
+开发里最常见的几类数据：
+String：最常用，适合缓存字符串、数字、JSON Hash：适合存对象结构 List：适合消息队列、按顺序保存数据 Set：适合去重 ZSet：适合排行榜 String 常用操作 String 是 Redis 使用最频繁的数据类型。
+1. 写入和读取 SET user:1001:name &#34;alice&#34; GET user:1001:name 2. 覆盖写入 SET user:1001:name &#34;bob&#34; SET 会直接覆盖旧值，这一点要特别注意。
+3. 数字自增 SET page:view 100 INCR page:view INCRBY page:view 10 这类操作适合做访问量、点赞数、库存计数等场景。
+4. 删除 key DEL user:1001:name Hash 常用操作 Hash 适合存一组相关字段，比如用户信息。">
+  <meta property="og:locale" content="en-us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2026-04-10T17:29:36+08:00">
+    <meta property="article:modified_time" content="2026-04-10T17:29:36+08:00">
+    <meta property="article:tag" content="Redis">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Redis 基础用法">
+<meta name="twitter:description" content="概述
+Redis 是常见的内存数据库，通常用来做缓存、计数、排行榜、分布式锁等高频读写场景。
+这篇文章聚焦最基础也最常用的内容，包括连接 Redis、常见数据类型、基本读写操作、过期时间，以及实战里常见的使用坑点。
+连接 Redis
+最常见的方式是使用命令行客户端：
+redis-cli
+如果要连接指定主机和端口：
+redis-cli -h 127.0.0.1 -p 6379
+如果服务设置了密码：
+redis-cli -h 127.0.0.1 -p 6379 -a your_password
+连接成功后，可以先做一个简单检查：
+PING
+返回 PONG 说明 Redis 服务可用。
+基本概念
+Redis 的数据以 key -&gt; value 的形式存储。和关系型数据库不同，它没有表结构，重点是根据业务场景选择合适的数据类型。
+开发里最常见的几类数据：
+
+String：最常用，适合缓存字符串、数字、JSON
+Hash：适合存对象结构
+List：适合消息队列、按顺序保存数据
+Set：适合去重
+ZSet：适合排行榜
+
+String 常用操作
+String 是 Redis 使用最频繁的数据类型。
+1. 写入和读取
+SET user:1001:name &#34;alice&#34;
+GET user:1001:name
+2. 覆盖写入
+SET user:1001:name &#34;bob&#34;
+SET 会直接覆盖旧值，这一点要特别注意。
+3. 数字自增
+SET page:view 100
+INCR page:view
+INCRBY page:view 10
+这类操作适合做访问量、点赞数、库存计数等场景。
+4. 删除 key
+DEL user:1001:name
+Hash 常用操作
+Hash 适合存一组相关字段，比如用户信息。">
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Posts",
+      "item": "/posts/"
+    }
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Redis 基础用法",
+      "item": "/posts/database/redis_basic/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Redis 基础用法",
+  "name": "Redis 基础用法",
+  "description": "概述 Redis 是常见的内存数据库，通常用来做缓存、计数、排行榜、分布式锁等高频读写场景。\n这篇文章聚焦最基础也最常用的内容，包括连接 Redis、常见数据类型、基本读写操作、过期时间，以及实战里常见的使用坑点。\n连接 Redis 最常见的方式是使用命令行客户端：\nredis-cli 如果要连接指定主机和端口：\nredis-cli -h 127.0.0.1 -p 6379 如果服务设置了密码：\nredis-cli -h 127.0.0.1 -p 6379 -a your_password 连接成功后，可以先做一个简单检查：\nPING 返回 PONG 说明 Redis 服务可用。\n基本概念 Redis 的数据以 key -\u0026gt; value 的形式存储。和关系型数据库不同，它没有表结构，重点是根据业务场景选择合适的数据类型。\n开发里最常见的几类数据：\nString：最常用，适合缓存字符串、数字、JSON Hash：适合存对象结构 List：适合消息队列、按顺序保存数据 Set：适合去重 ZSet：适合排行榜 String 常用操作 String 是 Redis 使用最频繁的数据类型。\n1. 写入和读取 SET user:1001:name \u0026#34;alice\u0026#34; GET user:1001:name 2. 覆盖写入 SET user:1001:name \u0026#34;bob\u0026#34; SET 会直接覆盖旧值，这一点要特别注意。\n3. 数字自增 SET page:view 100 INCR page:view INCRBY page:view 10 这类操作适合做访问量、点赞数、库存计数等场景。\n4. 删除 key DEL user:1001:name Hash 常用操作 Hash 适合存一组相关字段，比如用户信息。\n",
+  "keywords": [
+    "Redis"
+  ],
+  "articleBody": "概述 Redis 是常见的内存数据库，通常用来做缓存、计数、排行榜、分布式锁等高频读写场景。\n这篇文章聚焦最基础也最常用的内容，包括连接 Redis、常见数据类型、基本读写操作、过期时间，以及实战里常见的使用坑点。\n连接 Redis 最常见的方式是使用命令行客户端：\nredis-cli 如果要连接指定主机和端口：\nredis-cli -h 127.0.0.1 -p 6379 如果服务设置了密码：\nredis-cli -h 127.0.0.1 -p 6379 -a your_password 连接成功后，可以先做一个简单检查：\nPING 返回 PONG 说明 Redis 服务可用。\n基本概念 Redis 的数据以 key -\u003e value 的形式存储。和关系型数据库不同，它没有表结构，重点是根据业务场景选择合适的数据类型。\n开发里最常见的几类数据：\nString：最常用，适合缓存字符串、数字、JSON Hash：适合存对象结构 List：适合消息队列、按顺序保存数据 Set：适合去重 ZSet：适合排行榜 String 常用操作 String 是 Redis 使用最频繁的数据类型。\n1. 写入和读取 SET user:1001:name \"alice\" GET user:1001:name 2. 覆盖写入 SET user:1001:name \"bob\" SET 会直接覆盖旧值，这一点要特别注意。\n3. 数字自增 SET page:view 100 INCR page:view INCRBY page:view 10 这类操作适合做访问量、点赞数、库存计数等场景。\n4. 删除 key DEL user:1001:name Hash 常用操作 Hash 适合存一组相关字段，比如用户信息。\n1. 写入字段 HSET user:1001 name \"alice\" age 18 city \"Shanghai\" 2. 读取字段 HGET user:1001 name HGETALL user:1001 3. 更新字段 HSET user:1001 age 20 4. 删除字段 HDEL user:1001 city List 常用操作 List 适合按顺序保存一批数据。\n1. 左右插入 LPUSH tasks \"task1\" RPUSH tasks \"task2\" 2. 查看列表内容 LRANGE tasks 0 -1 3. 弹出元素 LPOP tasks RPOP tasks 如果只是做最简单的队列，LPUSH + RPOP 或 RPUSH + LPOP 就够用了。\nSet 与 ZSet 常用操作 1. Set 去重 SADD tags \"mysql\" \"redis\" \"mysql\" SMEMBERS tags Set 会自动去重，适合标签、用户 ID 集合、黑名单等场景。\n2. ZSet 排行榜 ZADD rank 100 user1 88 user2 95 user3 ZRANGE rank 0 -1 WITHSCORES ZREVRANGE rank 0 2 WITHSCORES ZSet 会按分数排序，适合排行榜、权重队列等场景。\n过期时间 Redis 很多场景都和“临时数据”有关，所以过期时间非常重要。\n1. 设置过期时间 SET login:code \"123456\" EXPIRE login:code 60 也可以一次写入并设置过期时间：\nSET session:token \"abc123\" EX 3600 2. 查看剩余过期时间 TTL session:token 3. 取消过期时间 PERSIST session:token 如果缓存、验证码、登录态没有设置过期时间，通常会留下很多无用数据。\nkey 与 value 的常见设计方式 实战里，Redis 通常不是随便起一个 key、再随便塞一个 value，而是把“业务含义”和“数据形态”一起设计好。\n1. key 要能直接定位目标数据 常见写法是把业务类型、唯一标识、数据含义拼进 key 里：\nuser:1001 user:1001:profile order:5001:status rank:daily 这样代码拿到用户 id、订单 id、榜单类型后，就能直接拼出 key，而不是再做复杂查询。\n2. value 可以是整个对象 详情缓存最常见的做法是直接存对象 JSON：\nuser:1001 -\u003e {\"id\":1001,\"name\":\"alice\",\"age\":18} 3. value 也可以只是部分结果 如果接口只需要少数字段，通常只缓存这部分数据：\nuser:1001:card -\u003e {\"name\":\"alice\",\"avatar\":\"a.png\"} 4. 简单状态适合存简单值 很多场景只需要一个状态值或计数值：\norder:5001:status -\u003e PAID article:2001:view_count -\u003e 9821 5. 集合关系优先用 Redis 原生结构 如果业务本身就是排行榜、标签集合、最近浏览记录，通常直接用 Redis 的数据类型表达：\nrank:daily -\u003e ZSet user:1001:tags -\u003e Set user:1001:recent_views -\u003e List 简单说，key 负责“怎么找到数据”，value 负责“数据用什么形式存”。设计得越清楚，后续维护越轻松。\n常用管理操作 查看当前库里的 key：\nKEYS * 生产环境里更推荐渐进式扫描：\nSCAN 0 切换数据库：\nSELECT 1 查看 key 是否存在：\nEXISTS user:1001 查看 key 的类型：\nTYPE user:1001 原子性与实战理解 Redis 单条命令通常具备原子性，这也是它很适合做计数器和简单状态控制的原因。\n例如下面的自增操作：\nINCR order:id 即使并发请求很多，这条命令本身也不会被拆开执行。\n但要注意，多个命令拼起来不一定天然安全。例如先 GET，再在代码里计算，最后再 SET，中间就可能被别的请求改掉。\n如果业务依赖“多步操作必须一起成功”，要考虑事务、Lua 脚本，或者重新设计数据更新方式。\n常见坑点 1. 直接把 Redis 当 MySQL 用 Redis 适合高频读写、短数据路径、简单结构，不适合直接替代关系型数据库做复杂查询和强事务场景。\n2. 忘记设置过期时间 例如验证码、登录态、临时缓存如果没有过期时间，数据会一直堆积。\nSET sms:code \"123456\" EX 300 3. KEYS * 用在生产环境 KEYS * 很方便，但数据量大时会明显影响 Redis。排查线上问题时，优先用 SCAN。\n4. 一个 key 存太大的 value 例如把很大的 JSON、很长的列表直接塞进一个 key，会增加网络传输和内存压力，也会让排查问题更麻烦。\n5. 误以为 Redis 天生不会丢数据 Redis 默认以内存为主，持久化策略、主从复制和部署方式都会影响数据可靠性。缓存类数据问题不大，但核心业务数据不能只靠“放进 Redis 就安全”这种假设。\n6. 不区分 key 命名 如果 key 命名很乱，后期维护会很痛苦。实际开发里最好统一前缀，例如：\nuser:1:name user:1:profile order:1001:status 小结 Redis 入门阶段，重点是先掌握常见数据类型和最基础的读写命令，再理解过期时间、原子性和 key 设计。真正容易出问题的地方通常不是命令不会写，而是数据类型选错、忘记设置过期时间、把大对象塞进单个 key，或者在线上滥用 KEYS *。\n",
+  "wordCount" : "368",
+  "inLanguage": "en",
+  "datePublished": "2026-04-10T17:29:36+08:00",
+  "dateModified": "2026-04-10T17:29:36+08:00",
+  "author":[{
+    "@type": "Person",
+    "name": "夏天的小西瓜"
+  }],
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "/posts/database/redis_basic/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "缥缈夏鸢",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "/favicon.ico"
+    }
+  }
+}
+</script>
+</head>
+
+<body class="" id="top">
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.body.classList.add('dark');
+    } else if (localStorage.getItem("pref-theme") === "light") {
+        document.body.classList.remove('dark')
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.body.classList.add('dark');
+    }
+
+</script>
+
+<header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="/" accesskey="h" title="缥缈夏鸢 (Alt + H)">缥缈夏鸢</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" accesskey="t" title="(Alt + T)">
+                    <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu">
+            <li>
+                <a href="/" title="首页">
+                    <span>首页</span>
+                </a>
+            </li>
+            <li>
+                <a href="/posts/" title="文章">
+                    <span>文章</span>
+                </a>
+            </li>
+            <li>
+                <a href="/categories/" title="分类">
+                    <span>分类</span>
+                </a>
+            </li>
+            <li>
+                <a href="/tags/" title="标签">
+                    <span>标签</span>
+                </a>
+            </li>
+            <li>
+                <a href="/archives/" title="归档">
+                    <span>归档</span>
+                </a>
+            </li>
+            <li>
+                <a href="/search/" title="搜索">
+                    <span>搜索</span>
+                </a>
+            </li>
+            <li>
+                <a href="/about/" title="关于">
+                    <span>关于</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <div class="breadcrumbs"><a href="/">Home</a>&nbsp;»&nbsp;<a href="/posts/">Posts</a></div>
+    <h1 class="post-title entry-hint-parent">
+      Redis 基础用法
+    </h1>
+    <div class="post-meta"><span title='2026-04-10 17:29:36 +0800 CST'>April 10, 2026</span>&nbsp;·&nbsp;2 min&nbsp;·&nbsp;368 words&nbsp;·&nbsp;夏天的小西瓜
+
+</div>
+  </header> <aside id="toc-container" class="toc-container wide">
+    <div class="toc">
+        <details  open>
+            <summary accesskey="c" title="(Alt + C)">
+                <span class="details">Table of Contents</span>
+            </summary>
+
+            <div class="inner"><ul>
+                    <li>
+                        <a href="#%e6%a6%82%e8%bf%b0" aria-label="概述">概述</a></li>
+                    <li>
+                        <a href="#%e8%bf%9e%e6%8e%a5-redis" aria-label="连接 Redis">连接 Redis</a></li>
+                    <li>
+                        <a href="#%e5%9f%ba%e6%9c%ac%e6%a6%82%e5%bf%b5" aria-label="基本概念">基本概念</a></li>
+                    <li>
+                        <a href="#string-%e5%b8%b8%e7%94%a8%e6%93%8d%e4%bd%9c" aria-label="String 常用操作">String 常用操作</a><ul>
+                            
+                    <li>
+                        <a href="#1-%e5%86%99%e5%85%a5%e5%92%8c%e8%af%bb%e5%8f%96" aria-label="1. 写入和读取">1. 写入和读取</a></li>
+                    <li>
+                        <a href="#2-%e8%a6%86%e7%9b%96%e5%86%99%e5%85%a5" aria-label="2. 覆盖写入">2. 覆盖写入</a></li>
+                    <li>
+                        <a href="#3-%e6%95%b0%e5%ad%97%e8%87%aa%e5%a2%9e" aria-label="3. 数字自增">3. 数字自增</a></li>
+                    <li>
+                        <a href="#4-%e5%88%a0%e9%99%a4-key" aria-label="4. 删除 key">4. 删除 key</a></li></ul>
+                    </li>
+                    <li>
+                        <a href="#hash-%e5%b8%b8%e7%94%a8%e6%93%8d%e4%bd%9c" aria-label="Hash 常用操作">Hash 常用操作</a><ul>
+                            
+                    <li>
+                        <a href="#1-%e5%86%99%e5%85%a5%e5%ad%97%e6%ae%b5" aria-label="1. 写入字段">1. 写入字段</a></li>
+                    <li>
+                        <a href="#2-%e8%af%bb%e5%8f%96%e5%ad%97%e6%ae%b5" aria-label="2. 读取字段">2. 读取字段</a></li>
+                    <li>
+                        <a href="#3-%e6%9b%b4%e6%96%b0%e5%ad%97%e6%ae%b5" aria-label="3. 更新字段">3. 更新字段</a></li>
+                    <li>
+                        <a href="#4-%e5%88%a0%e9%99%a4%e5%ad%97%e6%ae%b5" aria-label="4. 删除字段">4. 删除字段</a></li></ul>
+                    </li>
+                    <li>
+                        <a href="#list-%e5%b8%b8%e7%94%a8%e6%93%8d%e4%bd%9c" aria-label="List 常用操作">List 常用操作</a><ul>
+                            
+                    <li>
+                        <a href="#1-%e5%b7%a6%e5%8f%b3%e6%8f%92%e5%85%a5" aria-label="1. 左右插入">1. 左右插入</a></li>
+                    <li>
+                        <a href="#2-%e6%9f%a5%e7%9c%8b%e5%88%97%e8%a1%a8%e5%86%85%e5%ae%b9" aria-label="2. 查看列表内容">2. 查看列表内容</a></li>
+                    <li>
+                        <a href="#3-%e5%bc%b9%e5%87%ba%e5%85%83%e7%b4%a0" aria-label="3. 弹出元素">3. 弹出元素</a></li></ul>
+                    </li>
+                    <li>
+                        <a href="#set-%e4%b8%8e-zset-%e5%b8%b8%e7%94%a8%e6%93%8d%e4%bd%9c" aria-label="Set 与 ZSet 常用操作">Set 与 ZSet 常用操作</a><ul>
+                            
+                    <li>
+                        <a href="#1-set-%e5%8e%bb%e9%87%8d" aria-label="1. Set 去重">1. Set 去重</a></li>
+                    <li>
+                        <a href="#2-zset-%e6%8e%92%e8%a1%8c%e6%a6%9c" aria-label="2. ZSet 排行榜">2. ZSet 排行榜</a></li></ul>
+                    </li>
+                    <li>
+                        <a href="#%e8%bf%87%e6%9c%9f%e6%97%b6%e9%97%b4" aria-label="过期时间">过期时间</a><ul>
+                            
+                    <li>
+                        <a href="#1-%e8%ae%be%e7%bd%ae%e8%bf%87%e6%9c%9f%e6%97%b6%e9%97%b4" aria-label="1. 设置过期时间">1. 设置过期时间</a></li>
+                    <li>
+                        <a href="#2-%e6%9f%a5%e7%9c%8b%e5%89%a9%e4%bd%99%e8%bf%87%e6%9c%9f%e6%97%b6%e9%97%b4" aria-label="2. 查看剩余过期时间">2. 查看剩余过期时间</a></li>
+                    <li>
+                        <a href="#3-%e5%8f%96%e6%b6%88%e8%bf%87%e6%9c%9f%e6%97%b6%e9%97%b4" aria-label="3. 取消过期时间">3. 取消过期时间</a></li></ul>
+                    </li>
+                    <li>
+                        <a href="#key-%e4%b8%8e-value-%e7%9a%84%e5%b8%b8%e8%a7%81%e8%ae%be%e8%ae%a1%e6%96%b9%e5%bc%8f" aria-label="key 与 value 的常见设计方式">key 与 value 的常见设计方式</a><ul>
+                            
+                    <li>
+                        <a href="#1-key-%e8%a6%81%e8%83%bd%e7%9b%b4%e6%8e%a5%e5%ae%9a%e4%bd%8d%e7%9b%ae%e6%a0%87%e6%95%b0%e6%8d%ae" aria-label="1. key 要能直接定位目标数据">1. key 要能直接定位目标数据</a></li>
+                    <li>
+                        <a href="#2-value-%e5%8f%af%e4%bb%a5%e6%98%af%e6%95%b4%e4%b8%aa%e5%af%b9%e8%b1%a1" aria-label="2. value 可以是整个对象">2. value 可以是整个对象</a></li>
+                    <li>
+                        <a href="#3-value-%e4%b9%9f%e5%8f%af%e4%bb%a5%e5%8f%aa%e6%98%af%e9%83%a8%e5%88%86%e7%bb%93%e6%9e%9c" aria-label="3. value 也可以只是部分结果">3. value 也可以只是部分结果</a></li>
+                    <li>
+                        <a href="#4-%e7%ae%80%e5%8d%95%e7%8a%b6%e6%80%81%e9%80%82%e5%90%88%e5%ad%98%e7%ae%80%e5%8d%95%e5%80%bc" aria-label="4. 简单状态适合存简单值">4. 简单状态适合存简单值</a></li>
+                    <li>
+                        <a href="#5-%e9%9b%86%e5%90%88%e5%85%b3%e7%b3%bb%e4%bc%98%e5%85%88%e7%94%a8-redis-%e5%8e%9f%e7%94%9f%e7%bb%93%e6%9e%84" aria-label="5. 集合关系优先用 Redis 原生结构">5. 集合关系优先用 Redis 原生结构</a></li></ul>
+                    </li>
+                    <li>
+                        <a href="#%e5%b8%b8%e7%94%a8%e7%ae%a1%e7%90%86%e6%93%8d%e4%bd%9c" aria-label="常用管理操作">常用管理操作</a></li>
+                    <li>
+                        <a href="#%e5%8e%9f%e5%ad%90%e6%80%a7%e4%b8%8e%e5%ae%9e%e6%88%98%e7%90%86%e8%a7%a3" aria-label="原子性与实战理解">原子性与实战理解</a></li>
+                    <li>
+                        <a href="#%e5%b8%b8%e8%a7%81%e5%9d%91%e7%82%b9" aria-label="常见坑点">常见坑点</a><ul>
+                            
+                    <li>
+                        <a href="#1-%e7%9b%b4%e6%8e%a5%e6%8a%8a-redis-%e5%bd%93-mysql-%e7%94%a8" aria-label="1. 直接把 Redis 当 MySQL 用">1. 直接把 Redis 当 MySQL 用</a></li>
+                    <li>
+                        <a href="#2-%e5%bf%98%e8%ae%b0%e8%ae%be%e7%bd%ae%e8%bf%87%e6%9c%9f%e6%97%b6%e9%97%b4" aria-label="2. 忘记设置过期时间">2. 忘记设置过期时间</a></li>
+                    <li>
+                        <a href="#3-keys--%e7%94%a8%e5%9c%a8%e7%94%9f%e4%ba%a7%e7%8e%af%e5%a2%83" aria-label="3. KEYS * 用在生产环境">3. <code>KEYS *</code> 用在生产环境</a></li>
+                    <li>
+                        <a href="#4-%e4%b8%80%e4%b8%aa-key-%e5%ad%98%e5%a4%aa%e5%a4%a7%e7%9a%84-value" aria-label="4. 一个 key 存太大的 value">4. 一个 key 存太大的 value</a></li>
+                    <li>
+                        <a href="#5-%e8%af%af%e4%bb%a5%e4%b8%ba-redis-%e5%a4%a9%e7%94%9f%e4%b8%8d%e4%bc%9a%e4%b8%a2%e6%95%b0%e6%8d%ae" aria-label="5. 误以为 Redis 天生不会丢数据">5. 误以为 Redis 天生不会丢数据</a></li>
+                    <li>
+                        <a href="#6-%e4%b8%8d%e5%8c%ba%e5%88%86-key-%e5%91%bd%e5%90%8d" aria-label="6. 不区分 key 命名">6. 不区分 key 命名</a></li></ul>
+                    </li>
+                    <li>
+                        <a href="#%e5%b0%8f%e7%bb%93" aria-label="小结">小结</a>
+                    </li>
+                </ul>
+            </div>
+        </details>
+    </div>
+</aside>
+<script>
+    let activeElement;
+    let elements;
+    window.addEventListener('DOMContentLoaded', function (event) {
+        checkTocPosition();
+
+        elements = document.querySelectorAll('h1[id],h2[id],h3[id],h4[id],h5[id],h6[id]');
+         
+         activeElement = elements[0];
+         const id = encodeURI(activeElement.getAttribute('id')).toLowerCase();
+         document.querySelector(`.inner ul li a[href="#${id}"]`).classList.add('active');
+     }, false);
+
+    window.addEventListener('resize', function(event) {
+        checkTocPosition();
+    }, false);
+
+    window.addEventListener('scroll', () => {
+        
+        activeElement = Array.from(elements).find((element) => {
+            if ((getOffsetTop(element) - window.pageYOffset) > 0 && 
+                (getOffsetTop(element) - window.pageYOffset) < window.innerHeight/2) {
+                return element;
+            }
+        }) || activeElement
+
+        elements.forEach(element => {
+             const id = encodeURI(element.getAttribute('id')).toLowerCase();
+             if (element === activeElement){
+                 document.querySelector(`.inner ul li a[href="#${id}"]`).classList.add('active');
+             } else {
+                 document.querySelector(`.inner ul li a[href="#${id}"]`).classList.remove('active');
+             }
+         })
+     }, false);
+
+    const main = parseInt(getComputedStyle(document.body).getPropertyValue('--article-width'), 10);
+    const toc = parseInt(getComputedStyle(document.body).getPropertyValue('--toc-width'), 10);
+    const gap = parseInt(getComputedStyle(document.body).getPropertyValue('--gap'), 10);
+
+    function checkTocPosition() {
+        const width = document.body.scrollWidth;
+
+        if (width - main - (toc * 2) - (gap * 4) > 0) {
+            document.getElementById("toc-container").classList.add("wide");
+        } else {
+            document.getElementById("toc-container").classList.remove("wide");
+        }
+    }
+
+    function getOffsetTop(element) {
+        if (!element.getClientRects().length) {
+            return 0;
+        }
+        let rect = element.getBoundingClientRect();
+        let win = element.ownerDocument.defaultView;
+        return rect.top + win.pageYOffset;   
+    }
+</script>
+
+  <div class="post-content"><h2 id="概述">概述<a hidden class="anchor" aria-hidden="true" href="#概述">#</a></h2>
+<p>Redis 是常见的内存数据库，通常用来做缓存、计数、排行榜、分布式锁等高频读写场景。</p>
+<p>这篇文章聚焦最基础也最常用的内容，包括连接 Redis、常见数据类型、基本读写操作、过期时间，以及实战里常见的使用坑点。</p>
+<h2 id="连接-redis">连接 Redis<a hidden class="anchor" aria-hidden="true" href="#连接-redis">#</a></h2>
+<p>最常见的方式是使用命令行客户端：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">redis-cli
+</span></span></code></pre></div><p>如果要连接指定主机和端口：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">redis-cli -h 127.0.0.1 -p <span class="m">6379</span>
+</span></span></code></pre></div><p>如果服务设置了密码：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">redis-cli -h 127.0.0.1 -p <span class="m">6379</span> -a your_password
+</span></span></code></pre></div><p>连接成功后，可以先做一个简单检查：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">PING
+</span></span></code></pre></div><p>返回 <code>PONG</code> 说明 Redis 服务可用。</p>
+<h2 id="基本概念">基本概念<a hidden class="anchor" aria-hidden="true" href="#基本概念">#</a></h2>
+<p>Redis 的数据以 <code>key -&gt; value</code> 的形式存储。和关系型数据库不同，它没有表结构，重点是根据业务场景选择合适的数据类型。</p>
+<p>开发里最常见的几类数据：</p>
+<ol>
+<li><code>String</code>：最常用，适合缓存字符串、数字、JSON</li>
+<li><code>Hash</code>：适合存对象结构</li>
+<li><code>List</code>：适合消息队列、按顺序保存数据</li>
+<li><code>Set</code>：适合去重</li>
+<li><code>ZSet</code>：适合排行榜</li>
+</ol>
+<h2 id="string-常用操作">String 常用操作<a hidden class="anchor" aria-hidden="true" href="#string-常用操作">#</a></h2>
+<p><code>String</code> 是 Redis 使用最频繁的数据类型。</p>
+<h3 id="1-写入和读取">1. 写入和读取<a hidden class="anchor" aria-hidden="true" href="#1-写入和读取">#</a></h3>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">SET user:1001:name <span class="s2">&#34;alice&#34;</span>
+</span></span><span class="line"><span class="cl">GET user:1001:name
+</span></span></code></pre></div><h3 id="2-覆盖写入">2. 覆盖写入<a hidden class="anchor" aria-hidden="true" href="#2-覆盖写入">#</a></h3>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">SET user:1001:name <span class="s2">&#34;bob&#34;</span>
+</span></span></code></pre></div><p><code>SET</code> 会直接覆盖旧值，这一点要特别注意。</p>
+<h3 id="3-数字自增">3. 数字自增<a hidden class="anchor" aria-hidden="true" href="#3-数字自增">#</a></h3>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">SET page:view <span class="m">100</span>
+</span></span><span class="line"><span class="cl">INCR page:view
+</span></span><span class="line"><span class="cl">INCRBY page:view <span class="m">10</span>
+</span></span></code></pre></div><p>这类操作适合做访问量、点赞数、库存计数等场景。</p>
+<h3 id="4-删除-key">4. 删除 key<a hidden class="anchor" aria-hidden="true" href="#4-删除-key">#</a></h3>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">DEL user:1001:name
+</span></span></code></pre></div><h2 id="hash-常用操作">Hash 常用操作<a hidden class="anchor" aria-hidden="true" href="#hash-常用操作">#</a></h2>
+<p><code>Hash</code> 适合存一组相关字段，比如用户信息。</p>
+<h3 id="1-写入字段">1. 写入字段<a hidden class="anchor" aria-hidden="true" href="#1-写入字段">#</a></h3>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">HSET user:1001 name <span class="s2">&#34;alice&#34;</span> age <span class="m">18</span> city <span class="s2">&#34;Shanghai&#34;</span>
+</span></span></code></pre></div><h3 id="2-读取字段">2. 读取字段<a hidden class="anchor" aria-hidden="true" href="#2-读取字段">#</a></h3>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">HGET user:1001 name
+</span></span><span class="line"><span class="cl">HGETALL user:1001
+</span></span></code></pre></div><h3 id="3-更新字段">3. 更新字段<a hidden class="anchor" aria-hidden="true" href="#3-更新字段">#</a></h3>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">HSET user:1001 age <span class="m">20</span>
+</span></span></code></pre></div><h3 id="4-删除字段">4. 删除字段<a hidden class="anchor" aria-hidden="true" href="#4-删除字段">#</a></h3>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">HDEL user:1001 city
+</span></span></code></pre></div><h2 id="list-常用操作">List 常用操作<a hidden class="anchor" aria-hidden="true" href="#list-常用操作">#</a></h2>
+<p><code>List</code> 适合按顺序保存一批数据。</p>
+<h3 id="1-左右插入">1. 左右插入<a hidden class="anchor" aria-hidden="true" href="#1-左右插入">#</a></h3>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">LPUSH tasks <span class="s2">&#34;task1&#34;</span>
+</span></span><span class="line"><span class="cl">RPUSH tasks <span class="s2">&#34;task2&#34;</span>
+</span></span></code></pre></div><h3 id="2-查看列表内容">2. 查看列表内容<a hidden class="anchor" aria-hidden="true" href="#2-查看列表内容">#</a></h3>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">LRANGE tasks <span class="m">0</span> -1
+</span></span></code></pre></div><h3 id="3-弹出元素">3. 弹出元素<a hidden class="anchor" aria-hidden="true" href="#3-弹出元素">#</a></h3>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">LPOP tasks
+</span></span><span class="line"><span class="cl">RPOP tasks
+</span></span></code></pre></div><p>如果只是做最简单的队列，<code>LPUSH + RPOP</code> 或 <code>RPUSH + LPOP</code> 就够用了。</p>
+<h2 id="set-与-zset-常用操作">Set 与 ZSet 常用操作<a hidden class="anchor" aria-hidden="true" href="#set-与-zset-常用操作">#</a></h2>
+<h3 id="1-set-去重">1. Set 去重<a hidden class="anchor" aria-hidden="true" href="#1-set-去重">#</a></h3>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">SADD tags <span class="s2">&#34;mysql&#34;</span> <span class="s2">&#34;redis&#34;</span> <span class="s2">&#34;mysql&#34;</span>
+</span></span><span class="line"><span class="cl">SMEMBERS tags
+</span></span></code></pre></div><p><code>Set</code> 会自动去重，适合标签、用户 ID 集合、黑名单等场景。</p>
+<h3 id="2-zset-排行榜">2. ZSet 排行榜<a hidden class="anchor" aria-hidden="true" href="#2-zset-排行榜">#</a></h3>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">ZADD rank <span class="m">100</span> user1 <span class="m">88</span> user2 <span class="m">95</span> user3
+</span></span><span class="line"><span class="cl">ZRANGE rank <span class="m">0</span> -1 WITHSCORES
+</span></span><span class="line"><span class="cl">ZREVRANGE rank <span class="m">0</span> <span class="m">2</span> WITHSCORES
+</span></span></code></pre></div><p><code>ZSet</code> 会按分数排序，适合排行榜、权重队列等场景。</p>
+<h2 id="过期时间">过期时间<a hidden class="anchor" aria-hidden="true" href="#过期时间">#</a></h2>
+<p>Redis 很多场景都和“临时数据”有关，所以过期时间非常重要。</p>
+<h3 id="1-设置过期时间">1. 设置过期时间<a hidden class="anchor" aria-hidden="true" href="#1-设置过期时间">#</a></h3>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">SET login:code <span class="s2">&#34;123456&#34;</span>
+</span></span><span class="line"><span class="cl">EXPIRE login:code <span class="m">60</span>
+</span></span></code></pre></div><p>也可以一次写入并设置过期时间：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">SET session:token <span class="s2">&#34;abc123&#34;</span> EX <span class="m">3600</span>
+</span></span></code></pre></div><h3 id="2-查看剩余过期时间">2. 查看剩余过期时间<a hidden class="anchor" aria-hidden="true" href="#2-查看剩余过期时间">#</a></h3>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">TTL session:token
+</span></span></code></pre></div><h3 id="3-取消过期时间">3. 取消过期时间<a hidden class="anchor" aria-hidden="true" href="#3-取消过期时间">#</a></h3>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">PERSIST session:token
+</span></span></code></pre></div><p>如果缓存、验证码、登录态没有设置过期时间，通常会留下很多无用数据。</p>
+<h2 id="key-与-value-的常见设计方式">key 与 value 的常见设计方式<a hidden class="anchor" aria-hidden="true" href="#key-与-value-的常见设计方式">#</a></h2>
+<p>实战里，Redis 通常不是随便起一个 key、再随便塞一个 value，而是把“业务含义”和“数据形态”一起设计好。</p>
+<h3 id="1-key-要能直接定位目标数据">1. key 要能直接定位目标数据<a hidden class="anchor" aria-hidden="true" href="#1-key-要能直接定位目标数据">#</a></h3>
+<p>常见写法是把业务类型、唯一标识、数据含义拼进 key 里：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="cl">user:1001
+</span></span><span class="line"><span class="cl">user:1001:profile
+</span></span><span class="line"><span class="cl">order:5001:status
+</span></span><span class="line"><span class="cl">rank:daily
+</span></span></code></pre></div><p>这样代码拿到用户 id、订单 id、榜单类型后，就能直接拼出 key，而不是再做复杂查询。</p>
+<h3 id="2-value-可以是整个对象">2. value 可以是整个对象<a hidden class="anchor" aria-hidden="true" href="#2-value-可以是整个对象">#</a></h3>
+<p>详情缓存最常见的做法是直接存对象 JSON：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="cl">user:1001 -&gt; {&#34;id&#34;:1001,&#34;name&#34;:&#34;alice&#34;,&#34;age&#34;:18}
+</span></span></code></pre></div><h3 id="3-value-也可以只是部分结果">3. value 也可以只是部分结果<a hidden class="anchor" aria-hidden="true" href="#3-value-也可以只是部分结果">#</a></h3>
+<p>如果接口只需要少数字段，通常只缓存这部分数据：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="cl">user:1001:card -&gt; {&#34;name&#34;:&#34;alice&#34;,&#34;avatar&#34;:&#34;a.png&#34;}
+</span></span></code></pre></div><h3 id="4-简单状态适合存简单值">4. 简单状态适合存简单值<a hidden class="anchor" aria-hidden="true" href="#4-简单状态适合存简单值">#</a></h3>
+<p>很多场景只需要一个状态值或计数值：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="cl">order:5001:status -&gt; PAID
+</span></span><span class="line"><span class="cl">article:2001:view_count -&gt; 9821
+</span></span></code></pre></div><h3 id="5-集合关系优先用-redis-原生结构">5. 集合关系优先用 Redis 原生结构<a hidden class="anchor" aria-hidden="true" href="#5-集合关系优先用-redis-原生结构">#</a></h3>
+<p>如果业务本身就是排行榜、标签集合、最近浏览记录，通常直接用 Redis 的数据类型表达：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="cl">rank:daily -&gt; ZSet
+</span></span><span class="line"><span class="cl">user:1001:tags -&gt; Set
+</span></span><span class="line"><span class="cl">user:1001:recent_views -&gt; List
+</span></span></code></pre></div><p>简单说，key 负责“怎么找到数据”，value 负责“数据用什么形式存”。设计得越清楚，后续维护越轻松。</p>
+<h2 id="常用管理操作">常用管理操作<a hidden class="anchor" aria-hidden="true" href="#常用管理操作">#</a></h2>
+<p>查看当前库里的 key：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">KEYS *
+</span></span></code></pre></div><p>生产环境里更推荐渐进式扫描：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">SCAN <span class="m">0</span>
+</span></span></code></pre></div><p>切换数据库：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">SELECT <span class="m">1</span>
+</span></span></code></pre></div><p>查看 key 是否存在：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">EXISTS user:1001
+</span></span></code></pre></div><p>查看 key 的类型：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">TYPE user:1001
+</span></span></code></pre></div><h2 id="原子性与实战理解">原子性与实战理解<a hidden class="anchor" aria-hidden="true" href="#原子性与实战理解">#</a></h2>
+<p>Redis 单条命令通常具备原子性，这也是它很适合做计数器和简单状态控制的原因。</p>
+<p>例如下面的自增操作：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">INCR order:id
+</span></span></code></pre></div><p>即使并发请求很多，这条命令本身也不会被拆开执行。</p>
+<p>但要注意，多个命令拼起来不一定天然安全。例如先 <code>GET</code>，再在代码里计算，最后再 <code>SET</code>，中间就可能被别的请求改掉。</p>
+<p>如果业务依赖“多步操作必须一起成功”，要考虑事务、Lua 脚本，或者重新设计数据更新方式。</p>
+<h2 id="常见坑点">常见坑点<a hidden class="anchor" aria-hidden="true" href="#常见坑点">#</a></h2>
+<h3 id="1-直接把-redis-当-mysql-用">1. 直接把 Redis 当 MySQL 用<a hidden class="anchor" aria-hidden="true" href="#1-直接把-redis-当-mysql-用">#</a></h3>
+<p>Redis 适合高频读写、短数据路径、简单结构，不适合直接替代关系型数据库做复杂查询和强事务场景。</p>
+<h3 id="2-忘记设置过期时间">2. 忘记设置过期时间<a hidden class="anchor" aria-hidden="true" href="#2-忘记设置过期时间">#</a></h3>
+<p>例如验证码、登录态、临时缓存如果没有过期时间，数据会一直堆积。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">SET sms:code <span class="s2">&#34;123456&#34;</span> EX <span class="m">300</span>
+</span></span></code></pre></div><h3 id="3-keys--用在生产环境">3. <code>KEYS *</code> 用在生产环境<a hidden class="anchor" aria-hidden="true" href="#3-keys--用在生产环境">#</a></h3>
+<p><code>KEYS *</code> 很方便，但数据量大时会明显影响 Redis。排查线上问题时，优先用 <code>SCAN</code>。</p>
+<h3 id="4-一个-key-存太大的-value">4. 一个 key 存太大的 value<a hidden class="anchor" aria-hidden="true" href="#4-一个-key-存太大的-value">#</a></h3>
+<p>例如把很大的 JSON、很长的列表直接塞进一个 key，会增加网络传输和内存压力，也会让排查问题更麻烦。</p>
+<h3 id="5-误以为-redis-天生不会丢数据">5. 误以为 Redis 天生不会丢数据<a hidden class="anchor" aria-hidden="true" href="#5-误以为-redis-天生不会丢数据">#</a></h3>
+<p>Redis 默认以内存为主，持久化策略、主从复制和部署方式都会影响数据可靠性。缓存类数据问题不大，但核心业务数据不能只靠“放进 Redis 就安全”这种假设。</p>
+<h3 id="6-不区分-key-命名">6. 不区分 key 命名<a hidden class="anchor" aria-hidden="true" href="#6-不区分-key-命名">#</a></h3>
+<p>如果 key 命名很乱，后期维护会很痛苦。实际开发里最好统一前缀，例如：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">user:1:name
+</span></span><span class="line"><span class="cl">user:1:profile
+</span></span><span class="line"><span class="cl">order:1001:status
+</span></span></code></pre></div><h2 id="小结">小结<a hidden class="anchor" aria-hidden="true" href="#小结">#</a></h2>
+<p>Redis 入门阶段，重点是先掌握常见数据类型和最基础的读写命令，再理解过期时间、原子性和 key 设计。真正容易出问题的地方通常不是命令不会写，而是数据类型选错、忘记设置过期时间、把大对象塞进单个 key，或者在线上滥用 <code>KEYS *</code>。</p>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="/tags/redis/">Redis</a></li>
+    </ul>
+<nav class="paginav">
+  <a class="next" href="/posts/database/mysql_basic/">
+    <span class="title">Next »</span>
+    <br>
+    <span>MySQL 基础用法</span>
+  </a>
+</nav>
+
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2026 <a href="/">缥缈夏鸢</a></span> · 
+
+    <span>
+        Powered by
+        <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+        <path d="M12 6H0l6-6z" />
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu')
+    if (menu) {
+        menu.scrollLeft = localStorage.getItem("menu-scroll-position");
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        if (document.body.className.includes("dark")) {
+            document.body.classList.remove('dark');
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            document.body.classList.add('dark');
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerHTML = 'copy';
+
+        function copyingDone() {
+            copybutton.innerHTML = 'copied!';
+            setTimeout(() => {
+                copybutton.innerHTML = 'copy';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+</body>
+
+</html>

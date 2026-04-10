@@ -199,6 +199,61 @@ window.onload = () => {
 
 <article class="post-entry"> 
   <header class="entry-header">
+    <h2 class="entry-hint-parent">Charles网络抓包
+    </h2>
+  </header>
+  <div class="entry-content">
+    <p>下载与安装 Charles官网下载安装包，下载成功后根据指示安装即可
+官网地址： www.charlesproxy.com
+Charles激活码：
+Registered Name: https://zhile.io
+License Key: 48891cf209c6d32bf4
+HTTP代理设置 1. 设置PC端代理端口号 在Proxy -&gt; Proxy settings可设置HTTP Proxy的端口号。
+2. 设置手机端代理端口号 在应用内的Help -&gt; Local IP Address上查看本机的IP地址（en0等标识）
+3. Android手机代理设置 设置-WLAN，进入已连接WiFi手动设置（端口需与PC端设置端口号一致）
+编辑网络，选择手动代理，输入PC端的IP地址 &#43; Charles配置的端口号。
+当手机进行数据请求时，Charles 将弹出是否允许连接此代理(选择允许 allow)，之后便可进行HTTP抓包。
+HTTPS代理设置 HTTP的代理设置是抓取不了HTTPS，故需要进行HTTPS代理设置。
+手机上需要安装Charles SSL证书认证，证书下载地址：http://charlesproxy.com/getssl
+建议使用Chrome浏览器，其它浏览器有可能报错。
+其它下载地址推荐：https://www.charlesproxy.com/assets/legacy-ssl/charles.crt
+1. Charles配置SSL 选中Proxy -&gt; SSL Proxying Setting选项，开启SSL代理，并添加或移除信任地址（默认端口号443）。
+如果拦截所有，则配置主机*，端口号 443
+2. Android手机安装证书 在手机浏览器输入上面的证书下载地址，证书下载成功后，进入设置-安全-加密与凭据-安装证书-CA证书，选择已下载的证书进行安装。
+不同安卓手机设置里面选择不同，可自行查找系统安全进入证书安装
+3. Android系统证书配置 上面的方式配置出来的证书是用户类型，如果需要抓取应用release类型的网络日志，则需要配置成系统证书。
+具体步骤如下：
+选中Help -&gt; SSL Proxying -&gt; Save Charles Root Certificate...选项 保存charles-ssl-proxying-certificate.pem到指定目录 执行openssl x509 -inform PEM -subject_hash_old -in [pem文件路径]，这里最上方一行输出的是“91b45736” 重命名pem文件，系统的证书名称格式一般为：[pem的hash值].0名称。故笔者这里需要将pem文件命名为91b45736.0 将重命名后的文件push到如下路径：/system/etc/security/cacerts/ 重启手机，在设置应用上找到信任的凭据,查看系统的CA证书列表，确认是否有Charles Proxy CA存在 附上cer转换成pem的命令：openssl x509 -inform DER -in [cer文件] -out [pem文件]
+...</p>
+  </div>
+  <footer class="entry-footer"><span title='2025-01-22 17:27:21 +0800 CST'>January 22, 2025</span>&nbsp;·&nbsp;1 min&nbsp;·&nbsp;114 words&nbsp;·&nbsp;夏天的小西瓜</footer>
+  <a class="entry-link" aria-label="post link to Charles网络抓包" href="/posts/tools/charles/"></a>
+</article>
+
+<article class="post-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">openVPN
+    </h2>
+  </header>
+  <div class="entry-content">
+    <p>本文将基于Ubuntu系统环境快速搭建OpenVPN用于端对端的安全传输通道访问。
+安装软件 安装相关的软件(openvpn与easy-rsa)，执行命令：
+sudo apt update sudo apt install openvpn easy-rsa 查看安装后的 openvpn与 easy-rsa 版本，如下：
+openvpn/focal-updates,focal-security,now 2.4.12-0ubuntu0.20.04.2 amd64 [installed] virtual private network daemon easy-rsa/focal,focal,now 3.0.6-1 all [installed] Simple shell based CA utility 制作证书 OpenVPN 的证书分为三部分：CA证书、Server端证书、Client端证书。下面我们通过easy-rsa分别对其进行制作。
+制作证书：
+进入 /usr/share/easy-rsa 目录
+拷贝 vars.example 文件，并将新的文件命名为 vars
+编辑 vars 文件，取消注释并按需修改以下内容信息：
+set_var EASYRSA_REQ_COUNTRY &#34;US&#34; set_var EASYRSA_REQ_PROVINCE &#34;California&#34; set_var EASYRSA_REQ_CITY &#34;San Francisco&#34; set_var EASYRSA_REQ_ORG &#34;Copyleft Certificate Co&#34; set_var EASYRSA_REQ_EMAIL &#34;me@example.net&#34; set_var EASYRSA_REQ_OU &#34;My Organizational Unit&#34; 在该目录里执行以下命令用于初始化与生成CA证书：
+sudo ./easyrsa init-pki sudo ./easyrsa build-ca nopass 生成服务端证书：
+...</p>
+  </div>
+  <footer class="entry-footer"><span title='2024-12-23 17:09:22 +0800 CST'>December 23, 2024</span>&nbsp;·&nbsp;2 min&nbsp;·&nbsp;393 words&nbsp;·&nbsp;夏天的小西瓜</footer>
+  <a class="entry-link" aria-label="post link to openVPN" href="/posts/tools/openvpn/"></a>
+</article>
+
+<article class="post-entry"> 
+  <header class="entry-header">
     <h2 class="entry-hint-parent">Linux使用介绍
     </h2>
   </header>

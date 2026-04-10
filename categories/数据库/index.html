@@ -5,11 +5,11 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <meta name="robots" content="index, follow">
-<title>Categories | 缥缈夏鸢</title>
+<title>数据库 | 缥缈夏鸢</title>
 <meta name="keywords" content="">
 <meta name="description" content="">
 <meta name="author" content="夏天的小西瓜">
-<link rel="canonical" href="/categories/">
+<link rel="canonical" href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/">
 <meta name="google-site-verification" content="XYZabc">
 <meta name="msvalidate.01" content="XYZabc">
 <link crossorigin="anonymous" href="/assets/css/stylesheet.44278f16c6e7e77192a15a0565fb5b0f220c56128442fcfa6937b4d84456ecf0.css" integrity="sha256-RCePFsbn53GSoVoFZftbDyIMVhKEQvz6aTe02ERW7PA=" rel="preload stylesheet" as="style">
@@ -20,8 +20,8 @@
 <link rel="mask-icon" href="/safari-pinned-tab.svg">
 <meta name="theme-color" content="#2e2e33">
 <meta name="msapplication-TileColor" content="#2e2e33">
-<link rel="alternate" type="application/rss+xml" href="/categories/index.xml">
-<link rel="alternate" hreflang="en" href="/categories/">
+<link rel="alternate" type="application/rss+xml" href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/index.xml">
+<link rel="alternate" hreflang="en" href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/">
 <noscript>
     <style>
         #theme-toggle,
@@ -78,13 +78,13 @@ mermaid.initialize(config);
 window.onload = () => {
     window.mermaid.init(undefined, document.querySelectorAll('.language-mermaid'));
 }
-</script><meta property="og:url" content="/categories/">
+</script><meta property="og:url" content="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/">
   <meta property="og:site_name" content="缥缈夏鸢">
-  <meta property="og:title" content="Categories">
+  <meta property="og:title" content="数据库">
   <meta property="og:locale" content="en-us">
   <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Categories">
+<meta name="twitter:title" content="数据库">
 <meta name="twitter:description" content="">
 
 </head>
@@ -141,7 +141,7 @@ window.onload = () => {
             </li>
             <li>
                 <a href="/categories/" title="分类">
-                    <span class="active">分类</span>
+                    <span>分类</span>
                 </a>
             </li>
             <li>
@@ -167,31 +167,69 @@ window.onload = () => {
         </ul>
     </nav>
 </header>
-<main class="main">
-<header class="page-header">
-    <h1>Categories</h1>
+<main class="main"> 
+<header class="page-header"><div class="breadcrumbs"><a href="/">Home</a>&nbsp;»&nbsp;<a href="/categories/">Categories</a></div>
+  <h1>
+    数据库
+    <a href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/index.xml" title="RSS" aria-label="RSS">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" height="23">
+        <path d="M4 11a9 9 0 0 1 9 9" />
+        <path d="M4 4a16 16 0 0 1 16 16" />
+        <circle cx="5" cy="19" r="1" />
+      </svg>
+    </a>
+  </h1>
 </header>
 
-<ul class="terms-tags">
-    <li>
-        <a href="/categories/android/">Android <sup><strong><sup>3</sup></strong></sup> </a>
-    </li>
-    <li>
-        <a href="/categories/jvm/">JVM <sup><strong><sup>1</sup></strong></sup> </a>
-    </li>
-    <li>
-        <a href="/categories/%E5%B7%A5%E5%85%B7/">工具 <sup><strong><sup>8</sup></strong></sup> </a>
-    </li>
-    <li>
-        <a href="/categories/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/">操作系统 <sup><strong><sup>1</sup></strong></sup> </a>
-    </li>
-    <li>
-        <a href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库 <sup><strong><sup>2</sup></strong></sup> </a>
-    </li>
-    <li>
-        <a href="/categories/%E7%BC%96%E7%A8%8B%E8%AF%AD%E8%A8%80/">编程语言 <sup><strong><sup>1</sup></strong></sup> </a>
-    </li>
-</ul>
+<article class="post-entry tag-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">Redis 基础用法
+    </h2>
+  </header>
+  <div class="entry-content">
+    <p>概述 Redis 是常见的内存数据库，通常用来做缓存、计数、排行榜、分布式锁等高频读写场景。
+这篇文章聚焦最基础也最常用的内容，包括连接 Redis、常见数据类型、基本读写操作、过期时间，以及实战里常见的使用坑点。
+连接 Redis 最常见的方式是使用命令行客户端：
+redis-cli 如果要连接指定主机和端口：
+redis-cli -h 127.0.0.1 -p 6379 如果服务设置了密码：
+redis-cli -h 127.0.0.1 -p 6379 -a your_password 连接成功后，可以先做一个简单检查：
+PING 返回 PONG 说明 Redis 服务可用。
+基本概念 Redis 的数据以 key -&gt; value 的形式存储。和关系型数据库不同，它没有表结构，重点是根据业务场景选择合适的数据类型。
+开发里最常见的几类数据：
+String：最常用，适合缓存字符串、数字、JSON Hash：适合存对象结构 List：适合消息队列、按顺序保存数据 Set：适合去重 ZSet：适合排行榜 String 常用操作 String 是 Redis 使用最频繁的数据类型。
+1. 写入和读取 SET user:1001:name &#34;alice&#34; GET user:1001:name 2. 覆盖写入 SET user:1001:name &#34;bob&#34; SET 会直接覆盖旧值，这一点要特别注意。
+3. 数字自增 SET page:view 100 INCR page:view INCRBY page:view 10 这类操作适合做访问量、点赞数、库存计数等场景。
+4. 删除 key DEL user:1001:name Hash 常用操作 Hash 适合存一组相关字段，比如用户信息。
+...</p>
+  </div>
+  <footer class="entry-footer"><span title='2026-04-10 17:29:36 +0800 CST'>April 10, 2026</span>&nbsp;·&nbsp;2 min&nbsp;·&nbsp;368 words&nbsp;·&nbsp;夏天的小西瓜</footer>
+  <a class="entry-link" aria-label="post link to Redis 基础用法" href="/posts/database/redis_basic/"></a>
+</article>
+
+<article class="post-entry tag-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">MySQL 基础用法
+    </h2>
+  </header>
+  <div class="entry-content">
+    <p>概述 MySQL 是常见的关系型数据库，主要用来存储和查询结构化数据。
+这篇文章聚焦最基础也最常用的内容，包括连接数据库、建库建表、表结构修改、基本 CRUD，以及主键、索引、事务和常见坑点。
+连接数据库 最常见的进入方式是命令行连接：
+mysql -u root -p 如果是连接指定主机和端口：
+mysql -h 127.0.0.1 -P 3306 -u root -p 连接成功后，可以先看有哪些数据库：
+SHOW DATABASES; 退出客户端：
+exit 建库建表 创建一个测试库：
+CREATE DATABASE demo_db; 切换到这个库：
+USE demo_db; 查看当前库里的表：
+SHOW TABLES; 下面建一张最简单的用户表：
+CREATE TABLE users ( id INT PRIMARY KEY AUTO_INCREMENT, name VARCHAR(50) NOT NULL, age INT, city VARCHAR(50), created_at DATETIME DEFAULT CURRENT_TIMESTAMP ); 这里有几个关键点：
+1. 字段类型 INT：整数 VARCHAR(50)：最长 50 个字符的字符串 DATETIME：日期时间 2. 约束 PRIMARY KEY：主键，唯一标识一条记录 AUTO_INCREMENT：自增，适合主键 NOT NULL：不能为空 DEFAULT：默认值 可以用下面的命令查看表结构：
+...</p>
+  </div>
+  <footer class="entry-footer"><span title='2026-04-10 12:01:51 +0800 CST'>April 10, 2026</span>&nbsp;·&nbsp;3 min&nbsp;·&nbsp;622 words&nbsp;·&nbsp;夏天的小西瓜</footer>
+  <a class="entry-link" aria-label="post link to MySQL 基础用法" href="/posts/database/mysql_basic/"></a>
+</article>
     </main>
     
 <footer class="footer">

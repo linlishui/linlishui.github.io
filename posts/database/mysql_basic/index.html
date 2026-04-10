@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>MySQL 基础用法 | 缥缈夏鸢</title>
+<meta name="keywords" content="MySQL, SQL">
+<meta name="description" content="概述
+MySQL 是常见的关系型数据库，主要用来存储和查询结构化数据。
+这篇文章聚焦最基础也最常用的内容，包括连接数据库、建库建表、表结构修改、基本 CRUD，以及主键、索引、事务和常见坑点。
+连接数据库
+最常见的进入方式是命令行连接：
+mysql -u root -p
+如果是连接指定主机和端口：
+mysql -h 127.0.0.1 -P 3306 -u root -p
+连接成功后，可以先看有哪些数据库：
+SHOW DATABASES;
+退出客户端：
+exit
+建库建表
+创建一个测试库：
+CREATE DATABASE demo_db;
+切换到这个库：
+USE demo_db;
+查看当前库里的表：
+SHOW TABLES;
+下面建一张最简单的用户表：
+CREATE TABLE users (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  name VARCHAR(50) NOT NULL,
+  age INT,
+  city VARCHAR(50),
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+这里有几个关键点：
+1. 字段类型
+
+INT：整数
+VARCHAR(50)：最长 50 个字符的字符串
+DATETIME：日期时间
+
+2. 约束
+
+PRIMARY KEY：主键，唯一标识一条记录
+AUTO_INCREMENT：自增，适合主键
+NOT NULL：不能为空
+DEFAULT：默认值
+
+可以用下面的命令查看表结构：">
+<meta name="author" content="夏天的小西瓜">
+<link rel="canonical" href="/posts/database/mysql_basic/">
+<meta name="google-site-verification" content="XYZabc">
+<meta name="msvalidate.01" content="XYZabc">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.44278f16c6e7e77192a15a0565fb5b0f220c56128442fcfa6937b4d84456ecf0.css" integrity="sha256-RCePFsbn53GSoVoFZftbDyIMVhKEQvz6aTe02ERW7PA=" rel="preload stylesheet" as="style">
+<link rel="icon" href="/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="mask-icon" href="/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="en" href="/posts/database/mysql_basic/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-track {
+                background: 0 0;
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-thumb {
+                border-color: var(--theme);
+            }
+        }
+
+    </style>
+</noscript><script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+<script>
+
+const config = {
+    startOnLoad:true,
+    
+    themeVariables: {
+        lineColor: "#ffffff"    
+    },
+    flowchart: {
+        useMaxWidth:false,
+        htmlLabels:true
+    }
+};
+mermaid.initialize(config);
+
+
+window.onload = () => {
+    window.mermaid.init(undefined, document.querySelectorAll('.language-mermaid'));
+}
+</script><meta property="og:url" content="/posts/database/mysql_basic/">
+  <meta property="og:site_name" content="缥缈夏鸢">
+  <meta property="og:title" content="MySQL 基础用法">
+  <meta property="og:description" content="概述 MySQL 是常见的关系型数据库，主要用来存储和查询结构化数据。
+这篇文章聚焦最基础也最常用的内容，包括连接数据库、建库建表、表结构修改、基本 CRUD，以及主键、索引、事务和常见坑点。
+连接数据库 最常见的进入方式是命令行连接：
+mysql -u root -p 如果是连接指定主机和端口：
+mysql -h 127.0.0.1 -P 3306 -u root -p 连接成功后，可以先看有哪些数据库：
+SHOW DATABASES; 退出客户端：
+exit 建库建表 创建一个测试库：
+CREATE DATABASE demo_db; 切换到这个库：
+USE demo_db; 查看当前库里的表：
+SHOW TABLES; 下面建一张最简单的用户表：
+CREATE TABLE users ( id INT PRIMARY KEY AUTO_INCREMENT, name VARCHAR(50) NOT NULL, age INT, city VARCHAR(50), created_at DATETIME DEFAULT CURRENT_TIMESTAMP ); 这里有几个关键点：
+1. 字段类型 INT：整数 VARCHAR(50)：最长 50 个字符的字符串 DATETIME：日期时间 2. 约束 PRIMARY KEY：主键，唯一标识一条记录 AUTO_INCREMENT：自增，适合主键 NOT NULL：不能为空 DEFAULT：默认值 可以用下面的命令查看表结构：">
+  <meta property="og:locale" content="en-us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2026-04-10T12:01:51+08:00">
+    <meta property="article:modified_time" content="2026-04-10T12:01:51+08:00">
+    <meta property="article:tag" content="MySQL">
+    <meta property="article:tag" content="SQL">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="MySQL 基础用法">
+<meta name="twitter:description" content="概述
+MySQL 是常见的关系型数据库，主要用来存储和查询结构化数据。
+这篇文章聚焦最基础也最常用的内容，包括连接数据库、建库建表、表结构修改、基本 CRUD，以及主键、索引、事务和常见坑点。
+连接数据库
+最常见的进入方式是命令行连接：
+mysql -u root -p
+如果是连接指定主机和端口：
+mysql -h 127.0.0.1 -P 3306 -u root -p
+连接成功后，可以先看有哪些数据库：
+SHOW DATABASES;
+退出客户端：
+exit
+建库建表
+创建一个测试库：
+CREATE DATABASE demo_db;
+切换到这个库：
+USE demo_db;
+查看当前库里的表：
+SHOW TABLES;
+下面建一张最简单的用户表：
+CREATE TABLE users (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  name VARCHAR(50) NOT NULL,
+  age INT,
+  city VARCHAR(50),
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+这里有几个关键点：
+1. 字段类型
+
+INT：整数
+VARCHAR(50)：最长 50 个字符的字符串
+DATETIME：日期时间
+
+2. 约束
+
+PRIMARY KEY：主键，唯一标识一条记录
+AUTO_INCREMENT：自增，适合主键
+NOT NULL：不能为空
+DEFAULT：默认值
+
+可以用下面的命令查看表结构：">
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Posts",
+      "item": "/posts/"
+    }
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "MySQL 基础用法",
+      "item": "/posts/database/mysql_basic/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "MySQL 基础用法",
+  "name": "MySQL 基础用法",
+  "description": "概述 MySQL 是常见的关系型数据库，主要用来存储和查询结构化数据。\n这篇文章聚焦最基础也最常用的内容，包括连接数据库、建库建表、表结构修改、基本 CRUD，以及主键、索引、事务和常见坑点。\n连接数据库 最常见的进入方式是命令行连接：\nmysql -u root -p 如果是连接指定主机和端口：\nmysql -h 127.0.0.1 -P 3306 -u root -p 连接成功后，可以先看有哪些数据库：\nSHOW DATABASES; 退出客户端：\nexit 建库建表 创建一个测试库：\nCREATE DATABASE demo_db; 切换到这个库：\nUSE demo_db; 查看当前库里的表：\nSHOW TABLES; 下面建一张最简单的用户表：\nCREATE TABLE users ( id INT PRIMARY KEY AUTO_INCREMENT, name VARCHAR(50) NOT NULL, age INT, city VARCHAR(50), created_at DATETIME DEFAULT CURRENT_TIMESTAMP ); 这里有几个关键点：\n1. 字段类型 INT：整数 VARCHAR(50)：最长 50 个字符的字符串 DATETIME：日期时间 2. 约束 PRIMARY KEY：主键，唯一标识一条记录 AUTO_INCREMENT：自增，适合主键 NOT NULL：不能为空 DEFAULT：默认值 可以用下面的命令查看表结构：\n",
+  "keywords": [
+    "MySQL", "SQL"
+  ],
+  "articleBody": "概述 MySQL 是常见的关系型数据库，主要用来存储和查询结构化数据。\n这篇文章聚焦最基础也最常用的内容，包括连接数据库、建库建表、表结构修改、基本 CRUD，以及主键、索引、事务和常见坑点。\n连接数据库 最常见的进入方式是命令行连接：\nmysql -u root -p 如果是连接指定主机和端口：\nmysql -h 127.0.0.1 -P 3306 -u root -p 连接成功后，可以先看有哪些数据库：\nSHOW DATABASES; 退出客户端：\nexit 建库建表 创建一个测试库：\nCREATE DATABASE demo_db; 切换到这个库：\nUSE demo_db; 查看当前库里的表：\nSHOW TABLES; 下面建一张最简单的用户表：\nCREATE TABLE users ( id INT PRIMARY KEY AUTO_INCREMENT, name VARCHAR(50) NOT NULL, age INT, city VARCHAR(50), created_at DATETIME DEFAULT CURRENT_TIMESTAMP ); 这里有几个关键点：\n1. 字段类型 INT：整数 VARCHAR(50)：最长 50 个字符的字符串 DATETIME：日期时间 2. 约束 PRIMARY KEY：主键，唯一标识一条记录 AUTO_INCREMENT：自增，适合主键 NOT NULL：不能为空 DEFAULT：默认值 可以用下面的命令查看表结构：\nDESC users; 再补几组开发里常见的表操作。\n1. 新增字段 ALTER TABLE users ADD COLUMN email VARCHAR(100); 2. 修改字段类型或约束 ALTER TABLE users MODIFY COLUMN name VARCHAR(100) NOT NULL; 3. 重命名字段 ALTER TABLE users CHANGE COLUMN city user_city VARCHAR(50); 4. 删除字段 ALTER TABLE users DROP COLUMN email; 5. 添加和删除索引 ALTER TABLE users ADD INDEX idx_name (name); ALTER TABLE users DROP INDEX idx_name; 如果要删除测试表或测试库：\nDROP TABLE users; DROP DATABASE demo_db; 上面这些 ALTER TABLE 示例用于展示常见改表动作，实际执行时建议一次改一个点，并先用 DESC users; 或 SHOW CREATE TABLE users; 确认当前表结构。\n基本 CRUD 增删改查，也就是常说的 CRUD，是 MySQL 最基础的用法。\n1. 插入数据 INSERT INTO users (name, age, city) VALUES ('Alice', 18, 'Shanghai'); 一次插入多条：\nINSERT INTO users (name, age, city) VALUES ('Bob', 20, 'Beijing'), ('Cindy', 22, 'Shenzhen'); 2. 查询数据 查询全部数据：\nSELECT * FROM users; 只查部分字段：\nSELECT name, city FROM users; 带条件查询：\nSELECT * FROM users WHERE age \u003e= 20; 排序：\nSELECT * FROM users ORDER BY age DESC; 限制返回条数：\nSELECT * FROM users LIMIT 2; 分页查询：\nSELECT * FROM users LIMIT 0, 10; 组合使用：\nSELECT name, age FROM users WHERE city = 'Beijing' ORDER BY age DESC LIMIT 5; 3. 更新数据 UPDATE users SET age = 21 WHERE name = 'Bob'; 4. 删除数据 删除指定记录：\nDELETE FROM users WHERE name = 'Alice'; 5. 一条完整练习链路 如果你是第一次上手，可以按下面这条链路直接练一遍：\nCREATE DATABASE demo_db; USE demo_db; CREATE TABLE users ( id INT PRIMARY KEY AUTO_INCREMENT, name VARCHAR(50) NOT NULL, age INT, city VARCHAR(50), created_at DATETIME DEFAULT CURRENT_TIMESTAMP ); INSERT INTO users (name, age, city) VALUES ('Alice', 18, 'Shanghai'), ('Bob', 20, 'Beijing'); SELECT * FROM users; UPDATE users SET age = 21 WHERE name = 'Bob'; DELETE FROM users WHERE name = 'Alice'; SELECT * FROM users; 常用查询条件 实际开发里，查询通常不会只写一个 =。\n1. 比较运算 SELECT * FROM users WHERE age \u003e 18; SELECT * FROM users WHERE age \u003c= 30; 2. 区间与集合 SELECT * FROM users WHERE age BETWEEN 18 AND 25; SELECT * FROM users WHERE city IN ('Beijing', 'Shanghai'); 排除条件：\nSELECT * FROM users WHERE city NOT IN ('Beijing', 'Shanghai'); 3. 模糊匹配 SELECT * FROM users WHERE name LIKE 'A%'; 这里 % 表示任意长度的字符。\n如果只匹配单个字符，可以用 _：\nSELECT * FROM users WHERE name LIKE '_o%'; 4. 空值判断 SELECT * FROM users WHERE city IS NULL; 判断空值不能写成 city = NULL，这是初学者最常见的错误之一。\n主键、索引、事务分别解决什么问题 1. 主键 主键用来唯一标识一条记录，解决的是“怎么准确区分每一行数据”的问题。\n比如 users 表里的 id：\nid INT PRIMARY KEY AUTO_INCREMENT 它的价值主要有两点：\n保证每条记录都有唯一身份 方便更新、删除、关联查询时精确定位数据 如果没有主键，表里的记录虽然也能存，但后续维护和定位会很混乱。\n2. 索引 索引的作用可以简单理解为“加快查找”。\n比如经常按 name 查询时，可以加一个索引：\nCREATE INDEX idx_name ON users(name); 这样做的好处是查询更快，但也有代价：\n插入和更新会稍微慢一点 索引会占用额外空间 不是索引越多越好 所以索引要建在高频查询、高频过滤的字段上，而不是看到字段就加。\n例如下面这类查询更可能用到索引：\nSELECT * FROM users WHERE name = 'Bob'; 但如果你对字段做了函数处理，索引可能就不容易命中：\nSELECT * FROM users WHERE UPPER(name) = 'BOB'; 3. 事务 事务适合处理“一组操作必须同时成功”的场景，比如转账。\nSTART TRANSACTION; UPDATE account SET balance = balance - 100 WHERE id = 1; UPDATE account SET balance = balance + 100 WHERE id = 2; COMMIT; 如果中间某一步失败，应该回滚：\nROLLBACK; 事务的重点不是语法，而是场景意识：只要多个 SQL 之间存在强一致性要求，就要考虑事务。\n常见坑点 1. UPDATE 和 DELETE 忘记写 WHERE 下面这种写法会影响整张表：\nUPDATE users SET age = 18; DELETE FROM users; 如果不是你想要的结果，后果通常很严重。\n2. NULL 判断写错 错误写法：\nSELECT * FROM users WHERE city = NULL; 正确写法：\nSELECT * FROM users WHERE city IS NULL; 3. WHERE 条件写得不准确 例如你本来只想更新一个城市的数据，却把条件写得太宽：\nUPDATE users SET age = 25 WHERE city = 'Beijing'; 这条 SQL 可能会改到很多行。正式执行前，最好先用同样条件跑一遍查询：\nSELECT * FROM users WHERE city = 'Beijing'; 4. 以为建了索引就一定快 如果查询条件不走索引，或者数据量本身很小，索引未必能带来明显收益。索引优化要结合具体 SQL 和执行计划看。\n5. SELECT * 用得太随意 开发和排查问题时，SELECT * 很方便，但在正式查询里不一定合适：\n会把不需要的字段也查出来 表字段变多后，返回内容会越来越重 不利于后续接口和 SQL 的稳定维护 能明确字段时，优先写成下面这样：\nSELECT id, name, city FROM users WHERE id = 1; 6. 改表前不先看结构 在执行 ALTER TABLE 前，最好先确认当前表结构，否则很容易重复加字段，或者把字段类型改错。\nDESC users; SHOW CREATE TABLE users; 小结 先把建库、建表、改表、CRUD 这几组操作练熟，再补上主键、索引和事务的使用场景，MySQL 的基础就够用了。真正容易出问题的地方通常不是语法不会写，而是 WHERE 条件写宽、NULL 判断写错、改表前不确认结构，以及过度依赖索引。\n",
+  "wordCount" : "622",
+  "inLanguage": "en",
+  "datePublished": "2026-04-10T12:01:51+08:00",
+  "dateModified": "2026-04-10T12:01:51+08:00",
+  "author":[{
+    "@type": "Person",
+    "name": "夏天的小西瓜"
+  }],
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "/posts/database/mysql_basic/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "缥缈夏鸢",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "/favicon.ico"
+    }
+  }
+}
+</script>
+</head>
+
+<body class="" id="top">
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.body.classList.add('dark');
+    } else if (localStorage.getItem("pref-theme") === "light") {
+        document.body.classList.remove('dark')
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.body.classList.add('dark');
+    }
+
+</script>
+
+<header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="/" accesskey="h" title="缥缈夏鸢 (Alt + H)">缥缈夏鸢</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" accesskey="t" title="(Alt + T)">
+                    <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu">
+            <li>
+                <a href="/" title="首页">
+                    <span>首页</span>
+                </a>
+            </li>
+            <li>
+                <a href="/posts/" title="文章">
+                    <span>文章</span>
+                </a>
+            </li>
+            <li>
+                <a href="/categories/" title="分类">
+                    <span>分类</span>
+                </a>
+            </li>
+            <li>
+                <a href="/tags/" title="标签">
+                    <span>标签</span>
+                </a>
+            </li>
+            <li>
+                <a href="/archives/" title="归档">
+                    <span>归档</span>
+                </a>
+            </li>
+            <li>
+                <a href="/search/" title="搜索">
+                    <span>搜索</span>
+                </a>
+            </li>
+            <li>
+                <a href="/about/" title="关于">
+                    <span>关于</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <div class="breadcrumbs"><a href="/">Home</a>&nbsp;»&nbsp;<a href="/posts/">Posts</a></div>
+    <h1 class="post-title entry-hint-parent">
+      MySQL 基础用法
+    </h1>
+    <div class="post-meta"><span title='2026-04-10 12:01:51 +0800 CST'>April 10, 2026</span>&nbsp;·&nbsp;3 min&nbsp;·&nbsp;622 words&nbsp;·&nbsp;夏天的小西瓜
+
+</div>
+  </header> <aside id="toc-container" class="toc-container wide">
+    <div class="toc">
+        <details  open>
+            <summary accesskey="c" title="(Alt + C)">
+                <span class="details">Table of Contents</span>
+            </summary>
+
+            <div class="inner"><ul>
+                    <li>
+                        <a href="#%e6%a6%82%e8%bf%b0" aria-label="概述">概述</a></li>
+                    <li>
+                        <a href="#%e8%bf%9e%e6%8e%a5%e6%95%b0%e6%8d%ae%e5%ba%93" aria-label="连接数据库">连接数据库</a></li>
+                    <li>
+                        <a href="#%e5%bb%ba%e5%ba%93%e5%bb%ba%e8%a1%a8" aria-label="建库建表">建库建表</a><ul>
+                            
+                    <li>
+                        <a href="#1-%e5%ad%97%e6%ae%b5%e7%b1%bb%e5%9e%8b" aria-label="1. 字段类型">1. 字段类型</a></li>
+                    <li>
+                        <a href="#2-%e7%ba%a6%e6%9d%9f" aria-label="2. 约束">2. 约束</a></li>
+                    <li>
+                        <a href="#1-%e6%96%b0%e5%a2%9e%e5%ad%97%e6%ae%b5" aria-label="1. 新增字段">1. 新增字段</a></li>
+                    <li>
+                        <a href="#2-%e4%bf%ae%e6%94%b9%e5%ad%97%e6%ae%b5%e7%b1%bb%e5%9e%8b%e6%88%96%e7%ba%a6%e6%9d%9f" aria-label="2. 修改字段类型或约束">2. 修改字段类型或约束</a></li>
+                    <li>
+                        <a href="#3-%e9%87%8d%e5%91%bd%e5%90%8d%e5%ad%97%e6%ae%b5" aria-label="3. 重命名字段">3. 重命名字段</a></li>
+                    <li>
+                        <a href="#4-%e5%88%a0%e9%99%a4%e5%ad%97%e6%ae%b5" aria-label="4. 删除字段">4. 删除字段</a></li>
+                    <li>
+                        <a href="#5-%e6%b7%bb%e5%8a%a0%e5%92%8c%e5%88%a0%e9%99%a4%e7%b4%a2%e5%bc%95" aria-label="5. 添加和删除索引">5. 添加和删除索引</a></li></ul>
+                    </li>
+                    <li>
+                        <a href="#%e5%9f%ba%e6%9c%ac-crud" aria-label="基本 CRUD">基本 CRUD</a><ul>
+                            
+                    <li>
+                        <a href="#1-%e6%8f%92%e5%85%a5%e6%95%b0%e6%8d%ae" aria-label="1. 插入数据">1. 插入数据</a></li>
+                    <li>
+                        <a href="#2-%e6%9f%a5%e8%af%a2%e6%95%b0%e6%8d%ae" aria-label="2. 查询数据">2. 查询数据</a></li>
+                    <li>
+                        <a href="#3-%e6%9b%b4%e6%96%b0%e6%95%b0%e6%8d%ae" aria-label="3. 更新数据">3. 更新数据</a></li>
+                    <li>
+                        <a href="#4-%e5%88%a0%e9%99%a4%e6%95%b0%e6%8d%ae" aria-label="4. 删除数据">4. 删除数据</a></li>
+                    <li>
+                        <a href="#5-%e4%b8%80%e6%9d%a1%e5%ae%8c%e6%95%b4%e7%bb%83%e4%b9%a0%e9%93%be%e8%b7%af" aria-label="5. 一条完整练习链路">5. 一条完整练习链路</a></li></ul>
+                    </li>
+                    <li>
+                        <a href="#%e5%b8%b8%e7%94%a8%e6%9f%a5%e8%af%a2%e6%9d%a1%e4%bb%b6" aria-label="常用查询条件">常用查询条件</a><ul>
+                            
+                    <li>
+                        <a href="#1-%e6%af%94%e8%be%83%e8%bf%90%e7%ae%97" aria-label="1. 比较运算">1. 比较运算</a></li>
+                    <li>
+                        <a href="#2-%e5%8c%ba%e9%97%b4%e4%b8%8e%e9%9b%86%e5%90%88" aria-label="2. 区间与集合">2. 区间与集合</a></li>
+                    <li>
+                        <a href="#3-%e6%a8%a1%e7%b3%8a%e5%8c%b9%e9%85%8d" aria-label="3. 模糊匹配">3. 模糊匹配</a></li>
+                    <li>
+                        <a href="#4-%e7%a9%ba%e5%80%bc%e5%88%a4%e6%96%ad" aria-label="4. 空值判断">4. 空值判断</a></li></ul>
+                    </li>
+                    <li>
+                        <a href="#%e4%b8%bb%e9%94%ae%e7%b4%a2%e5%bc%95%e4%ba%8b%e5%8a%a1%e5%88%86%e5%88%ab%e8%a7%a3%e5%86%b3%e4%bb%80%e4%b9%88%e9%97%ae%e9%a2%98" aria-label="主键、索引、事务分别解决什么问题">主键、索引、事务分别解决什么问题</a><ul>
+                            
+                    <li>
+                        <a href="#1-%e4%b8%bb%e9%94%ae" aria-label="1. 主键">1. 主键</a></li>
+                    <li>
+                        <a href="#2-%e7%b4%a2%e5%bc%95" aria-label="2. 索引">2. 索引</a></li>
+                    <li>
+                        <a href="#3-%e4%ba%8b%e5%8a%a1" aria-label="3. 事务">3. 事务</a></li></ul>
+                    </li>
+                    <li>
+                        <a href="#%e5%b8%b8%e8%a7%81%e5%9d%91%e7%82%b9" aria-label="常见坑点">常见坑点</a><ul>
+                            
+                    <li>
+                        <a href="#1-update-%e5%92%8c-delete-%e5%bf%98%e8%ae%b0%e5%86%99-where" aria-label="1. UPDATE 和 DELETE 忘记写 WHERE">1. <code>UPDATE</code> 和 <code>DELETE</code> 忘记写 <code>WHERE</code></a></li>
+                    <li>
+                        <a href="#2-null-%e5%88%a4%e6%96%ad%e5%86%99%e9%94%99" aria-label="2. NULL 判断写错">2. <code>NULL</code> 判断写错</a></li>
+                    <li>
+                        <a href="#3-where-%e6%9d%a1%e4%bb%b6%e5%86%99%e5%be%97%e4%b8%8d%e5%87%86%e7%a1%ae" aria-label="3. WHERE 条件写得不准确">3. <code>WHERE</code> 条件写得不准确</a></li>
+                    <li>
+                        <a href="#4-%e4%bb%a5%e4%b8%ba%e5%bb%ba%e4%ba%86%e7%b4%a2%e5%bc%95%e5%b0%b1%e4%b8%80%e5%ae%9a%e5%bf%ab" aria-label="4. 以为建了索引就一定快">4. 以为建了索引就一定快</a></li>
+                    <li>
+                        <a href="#5-select--%e7%94%a8%e5%be%97%e5%a4%aa%e9%9a%8f%e6%84%8f" aria-label="5. SELECT * 用得太随意">5. <code>SELECT *</code> 用得太随意</a></li>
+                    <li>
+                        <a href="#6-%e6%94%b9%e8%a1%a8%e5%89%8d%e4%b8%8d%e5%85%88%e7%9c%8b%e7%bb%93%e6%9e%84" aria-label="6. 改表前不先看结构">6. 改表前不先看结构</a></li></ul>
+                    </li>
+                    <li>
+                        <a href="#%e5%b0%8f%e7%bb%93" aria-label="小结">小结</a>
+                    </li>
+                </ul>
+            </div>
+        </details>
+    </div>
+</aside>
+<script>
+    let activeElement;
+    let elements;
+    window.addEventListener('DOMContentLoaded', function (event) {
+        checkTocPosition();
+
+        elements = document.querySelectorAll('h1[id],h2[id],h3[id],h4[id],h5[id],h6[id]');
+         
+         activeElement = elements[0];
+         const id = encodeURI(activeElement.getAttribute('id')).toLowerCase();
+         document.querySelector(`.inner ul li a[href="#${id}"]`).classList.add('active');
+     }, false);
+
+    window.addEventListener('resize', function(event) {
+        checkTocPosition();
+    }, false);
+
+    window.addEventListener('scroll', () => {
+        
+        activeElement = Array.from(elements).find((element) => {
+            if ((getOffsetTop(element) - window.pageYOffset) > 0 && 
+                (getOffsetTop(element) - window.pageYOffset) < window.innerHeight/2) {
+                return element;
+            }
+        }) || activeElement
+
+        elements.forEach(element => {
+             const id = encodeURI(element.getAttribute('id')).toLowerCase();
+             if (element === activeElement){
+                 document.querySelector(`.inner ul li a[href="#${id}"]`).classList.add('active');
+             } else {
+                 document.querySelector(`.inner ul li a[href="#${id}"]`).classList.remove('active');
+             }
+         })
+     }, false);
+
+    const main = parseInt(getComputedStyle(document.body).getPropertyValue('--article-width'), 10);
+    const toc = parseInt(getComputedStyle(document.body).getPropertyValue('--toc-width'), 10);
+    const gap = parseInt(getComputedStyle(document.body).getPropertyValue('--gap'), 10);
+
+    function checkTocPosition() {
+        const width = document.body.scrollWidth;
+
+        if (width - main - (toc * 2) - (gap * 4) > 0) {
+            document.getElementById("toc-container").classList.add("wide");
+        } else {
+            document.getElementById("toc-container").classList.remove("wide");
+        }
+    }
+
+    function getOffsetTop(element) {
+        if (!element.getClientRects().length) {
+            return 0;
+        }
+        let rect = element.getBoundingClientRect();
+        let win = element.ownerDocument.defaultView;
+        return rect.top + win.pageYOffset;   
+    }
+</script>
+
+  <div class="post-content"><h2 id="概述">概述<a hidden class="anchor" aria-hidden="true" href="#概述">#</a></h2>
+<p>MySQL 是常见的关系型数据库，主要用来存储和查询结构化数据。</p>
+<p>这篇文章聚焦最基础也最常用的内容，包括连接数据库、建库建表、表结构修改、基本 CRUD，以及主键、索引、事务和常见坑点。</p>
+<h2 id="连接数据库">连接数据库<a hidden class="anchor" aria-hidden="true" href="#连接数据库">#</a></h2>
+<p>最常见的进入方式是命令行连接：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">mysql -u root -p
+</span></span></code></pre></div><p>如果是连接指定主机和端口：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">mysql -h 127.0.0.1 -P <span class="m">3306</span> -u root -p
+</span></span></code></pre></div><p>连接成功后，可以先看有哪些数据库：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="k">SHOW</span><span class="w"> </span><span class="n">DATABASES</span><span class="p">;</span><span class="w">
+</span></span></span></code></pre></div><p>退出客户端：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="n">exit</span><span class="w">
+</span></span></span></code></pre></div><h2 id="建库建表">建库建表<a hidden class="anchor" aria-hidden="true" href="#建库建表">#</a></h2>
+<p>创建一个测试库：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="k">CREATE</span><span class="w"> </span><span class="k">DATABASE</span><span class="w"> </span><span class="n">demo_db</span><span class="p">;</span><span class="w">
+</span></span></span></code></pre></div><p>切换到这个库：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="n">USE</span><span class="w"> </span><span class="n">demo_db</span><span class="p">;</span><span class="w">
+</span></span></span></code></pre></div><p>查看当前库里的表：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="k">SHOW</span><span class="w"> </span><span class="n">TABLES</span><span class="p">;</span><span class="w">
+</span></span></span></code></pre></div><p>下面建一张最简单的用户表：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">users</span><span class="w"> </span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">id</span><span class="w"> </span><span class="nb">INT</span><span class="w"> </span><span class="k">PRIMARY</span><span class="w"> </span><span class="k">KEY</span><span class="w"> </span><span class="n">AUTO_INCREMENT</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">name</span><span class="w"> </span><span class="nb">VARCHAR</span><span class="p">(</span><span class="mi">50</span><span class="p">)</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">age</span><span class="w"> </span><span class="nb">INT</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">city</span><span class="w"> </span><span class="nb">VARCHAR</span><span class="p">(</span><span class="mi">50</span><span class="p">),</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">created_at</span><span class="w"> </span><span class="n">DATETIME</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="k">CURRENT_TIMESTAMP</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">);</span><span class="w">
+</span></span></span></code></pre></div><p>这里有几个关键点：</p>
+<h3 id="1-字段类型">1. 字段类型<a hidden class="anchor" aria-hidden="true" href="#1-字段类型">#</a></h3>
+<ul>
+<li><code>INT</code>：整数</li>
+<li><code>VARCHAR(50)</code>：最长 50 个字符的字符串</li>
+<li><code>DATETIME</code>：日期时间</li>
+</ul>
+<h3 id="2-约束">2. 约束<a hidden class="anchor" aria-hidden="true" href="#2-约束">#</a></h3>
+<ul>
+<li><code>PRIMARY KEY</code>：主键，唯一标识一条记录</li>
+<li><code>AUTO_INCREMENT</code>：自增，适合主键</li>
+<li><code>NOT NULL</code>：不能为空</li>
+<li><code>DEFAULT</code>：默认值</li>
+</ul>
+<p>可以用下面的命令查看表结构：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="k">DESC</span><span class="w"> </span><span class="n">users</span><span class="p">;</span><span class="w">
+</span></span></span></code></pre></div><p>再补几组开发里常见的表操作。</p>
+<h3 id="1-新增字段">1. 新增字段<a hidden class="anchor" aria-hidden="true" href="#1-新增字段">#</a></h3>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="k">ALTER</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">users</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">ADD</span><span class="w"> </span><span class="k">COLUMN</span><span class="w"> </span><span class="n">email</span><span class="w"> </span><span class="nb">VARCHAR</span><span class="p">(</span><span class="mi">100</span><span class="p">);</span><span class="w">
+</span></span></span></code></pre></div><h3 id="2-修改字段类型或约束">2. 修改字段类型或约束<a hidden class="anchor" aria-hidden="true" href="#2-修改字段类型或约束">#</a></h3>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="k">ALTER</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">users</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">MODIFY</span><span class="w"> </span><span class="k">COLUMN</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="nb">VARCHAR</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">;</span><span class="w">
+</span></span></span></code></pre></div><h3 id="3-重命名字段">3. 重命名字段<a hidden class="anchor" aria-hidden="true" href="#3-重命名字段">#</a></h3>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="k">ALTER</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">users</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">CHANGE</span><span class="w"> </span><span class="k">COLUMN</span><span class="w"> </span><span class="n">city</span><span class="w"> </span><span class="n">user_city</span><span class="w"> </span><span class="nb">VARCHAR</span><span class="p">(</span><span class="mi">50</span><span class="p">);</span><span class="w">
+</span></span></span></code></pre></div><h3 id="4-删除字段">4. 删除字段<a hidden class="anchor" aria-hidden="true" href="#4-删除字段">#</a></h3>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="k">ALTER</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">users</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">DROP</span><span class="w"> </span><span class="k">COLUMN</span><span class="w"> </span><span class="n">email</span><span class="p">;</span><span class="w">
+</span></span></span></code></pre></div><h3 id="5-添加和删除索引">5. 添加和删除索引<a hidden class="anchor" aria-hidden="true" href="#5-添加和删除索引">#</a></h3>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="k">ALTER</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">users</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">ADD</span><span class="w"> </span><span class="k">INDEX</span><span class="w"> </span><span class="n">idx_name</span><span class="w"> </span><span class="p">(</span><span class="n">name</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">ALTER</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">users</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">DROP</span><span class="w"> </span><span class="k">INDEX</span><span class="w"> </span><span class="n">idx_name</span><span class="p">;</span><span class="w">
+</span></span></span></code></pre></div><p>如果要删除测试表或测试库：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="k">DROP</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">users</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">DROP</span><span class="w"> </span><span class="k">DATABASE</span><span class="w"> </span><span class="n">demo_db</span><span class="p">;</span><span class="w">
+</span></span></span></code></pre></div><p>上面这些 <code>ALTER TABLE</code> 示例用于展示常见改表动作，实际执行时建议一次改一个点，并先用 <code>DESC users;</code> 或 <code>SHOW CREATE TABLE users;</code> 确认当前表结构。</p>
+<h2 id="基本-crud">基本 CRUD<a hidden class="anchor" aria-hidden="true" href="#基本-crud">#</a></h2>
+<p>增删改查，也就是常说的 CRUD，是 MySQL 最基础的用法。</p>
+<h3 id="1-插入数据">1. 插入数据<a hidden class="anchor" aria-hidden="true" href="#1-插入数据">#</a></h3>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="k">INSERT</span><span class="w"> </span><span class="k">INTO</span><span class="w"> </span><span class="n">users</span><span class="w"> </span><span class="p">(</span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="n">age</span><span class="p">,</span><span class="w"> </span><span class="n">city</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">VALUES</span><span class="w"> </span><span class="p">(</span><span class="s1">&#39;Alice&#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">18</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;Shanghai&#39;</span><span class="p">);</span><span class="w">
+</span></span></span></code></pre></div><p>一次插入多条：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="k">INSERT</span><span class="w"> </span><span class="k">INTO</span><span class="w"> </span><span class="n">users</span><span class="w"> </span><span class="p">(</span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="n">age</span><span class="p">,</span><span class="w"> </span><span class="n">city</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">VALUES</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">(</span><span class="s1">&#39;Bob&#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">20</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;Beijing&#39;</span><span class="p">),</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">(</span><span class="s1">&#39;Cindy&#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">22</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;Shenzhen&#39;</span><span class="p">);</span><span class="w">
+</span></span></span></code></pre></div><h3 id="2-查询数据">2. 查询数据<a hidden class="anchor" aria-hidden="true" href="#2-查询数据">#</a></h3>
+<p>查询全部数据：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="k">SELECT</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="n">users</span><span class="p">;</span><span class="w">
+</span></span></span></code></pre></div><p>只查部分字段：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="k">SELECT</span><span class="w"> </span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="n">city</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="n">users</span><span class="p">;</span><span class="w">
+</span></span></span></code></pre></div><p>带条件查询：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="k">SELECT</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="n">users</span><span class="w"> </span><span class="k">WHERE</span><span class="w"> </span><span class="n">age</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="mi">20</span><span class="p">;</span><span class="w">
+</span></span></span></code></pre></div><p>排序：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="k">SELECT</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="n">users</span><span class="w"> </span><span class="k">ORDER</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">age</span><span class="w"> </span><span class="k">DESC</span><span class="p">;</span><span class="w">
+</span></span></span></code></pre></div><p>限制返回条数：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="k">SELECT</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="n">users</span><span class="w"> </span><span class="k">LIMIT</span><span class="w"> </span><span class="mi">2</span><span class="p">;</span><span class="w">
+</span></span></span></code></pre></div><p>分页查询：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="k">SELECT</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="n">users</span><span class="w"> </span><span class="k">LIMIT</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">10</span><span class="p">;</span><span class="w">
+</span></span></span></code></pre></div><p>组合使用：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="k">SELECT</span><span class="w"> </span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="n">age</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">FROM</span><span class="w"> </span><span class="n">users</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">WHERE</span><span class="w"> </span><span class="n">city</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;Beijing&#39;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">ORDER</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">age</span><span class="w"> </span><span class="k">DESC</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">LIMIT</span><span class="w"> </span><span class="mi">5</span><span class="p">;</span><span class="w">
+</span></span></span></code></pre></div><h3 id="3-更新数据">3. 更新数据<a hidden class="anchor" aria-hidden="true" href="#3-更新数据">#</a></h3>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="k">UPDATE</span><span class="w"> </span><span class="n">users</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">SET</span><span class="w"> </span><span class="n">age</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">21</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">WHERE</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;Bob&#39;</span><span class="p">;</span><span class="w">
+</span></span></span></code></pre></div><h3 id="4-删除数据">4. 删除数据<a hidden class="anchor" aria-hidden="true" href="#4-删除数据">#</a></h3>
+<p>删除指定记录：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="k">DELETE</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="n">users</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">WHERE</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;Alice&#39;</span><span class="p">;</span><span class="w">
+</span></span></span></code></pre></div><h3 id="5-一条完整练习链路">5. 一条完整练习链路<a hidden class="anchor" aria-hidden="true" href="#5-一条完整练习链路">#</a></h3>
+<p>如果你是第一次上手，可以按下面这条链路直接练一遍：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="k">CREATE</span><span class="w"> </span><span class="k">DATABASE</span><span class="w"> </span><span class="n">demo_db</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">USE</span><span class="w"> </span><span class="n">demo_db</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">users</span><span class="w"> </span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">id</span><span class="w"> </span><span class="nb">INT</span><span class="w"> </span><span class="k">PRIMARY</span><span class="w"> </span><span class="k">KEY</span><span class="w"> </span><span class="n">AUTO_INCREMENT</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">name</span><span class="w"> </span><span class="nb">VARCHAR</span><span class="p">(</span><span class="mi">50</span><span class="p">)</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">age</span><span class="w"> </span><span class="nb">INT</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">city</span><span class="w"> </span><span class="nb">VARCHAR</span><span class="p">(</span><span class="mi">50</span><span class="p">),</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">created_at</span><span class="w"> </span><span class="n">DATETIME</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="k">CURRENT_TIMESTAMP</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">INSERT</span><span class="w"> </span><span class="k">INTO</span><span class="w"> </span><span class="n">users</span><span class="w"> </span><span class="p">(</span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="n">age</span><span class="p">,</span><span class="w"> </span><span class="n">city</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">VALUES</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">(</span><span class="s1">&#39;Alice&#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">18</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;Shanghai&#39;</span><span class="p">),</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">(</span><span class="s1">&#39;Bob&#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">20</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;Beijing&#39;</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">SELECT</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="n">users</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">UPDATE</span><span class="w"> </span><span class="n">users</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">SET</span><span class="w"> </span><span class="n">age</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">21</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">WHERE</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;Bob&#39;</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">DELETE</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="n">users</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">WHERE</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;Alice&#39;</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">SELECT</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="n">users</span><span class="p">;</span><span class="w">
+</span></span></span></code></pre></div><h2 id="常用查询条件">常用查询条件<a hidden class="anchor" aria-hidden="true" href="#常用查询条件">#</a></h2>
+<p>实际开发里，查询通常不会只写一个 <code>=</code>。</p>
+<h3 id="1-比较运算">1. 比较运算<a hidden class="anchor" aria-hidden="true" href="#1-比较运算">#</a></h3>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="k">SELECT</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="n">users</span><span class="w"> </span><span class="k">WHERE</span><span class="w"> </span><span class="n">age</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">18</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">SELECT</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="n">users</span><span class="w"> </span><span class="k">WHERE</span><span class="w"> </span><span class="n">age</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="mi">30</span><span class="p">;</span><span class="w">
+</span></span></span></code></pre></div><h3 id="2-区间与集合">2. 区间与集合<a hidden class="anchor" aria-hidden="true" href="#2-区间与集合">#</a></h3>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="k">SELECT</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="n">users</span><span class="w"> </span><span class="k">WHERE</span><span class="w"> </span><span class="n">age</span><span class="w"> </span><span class="k">BETWEEN</span><span class="w"> </span><span class="mi">18</span><span class="w"> </span><span class="k">AND</span><span class="w"> </span><span class="mi">25</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">SELECT</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="n">users</span><span class="w"> </span><span class="k">WHERE</span><span class="w"> </span><span class="n">city</span><span class="w"> </span><span class="k">IN</span><span class="w"> </span><span class="p">(</span><span class="s1">&#39;Beijing&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;Shanghai&#39;</span><span class="p">);</span><span class="w">
+</span></span></span></code></pre></div><p>排除条件：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="k">SELECT</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="n">users</span><span class="w"> </span><span class="k">WHERE</span><span class="w"> </span><span class="n">city</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">IN</span><span class="w"> </span><span class="p">(</span><span class="s1">&#39;Beijing&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;Shanghai&#39;</span><span class="p">);</span><span class="w">
+</span></span></span></code></pre></div><h3 id="3-模糊匹配">3. 模糊匹配<a hidden class="anchor" aria-hidden="true" href="#3-模糊匹配">#</a></h3>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="k">SELECT</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="n">users</span><span class="w"> </span><span class="k">WHERE</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="k">LIKE</span><span class="w"> </span><span class="s1">&#39;A%&#39;</span><span class="p">;</span><span class="w">
+</span></span></span></code></pre></div><p>这里 <code>%</code> 表示任意长度的字符。</p>
+<p>如果只匹配单个字符，可以用 <code>_</code>：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="k">SELECT</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="n">users</span><span class="w"> </span><span class="k">WHERE</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="k">LIKE</span><span class="w"> </span><span class="s1">&#39;_o%&#39;</span><span class="p">;</span><span class="w">
+</span></span></span></code></pre></div><h3 id="4-空值判断">4. 空值判断<a hidden class="anchor" aria-hidden="true" href="#4-空值判断">#</a></h3>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="k">SELECT</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="n">users</span><span class="w"> </span><span class="k">WHERE</span><span class="w"> </span><span class="n">city</span><span class="w"> </span><span class="k">IS</span><span class="w"> </span><span class="k">NULL</span><span class="p">;</span><span class="w">
+</span></span></span></code></pre></div><p>判断空值不能写成 <code>city = NULL</code>，这是初学者最常见的错误之一。</p>
+<h2 id="主键索引事务分别解决什么问题">主键、索引、事务分别解决什么问题<a hidden class="anchor" aria-hidden="true" href="#主键索引事务分别解决什么问题">#</a></h2>
+<h3 id="1-主键">1. 主键<a hidden class="anchor" aria-hidden="true" href="#1-主键">#</a></h3>
+<p>主键用来唯一标识一条记录，解决的是“怎么准确区分每一行数据”的问题。</p>
+<p>比如 <code>users</code> 表里的 <code>id</code>：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="n">id</span><span class="w"> </span><span class="nb">INT</span><span class="w"> </span><span class="k">PRIMARY</span><span class="w"> </span><span class="k">KEY</span><span class="w"> </span><span class="n">AUTO_INCREMENT</span><span class="w">
+</span></span></span></code></pre></div><p>它的价值主要有两点：</p>
+<ul>
+<li>保证每条记录都有唯一身份</li>
+<li>方便更新、删除、关联查询时精确定位数据</li>
+</ul>
+<p>如果没有主键，表里的记录虽然也能存，但后续维护和定位会很混乱。</p>
+<h3 id="2-索引">2. 索引<a hidden class="anchor" aria-hidden="true" href="#2-索引">#</a></h3>
+<p>索引的作用可以简单理解为“加快查找”。</p>
+<p>比如经常按 <code>name</code> 查询时，可以加一个索引：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="k">CREATE</span><span class="w"> </span><span class="k">INDEX</span><span class="w"> </span><span class="n">idx_name</span><span class="w"> </span><span class="k">ON</span><span class="w"> </span><span class="n">users</span><span class="p">(</span><span class="n">name</span><span class="p">);</span><span class="w">
+</span></span></span></code></pre></div><p>这样做的好处是查询更快，但也有代价：</p>
+<ul>
+<li>插入和更新会稍微慢一点</li>
+<li>索引会占用额外空间</li>
+<li>不是索引越多越好</li>
+</ul>
+<p>所以索引要建在高频查询、高频过滤的字段上，而不是看到字段就加。</p>
+<p>例如下面这类查询更可能用到索引：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="k">SELECT</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="n">users</span><span class="w"> </span><span class="k">WHERE</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;Bob&#39;</span><span class="p">;</span><span class="w">
+</span></span></span></code></pre></div><p>但如果你对字段做了函数处理，索引可能就不容易命中：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="k">SELECT</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="n">users</span><span class="w"> </span><span class="k">WHERE</span><span class="w"> </span><span class="k">UPPER</span><span class="p">(</span><span class="n">name</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;BOB&#39;</span><span class="p">;</span><span class="w">
+</span></span></span></code></pre></div><h3 id="3-事务">3. 事务<a hidden class="anchor" aria-hidden="true" href="#3-事务">#</a></h3>
+<p>事务适合处理“一组操作必须同时成功”的场景，比如转账。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="k">START</span><span class="w"> </span><span class="k">TRANSACTION</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">UPDATE</span><span class="w"> </span><span class="n">account</span><span class="w"> </span><span class="k">SET</span><span class="w"> </span><span class="n">balance</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">balance</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">100</span><span class="w"> </span><span class="k">WHERE</span><span class="w"> </span><span class="n">id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">UPDATE</span><span class="w"> </span><span class="n">account</span><span class="w"> </span><span class="k">SET</span><span class="w"> </span><span class="n">balance</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">balance</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">100</span><span class="w"> </span><span class="k">WHERE</span><span class="w"> </span><span class="n">id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">COMMIT</span><span class="p">;</span><span class="w">
+</span></span></span></code></pre></div><p>如果中间某一步失败，应该回滚：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="k">ROLLBACK</span><span class="p">;</span><span class="w">
+</span></span></span></code></pre></div><p>事务的重点不是语法，而是场景意识：只要多个 SQL 之间存在强一致性要求，就要考虑事务。</p>
+<h2 id="常见坑点">常见坑点<a hidden class="anchor" aria-hidden="true" href="#常见坑点">#</a></h2>
+<h3 id="1-update-和-delete-忘记写-where">1. <code>UPDATE</code> 和 <code>DELETE</code> 忘记写 <code>WHERE</code><a hidden class="anchor" aria-hidden="true" href="#1-update-和-delete-忘记写-where">#</a></h3>
+<p>下面这种写法会影响整张表：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="k">UPDATE</span><span class="w"> </span><span class="n">users</span><span class="w"> </span><span class="k">SET</span><span class="w"> </span><span class="n">age</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">18</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">DELETE</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="n">users</span><span class="p">;</span><span class="w">
+</span></span></span></code></pre></div><p>如果不是你想要的结果，后果通常很严重。</p>
+<h3 id="2-null-判断写错">2. <code>NULL</code> 判断写错<a hidden class="anchor" aria-hidden="true" href="#2-null-判断写错">#</a></h3>
+<p>错误写法：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="k">SELECT</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="n">users</span><span class="w"> </span><span class="k">WHERE</span><span class="w"> </span><span class="n">city</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">NULL</span><span class="p">;</span><span class="w">
+</span></span></span></code></pre></div><p>正确写法：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="k">SELECT</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="n">users</span><span class="w"> </span><span class="k">WHERE</span><span class="w"> </span><span class="n">city</span><span class="w"> </span><span class="k">IS</span><span class="w"> </span><span class="k">NULL</span><span class="p">;</span><span class="w">
+</span></span></span></code></pre></div><h3 id="3-where-条件写得不准确">3. <code>WHERE</code> 条件写得不准确<a hidden class="anchor" aria-hidden="true" href="#3-where-条件写得不准确">#</a></h3>
+<p>例如你本来只想更新一个城市的数据，却把条件写得太宽：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="k">UPDATE</span><span class="w"> </span><span class="n">users</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">SET</span><span class="w"> </span><span class="n">age</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">25</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">WHERE</span><span class="w"> </span><span class="n">city</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;Beijing&#39;</span><span class="p">;</span><span class="w">
+</span></span></span></code></pre></div><p>这条 SQL 可能会改到很多行。正式执行前，最好先用同样条件跑一遍查询：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="k">SELECT</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="n">users</span><span class="w"> </span><span class="k">WHERE</span><span class="w"> </span><span class="n">city</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;Beijing&#39;</span><span class="p">;</span><span class="w">
+</span></span></span></code></pre></div><h3 id="4-以为建了索引就一定快">4. 以为建了索引就一定快<a hidden class="anchor" aria-hidden="true" href="#4-以为建了索引就一定快">#</a></h3>
+<p>如果查询条件不走索引，或者数据量本身很小，索引未必能带来明显收益。索引优化要结合具体 SQL 和执行计划看。</p>
+<h3 id="5-select--用得太随意">5. <code>SELECT *</code> 用得太随意<a hidden class="anchor" aria-hidden="true" href="#5-select--用得太随意">#</a></h3>
+<p>开发和排查问题时，<code>SELECT *</code> 很方便，但在正式查询里不一定合适：</p>
+<ul>
+<li>会把不需要的字段也查出来</li>
+<li>表字段变多后，返回内容会越来越重</li>
+<li>不利于后续接口和 SQL 的稳定维护</li>
+</ul>
+<p>能明确字段时，优先写成下面这样：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="k">SELECT</span><span class="w"> </span><span class="n">id</span><span class="p">,</span><span class="w"> </span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="n">city</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="n">users</span><span class="w"> </span><span class="k">WHERE</span><span class="w"> </span><span class="n">id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span><span class="w">
+</span></span></span></code></pre></div><h3 id="6-改表前不先看结构">6. 改表前不先看结构<a hidden class="anchor" aria-hidden="true" href="#6-改表前不先看结构">#</a></h3>
+<p>在执行 <code>ALTER TABLE</code> 前，最好先确认当前表结构，否则很容易重复加字段，或者把字段类型改错。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="k">DESC</span><span class="w"> </span><span class="n">users</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">SHOW</span><span class="w"> </span><span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">users</span><span class="p">;</span><span class="w">
+</span></span></span></code></pre></div><h2 id="小结">小结<a hidden class="anchor" aria-hidden="true" href="#小结">#</a></h2>
+<p>先把建库、建表、改表、CRUD 这几组操作练熟，再补上主键、索引和事务的使用场景，MySQL 的基础就够用了。真正容易出问题的地方通常不是语法不会写，而是 <code>WHERE</code> 条件写宽、<code>NULL</code> 判断写错、改表前不确认结构，以及过度依赖索引。</p>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="/tags/mysql/">MySQL</a></li>
+      <li><a href="/tags/sql/">SQL</a></li>
+    </ul>
+<nav class="paginav">
+  <a class="prev" href="/posts/database/redis_basic/">
+    <span class="title">« Prev</span>
+    <br>
+    <span>Redis 基础用法</span>
+  </a>
+  <a class="next" href="/posts/typescript/typescript_intro/">
+    <span class="title">Next »</span>
+    <br>
+    <span>TypeScript基础用法</span>
+  </a>
+</nav>
+
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2026 <a href="/">缥缈夏鸢</a></span> · 
+
+    <span>
+        Powered by
+        <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+        <path d="M12 6H0l6-6z" />
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu')
+    if (menu) {
+        menu.scrollLeft = localStorage.getItem("menu-scroll-position");
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        if (document.body.className.includes("dark")) {
+            document.body.classList.remove('dark');
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            document.body.classList.add('dark');
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerHTML = 'copy';
+
+        function copyingDone() {
+            copybutton.innerHTML = 'copied!';
+            setTimeout(() => {
+                copybutton.innerHTML = 'copy';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+</body>
+
+</html>
