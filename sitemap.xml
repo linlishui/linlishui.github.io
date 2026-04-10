@@ -3,24 +3,39 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
     <loc>/categories/</loc>
-    <lastmod>2026-01-15T14:41:00+08:00</lastmod>
+    <lastmod>2026-04-09T19:10:00+08:00</lastmod>
   </url><url>
-    <loc>/categories/jvm/</loc>
-    <lastmod>2026-01-15T14:41:00+08:00</lastmod>
+    <loc>/tags/javascript/</loc>
+    <lastmod>2026-04-09T19:10:00+08:00</lastmod>
   </url><url>
     <loc>/posts/</loc>
-    <lastmod>2026-01-15T14:41:00+08:00</lastmod>
+    <lastmod>2026-04-09T19:10:00+08:00</lastmod>
   </url><url>
     <loc>/tags/</loc>
+    <lastmod>2026-04-09T19:10:00+08:00</lastmod>
+  </url><url>
+    <loc>/tags/typescript/</loc>
+    <lastmod>2026-04-09T19:10:00+08:00</lastmod>
+  </url><url>
+    <loc>/posts/typescript/typescript_intro/</loc>
+    <lastmod>2026-04-09T19:10:00+08:00</lastmod>
+  </url><url>
+    <loc>/tags/%E7%B1%BB%E5%9E%8B%E7%B3%BB%E7%BB%9F/</loc>
+    <lastmod>2026-04-09T19:10:00+08:00</lastmod>
+  </url><url>
+    <loc>/categories/%E7%BC%96%E7%A8%8B%E8%AF%AD%E8%A8%80/</loc>
+    <lastmod>2026-04-09T19:10:00+08:00</lastmod>
+  </url><url>
+    <loc>/</loc>
+    <lastmod>2026-04-09T19:10:00+08:00</lastmod>
+  </url><url>
+    <loc>/categories/jvm/</loc>
     <lastmod>2026-01-15T14:41:00+08:00</lastmod>
   </url><url>
     <loc>/tags/%E5%AD%97%E8%8A%82%E7%A0%81/</loc>
     <lastmod>2026-01-15T14:41:00+08:00</lastmod>
   </url><url>
     <loc>/posts/jvm/bytecode_guide/</loc>
-    <lastmod>2026-01-15T14:41:00+08:00</lastmod>
-  </url><url>
-    <loc>/</loc>
     <lastmod>2026-01-15T14:41:00+08:00</lastmod>
   </url><url>
     <loc>/tags/curl/</loc>

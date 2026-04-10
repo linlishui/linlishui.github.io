@@ -6,8 +6,29 @@
     <description>Recent content in Tags on 缥缈夏鸢</description>
     <generator>Hugo -- 0.138.0</generator>
     <language>en-us</language>
-    <lastBuildDate>Thu, 15 Jan 2026 14:41:00 +0800</lastBuildDate>
+    <lastBuildDate>Thu, 09 Apr 2026 19:10:00 +0800</lastBuildDate>
     <atom:link href="/tags/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>JavaScript</title>
+      <link>/tags/javascript/</link>
+      <pubDate>Thu, 09 Apr 2026 19:10:00 +0800</pubDate>
+      <guid>/tags/javascript/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>TypeScript</title>
+      <link>/tags/typescript/</link>
+      <pubDate>Thu, 09 Apr 2026 19:10:00 +0800</pubDate>
+      <guid>/tags/typescript/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>类型系统</title>
+      <link>/tags/%E7%B1%BB%E5%9E%8B%E7%B3%BB%E7%BB%9F/</link>
+      <pubDate>Thu, 09 Apr 2026 19:10:00 +0800</pubDate>
+      <guid>/tags/%E7%B1%BB%E5%9E%8B%E7%B3%BB%E7%BB%9F/</guid>
+      <description></description>
+    </item>
     <item>
       <title>字节码</title>
       <link>/tags/%E5%AD%97%E8%8A%82%E7%A0%81/</link>

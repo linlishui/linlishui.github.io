@@ -216,6 +216,34 @@ window.onload = () => {
 
 <article class="post-entry"> 
   <header class="entry-header">
+    <h2 class="entry-hint-parent">TypeScript基础用法
+    </h2>
+  </header>
+  <div class="entry-content">
+    <p>TypeScript 是在 JavaScript 基础上增加了类型能力的语言。对初学者来说，先不用纠结太多概念，先把最常见的基础写法掌握住就够了。
+一、基础类型 TypeScript 可以直接给变量标注类型：
+const name: string = &#34;Tom&#34;; const age: number = 18; const passed: boolean = true; 常见基础类型有：
+string：字符串 number：数字 boolean：布尔值 undefined null 如果类型和赋值不一致，TypeScript 会直接报错。
+const age: number = &#34;18&#34;; // 报错 数组类型 数组有两种常见写法：
+const ids: number[] = [1, 2, 3]; const names: Array&lt;string&gt; = [&#34;Tom&#34;, &#34;Jerry&#34;]; 这两种写法都表示“数组中元素的类型是固定的”。
+例如：
+const scores: number[] = [95, 88, 76]; const cities: string[] = [&#34;Shanghai&#34;, &#34;Beijing&#34;, &#34;Shenzhen&#34;]; 如果往 scores 里放字符串，TypeScript 会报错：
+const scores: number[] = [95, 88, &#34;76&#34;]; // 报错 string 类型 string 表示字符串类型，也就是文本内容。
+const username: string = &#34;Tom&#34;; const message: string = &#34;Hello TypeScript&#34;; 一般只要变量里存的是一段文本，就可以考虑使用 string。
+例如下面这些值都属于字符串：
+const city: string = &#34;Shanghai&#34;; const phone: string = &#34;13800138000&#34;; const id: string = &#34;user_1001&#34;; 注意：即使内容看起来像数字，只要你希望它按文本处理，也应该使用 string，例如手机号、订单号、身份证号。
+理解 undefined 与 null undefined 和 null 都表示“没有值”，但它们的使用场景不完全一样。
+undefined：通常表示“还没有值”或“这个字段不存在” null：通常表示“这里明确是空值” 例如：
+let nickname: string | undefined = undefined; let avatar: string | null = null; 可以先这样理解：
+undefined 更像“没提供” null 更像“有这个位置，但现在为空” 在 TypeScript 里，它们通常会和联合类型一起使用：
+...</p>
+  </div>
+  <footer class="entry-footer"><span title='2026-04-09 19:10:00 +0800 CST'>April 9, 2026</span>&nbsp;·&nbsp;4 min&nbsp;·&nbsp;772 words&nbsp;·&nbsp;夏天的小西瓜</footer>
+  <a class="entry-link" aria-label="post link to TypeScript基础用法" href="/posts/typescript/typescript_intro/"></a>
+</article>
+
+<article class="post-entry"> 
+  <header class="entry-header">
     <h2 class="entry-hint-parent">字节码技术入门
     </h2>
   </header>
@@ -381,22 +409,6 @@ sudo ./easyrsa init-pki sudo ./easyrsa build-ca nopass 生成服务端证书：
   </div>
   <footer class="entry-footer"><span title='2024-12-23 17:09:22 +0800 CST'>December 23, 2024</span>&nbsp;·&nbsp;2 min&nbsp;·&nbsp;398 words&nbsp;·&nbsp;夏天的小西瓜</footer>
   <a class="entry-link" aria-label="post link to openVPN" href="/posts/tools/openvpn/"></a>
-</article>
-
-<article class="post-entry"> 
-  <header class="entry-header">
-    <h2 class="entry-hint-parent">Linux使用介绍
-    </h2>
-  </header>
-  <div class="entry-content">
-    <p>简要概述 1. 启动过程 Linux系统的启动过程可以分为5个阶段：
-内核的引导 运行 init 系统初始化 建立终端 用户登录系统 启动流程图:
-graph LR system(操作系统) boot(/boot) init(init进程) run(运行级别) etc(/etc/init.d) user(用户登录) shell(Login shell) system --&gt; boot boot --&gt; init init --&gt; run run --&gt; etc etc --&gt; user user --&gt; shell 2. 目录结构 登录系统后，在当前命令窗口下输入命令：ls /
-根目录文件夹及文件 描述 /bin bin是Binary的缩写, 这个目录存放着最经常使用的命令 /boot 存放的是启动Linux时使用的一些核心文件，包括一些连接文件以及镜像文件 /dev dev是Device(设备)的缩写, 该目录下存放的是Linux的外部设备，在Linux中访问设备的方式和访问文件的方式是相同的 /etc 用来存放所有的系统管理所需要的配置文件和子目录 /home 用户的主目录，在Linux中，每个用户都有一个自己的目录，一般该目录名是以用户的账号命名的 /lib 存放着系统最基本的动态连接共享库，其作用类似于Windows里的dll文件 /lost&#43;found 一般情况下是空的，当系统非法关机后，这里就存放了一些文件 /media linux系统会自动识别一些设备，例如U盘、光驱等等，当识别后，linux会把识别的设备挂载到这个目录下 /mnt 系统提供该目录是为了让用户临时挂载别的文件系统的，我们可以将光驱挂载在/mnt/上，然后进入该目录就可以查看光驱里的内容了 /opt 给主机额外安装软件所摆放的目录。比如你安装一个ORACLE数据库则就可以放到这个目录下。默认是空的 /proc 这个目录的内容不在硬盘上而是在内存里 ,是一个虚拟的目录它是系统内存的映射，可以通过直接访问这个目录来获取系统信息 /root 该目录为系统管理员，也称作超级权限者的用户主目录 /sbin s就是Super User的意思，这里存放的是系统管理员使用的系统管理程序 /srv 该目录存放一些服务启动之后需要提取的数据 /sys 系统文件夹 /tmp 这个目录是用来存放一些临时文件的 /usr 这是一个非常重要的目录，用户的很多应用程序和文件都放在这个目录下，类似于windows下的program files目录/usr/bin：系统用户使用的应用程序/usr/sbin：超级用户使用的比较高级的管理程序和系统守护程序/usr/src：内核源代码默认的放置目录 /var 这个目录中存放着在不断扩充着的东西，我们习惯将那些经常被修改的目录放在这个目录下。包括各种日志文件 3. 文件权限管理 Linux系统是一种典型的多用户系统，不同的用户处于不同的地位，拥有不同的权限。为了保护系统的安全性，Linux系统对不同的用户访问同一文件（包括目录文件）的权限做了不同的规定。 在Linux中我们可以使用ll或者ls –l命令来显示一个文件的属性以及文件所属的用户和组，如：
-...</p>
-  </div>
-  <footer class="entry-footer"><span title='2024-11-15 14:38:57 +0800 CST'>November 15, 2024</span>&nbsp;·&nbsp;4 min&nbsp;·&nbsp;843 words&nbsp;·&nbsp;夏天的小西瓜</footer>
-  <a class="entry-link" aria-label="post link to Linux使用介绍" href="/posts/os/linux/"></a>
 </article>
 <footer class="page-footer">
   <nav class="pagination">
