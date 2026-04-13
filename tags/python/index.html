@@ -5,11 +5,11 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <meta name="robots" content="index, follow">
-<title>Vim | 缥缈夏鸢</title>
+<title>Python | 缥缈夏鸢</title>
 <meta name="keywords" content="">
 <meta name="description" content="Android 开发工程师，持续探索 Agent 应用开发，长期关注全栈能力建设。">
 <meta name="author" content="夏天的小西瓜">
-<link rel="canonical" href="/tags/vim/">
+<link rel="canonical" href="/tags/python/">
 <meta name="google-site-verification" content="XYZabc">
 <meta name="msvalidate.01" content="XYZabc">
 <link crossorigin="anonymous" href="/assets/css/stylesheet.44278f16c6e7e77192a15a0565fb5b0f220c56128442fcfa6937b4d84456ecf0.css" integrity="sha256-RCePFsbn53GSoVoFZftbDyIMVhKEQvz6aTe02ERW7PA=" rel="preload stylesheet" as="style">
@@ -20,8 +20,8 @@
 <link rel="mask-icon" href="/safari-pinned-tab.svg">
 <meta name="theme-color" content="#2e2e33">
 <meta name="msapplication-TileColor" content="#2e2e33">
-<link rel="alternate" type="application/rss+xml" href="/tags/vim/index.xml">
-<link rel="alternate" hreflang="en" href="/tags/vim/">
+<link rel="alternate" type="application/rss+xml" href="/tags/python/index.xml">
+<link rel="alternate" hreflang="en" href="/tags/python/">
 <noscript>
     <style>
         #theme-toggle,
@@ -78,14 +78,14 @@ mermaid.initialize(config);
 window.onload = () => {
     window.mermaid.init(undefined, document.querySelectorAll('.language-mermaid'));
 }
-</script><meta property="og:url" content="/tags/vim/">
+</script><meta property="og:url" content="/tags/python/">
   <meta property="og:site_name" content="缥缈夏鸢">
-  <meta property="og:title" content="Vim">
+  <meta property="og:title" content="Python">
   <meta property="og:description" content="Android 开发工程师，持续探索 Agent 应用开发，长期关注全栈能力建设。">
   <meta property="og:locale" content="en-us">
   <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Vim">
+<meta name="twitter:title" content="Python">
 <meta name="twitter:description" content="Android 开发工程师，持续探索 Agent 应用开发，长期关注全栈能力建设。">
 
 </head>
@@ -171,8 +171,8 @@ window.onload = () => {
 <main class="main"> 
 <header class="page-header"><div class="breadcrumbs"><a href="/">Home</a>&nbsp;»&nbsp;<a href="/tags/">Tags</a></div>
   <h1>
-    Vim
-    <a href="/tags/vim/index.xml" title="RSS" aria-label="RSS">
+    Python
+    <a href="/tags/python/index.xml" title="RSS" aria-label="RSS">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
         stroke-linecap="round" stroke-linejoin="round" height="23">
         <path d="M4 11a9 9 0 0 1 9 9" />
@@ -185,16 +185,94 @@ window.onload = () => {
 
 <article class="post-entry tag-entry"> 
   <header class="entry-header">
-    <h2 class="entry-hint-parent">Vim基础使用
+    <h2 class="entry-hint-parent">Python异步回顾
     </h2>
   </header>
   <div class="entry-content">
-    <p>Vim基本操作 1. 移动光标 键位 含义 hjkl，方向键 移动一位，hjkl代表左、下、上、右 数字0 移至本行开头 ^ 移至本行第一个非空字符，匹配开头 $ 移至本行结尾，可以包含空格 w 移至下一单词或标点的开头 b 移至上一单词或标点开头 ctrl-f/PgDn 下翻一页 ctrl-b/PgUp 上翻一页 nG 移至第n行（n为数字） gg 光标移至第一行 G 光标移至最后一行 :n enter键 移至第n行 n&#43; 向下跳n行 n- 向上跳n行 H 移至当前屏幕的第一行 L 移至当前屏幕的最后一行 注意：许多vi的命令前面都可以缀上数字，前缀数字可以控制该命令执行的次数，比如5j可以使得光标向下移动5行
-2. 基本编辑 键位 含义 a 在当前字符后插入文本 A 在行尾插入文本 i 在当前字符前插入文本 I 在行首插入文本 o 当前行下方插入新行并进入插入模式 O 当前行上方插入新行并进入插入模式 3. 删除和撤销 键位 含义 x 删除当前字符（剪切） nx 向后删除当前行在内的n个字符（剪切） dd 删除（剪切）当前行 ndd 向下删除当前行在内的n行（剪切） u 撤销上一次操作 nu 撤销n次操作 U 撤销对当前行的所有操作 结合光标移动以及这里的删除和撤销，可以组合命令。如：dG，代表删除当前行到文件末尾（剪切）
+    <p>这篇文章适合已经接触过 Python、但想快速把异步概念捡起来的读者。目标很简单：用最少的内容讲清楚 Python 异步是干什么的、怎么写、哪里最容易出错。
+异步是为了解决什么问题 Python 异步主要解决的是 I/O 等待，比如：
+同时请求多个接口 同时查多个远程服务 Web 服务在等数据库或网络返回时，不想把线程一直卡住 它不擅长解决 CPU 密集型计算问题。比如大量图片处理、复杂计算，这类任务通常不靠异步提速。
+可以先记住一句话：
+异步的重点不是“更快执行一段代码”，而是“等待的时候别闲着”。
+最核心的三个点 1. async def 定义协程函数 async def fetch_data(): return &#34;ok&#34; 这不是普通函数。调用它时，不会立刻执行，而是先得到一个协程对象。
+2. await 表示“先等一下，同时让出执行权” import asyncio async def main(): await asyncio.sleep(1) print(&#34;done&#34;) asyncio.run(main()) 这里的 await asyncio.sleep(1) 不等于“整个程序卡住 1 秒”，而是“当前任务先暂停，事件循环可以先去执行别的任务”。
+3. asyncio.run() 是常见入口 asyncio.run(main()) 可以把它理解成：启动事件循环，把协程跑起来。
+最常见的写法区别 很多人刚写异步时，问题不在语法，而在“看起来是异步，其实还是串行”。
+串行写法 import asyncio async def work(name, delay): await asyncio.sleep(delay) return f&#34;{name} done&#34; async def main(): r1 = await work(&#34;task1&#34;, 1) r2 = await work(&#34;task2&#34;, 2) print(r1, r2) asyncio.run(main()) 这段代码会一个接一个执行，总耗时大约是 3 秒。
+并发写法 import asyncio async def work(name, delay): await asyncio.sleep(delay) return f&#34;{name} done&#34; async def main(): r1, r2 = await asyncio.gather( work(&#34;task1&#34;, 1), work(&#34;task2&#34;, 2), ) print(r1, r2) asyncio.run(main()) 这里两个任务会一起调度，总耗时大约是 2 秒。
 ...</p>
   </div>
-  <footer class="entry-footer"><span title='2025-05-30 14:41:49 +0800 CST'>May 30, 2025</span>&nbsp;·&nbsp;1 min&nbsp;·&nbsp;168 words&nbsp;·&nbsp;夏天的小西瓜</footer>
-  <a class="entry-link" aria-label="post link to Vim基础使用" href="/posts/tools/vim/"></a>
+  <footer class="entry-footer"><span title='2026-04-13 00:10:01 +0800 CST'>April 13, 2026</span>&nbsp;·&nbsp;2 min&nbsp;·&nbsp;277 words&nbsp;·&nbsp;夏天的小西瓜</footer>
+  <a class="entry-link" aria-label="post link to Python异步回顾" href="/posts/python/python_async_review/"></a>
+</article>
+
+<article class="post-entry tag-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">Python常用模块与网络请求
+    </h2>
+  </header>
+  <div class="entry-content">
+    <p>这篇文章主要整理 Python 里常见的模块导入方式、日常脚本开发中经常会用到的标准库，以及常见网络库的基础用法。
+模块导入 Python 代码通常会拆到不同文件中，拆分后的代码会通过导入来组织和复用。
+1. 同目录下导入整个模块 假设有一个 tools.py 文件：
+# 定义一个简单函数 def add(a, b): return a &#43; b 在另一个文件中这样使用：
+# 导入整个 tools 模块 import tools # 通过 模块名.函数名 调用 print(tools.add(1, 2)) 这种写法比较直接，适合区分“函数来自哪个模块”。
+2. 同目录下导入指定内容 也可以只导入需要的函数：
+# 只导入 add 函数 from tools import add # 直接调用函数名 print(add(1, 2)) 这种写法更简洁，但项目变大后，如果导入太多同名函数，代码可读性会差一点。
+3. 包内导入 当代码放进目录结构里时，通常会按包来导入。
+例如目录结构：
+project/ app/ main.py utils.py main.py 中可以这样写：
+# 从 app 包中的 utils 模块导入 add from app.utils import add 这种写法更适合项目代码。模块不在当前文件同目录下时，也优先通过包路径导入，而不是手动改 sys.path。只有在临时脚本场景下，才会看到 sys.path 相关写法，但这类方式不适合作为常规项目结构。
+4. 相对导入 在包内部，也会看到相对导入写法。
+例如：
+...</p>
+  </div>
+  <footer class="entry-footer"><span title='2026-04-12 23:14:08 +0800 CST'>April 12, 2026</span>&nbsp;·&nbsp;3 min&nbsp;·&nbsp;468 words&nbsp;·&nbsp;夏天的小西瓜</footer>
+  <a class="entry-link" aria-label="post link to Python常用模块与网络请求" href="/posts/python/python_modules_network/"></a>
+</article>
+
+<article class="post-entry tag-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">Python环境设置
+    </h2>
+  </header>
+  <div class="entry-content">
+    <p>这篇文章主要整理 Python 环境相关的常用概念和配置方式，包括 python 与 python3、pip 与 pip3、虚拟环境 venv、以及安装独立工具时常见的 pipx。
+Python、python3、pip 与 pip3 在日常使用里，这几个命令很容易混淆：
+python：启动 Python 解释器 python3：明确使用 Python 3 解释器 pip：Python 包管理工具 pip3：通常表示给 Python 3 安装包 更实用的理解方式是：python3 和 pip3 往往是一组，尽量配套使用。
+例如：
+# 查看 Python 3 版本 python3 --version # 查看 pip3 对应的版本与安装位置 pip3 --version 如果机器上同时存在多个 Python 版本，优先使用 python3 和 pip3，歧义更少。
+1. 怎么确认当前命令对应的是哪个环境 环境问题里最常见的坑，不是命令不会用，而是命令实际指向的解释器和包安装位置不一致。
+常见检查方式：
+# 查看 python3 的实际路径 which python3 # 查看 pip3 的实际路径 which pip3 # 查看 pip3 安装到了哪个 Python 环境 pip3 --version 如果 python3 和 pip3 指向的环境不一致，安装完包后就可能出现“命令执行了，但代码里还是导入失败”的问题。
+...</p>
+  </div>
+  <footer class="entry-footer"><span title='2026-04-12 23:14:08 +0800 CST'>April 12, 2026</span>&nbsp;·&nbsp;2 min&nbsp;·&nbsp;305 words&nbsp;·&nbsp;夏天的小西瓜</footer>
+  <a class="entry-link" aria-label="post link to Python环境设置" href="/posts/python/python_setup/"></a>
+</article>
+
+<article class="post-entry tag-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">Python常用基础回顾
+    </h2>
+  </header>
+  <div class="entry-content">
+    <p>Python 是常用的动态类型脚本语言，这篇文章面向已经用过 Python、但想快速回顾常用基础写法的读者。
+变量与基础类型 Python 变量不需要先声明类型，直接赋值即可。
+name = &#34;Tom&#34; age = 18 price = 19.9 passed = True 常见基础类型有：
+str：字符串 int：整数 float：小数 bool：布尔值 NoneType：空值类型，对应 None 常见基础数据结构有：
+list：列表，有顺序、可修改 tuple：元组，有顺序、不可修改 set：集合，无序、不重复 dict：字典，键值对结构 如果想看变量类型，可以直接用 type()：
+name = &#34;Tom&#34; age = 18 # 查看变量运行时的实际类型 print(type(name)) print(type(age)) 实际开发里，大多数时候不用刻意写类型判断，但在调试阶段它很有用。
+1. Python 是动态类型语言 Python 是动态类型语言。
+变量本身不固定类型，类型跟当前保存的值有关。
+value = 10 # 当前是 int print(type(value)) value = &#34;hello&#34; # 同一个变量现在变成了 str print(type(value)) 同一个变量先保存整数、后保存字符串，在 Python 里是允许的。
+2. 变量可以是空值，也可能未定义 变量未定义时，直接访问会报错：
+print(name) # NameError 变量已经定义但当前没有值时，一般用 None 表示：
+name = None print(name) nickname = None # 用 is None 判断空值 if nickname is None: print(&#34;nickname is empty&#34;) None 就表示“现在没有值”。
+...</p>
+  </div>
+  <footer class="entry-footer"><span title='2026-04-11 00:40:23 +0800 CST'>April 11, 2026</span>&nbsp;·&nbsp;4 min&nbsp;·&nbsp;724 words&nbsp;·&nbsp;夏天的小西瓜</footer>
+  <a class="entry-link" aria-label="post link to Python常用基础回顾" href="/posts/python/python_intro/"></a>
 </article>
     </main>
     

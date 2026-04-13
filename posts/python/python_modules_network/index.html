@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>Python常用模块与网络请求 | 缥缈夏鸢</title>
+<meta name="keywords" content="Python">
+<meta name="description" content="这篇文章主要整理 Python 里常见的模块导入方式、日常脚本开发中经常会用到的标准库，以及常见网络库的基础用法。
+模块导入
+Python 代码通常会拆到不同文件中，拆分后的代码会通过导入来组织和复用。
+1. 同目录下导入整个模块
+假设有一个 tools.py 文件：
+# 定义一个简单函数
+def add(a, b):
+    return a &#43; b
+在另一个文件中这样使用：
+# 导入整个 tools 模块
+import tools
+
+# 通过 模块名.函数名 调用
+print(tools.add(1, 2))
+这种写法比较直接，适合区分“函数来自哪个模块”。
+2. 同目录下导入指定内容
+也可以只导入需要的函数：
+# 只导入 add 函数
+from tools import add
+
+# 直接调用函数名
+print(add(1, 2))
+这种写法更简洁，但项目变大后，如果导入太多同名函数，代码可读性会差一点。
+3. 包内导入
+当代码放进目录结构里时，通常会按包来导入。
+例如目录结构：
+project/
+  app/
+    main.py
+    utils.py
+main.py 中可以这样写：
+# 从 app 包中的 utils 模块导入 add
+from app.utils import add
+这种写法更适合项目代码。模块不在当前文件同目录下时，也优先通过包路径导入，而不是手动改 sys.path。只有在临时脚本场景下，才会看到 sys.path 相关写法，但这类方式不适合作为常规项目结构。
+4. 相对导入
+在包内部，也会看到相对导入写法。
+例如：">
+<meta name="author" content="夏天的小西瓜">
+<link rel="canonical" href="/posts/python/python_modules_network/">
+<meta name="google-site-verification" content="XYZabc">
+<meta name="msvalidate.01" content="XYZabc">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.44278f16c6e7e77192a15a0565fb5b0f220c56128442fcfa6937b4d84456ecf0.css" integrity="sha256-RCePFsbn53GSoVoFZftbDyIMVhKEQvz6aTe02ERW7PA=" rel="preload stylesheet" as="style">
+<link rel="icon" href="/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="mask-icon" href="/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="en" href="/posts/python/python_modules_network/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-track {
+                background: 0 0;
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-thumb {
+                border-color: var(--theme);
+            }
+        }
+
+    </style>
+</noscript><script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+<script>
+
+const config = {
+    startOnLoad:true,
+    
+    themeVariables: {
+        lineColor: "#ffffff"    
+    },
+    flowchart: {
+        useMaxWidth:false,
+        htmlLabels:true
+    }
+};
+mermaid.initialize(config);
+
+
+window.onload = () => {
+    window.mermaid.init(undefined, document.querySelectorAll('.language-mermaid'));
+}
+</script><meta property="og:url" content="/posts/python/python_modules_network/">
+  <meta property="og:site_name" content="缥缈夏鸢">
+  <meta property="og:title" content="Python常用模块与网络请求">
+  <meta property="og:description" content="这篇文章主要整理 Python 里常见的模块导入方式、日常脚本开发中经常会用到的标准库，以及常见网络库的基础用法。
+模块导入 Python 代码通常会拆到不同文件中，拆分后的代码会通过导入来组织和复用。
+1. 同目录下导入整个模块 假设有一个 tools.py 文件：
+# 定义一个简单函数 def add(a, b): return a &#43; b 在另一个文件中这样使用：
+# 导入整个 tools 模块 import tools # 通过 模块名.函数名 调用 print(tools.add(1, 2)) 这种写法比较直接，适合区分“函数来自哪个模块”。
+2. 同目录下导入指定内容 也可以只导入需要的函数：
+# 只导入 add 函数 from tools import add # 直接调用函数名 print(add(1, 2)) 这种写法更简洁，但项目变大后，如果导入太多同名函数，代码可读性会差一点。
+3. 包内导入 当代码放进目录结构里时，通常会按包来导入。
+例如目录结构：
+project/ app/ main.py utils.py main.py 中可以这样写：
+# 从 app 包中的 utils 模块导入 add from app.utils import add 这种写法更适合项目代码。模块不在当前文件同目录下时，也优先通过包路径导入，而不是手动改 sys.path。只有在临时脚本场景下，才会看到 sys.path 相关写法，但这类方式不适合作为常规项目结构。
+4. 相对导入 在包内部，也会看到相对导入写法。
+例如：">
+  <meta property="og:locale" content="en-us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2026-04-12T23:14:08+08:00">
+    <meta property="article:modified_time" content="2026-04-12T23:14:08+08:00">
+    <meta property="article:tag" content="Python">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Python常用模块与网络请求">
+<meta name="twitter:description" content="这篇文章主要整理 Python 里常见的模块导入方式、日常脚本开发中经常会用到的标准库，以及常见网络库的基础用法。
+模块导入
+Python 代码通常会拆到不同文件中，拆分后的代码会通过导入来组织和复用。
+1. 同目录下导入整个模块
+假设有一个 tools.py 文件：
+# 定义一个简单函数
+def add(a, b):
+    return a &#43; b
+在另一个文件中这样使用：
+# 导入整个 tools 模块
+import tools
+
+# 通过 模块名.函数名 调用
+print(tools.add(1, 2))
+这种写法比较直接，适合区分“函数来自哪个模块”。
+2. 同目录下导入指定内容
+也可以只导入需要的函数：
+# 只导入 add 函数
+from tools import add
+
+# 直接调用函数名
+print(add(1, 2))
+这种写法更简洁，但项目变大后，如果导入太多同名函数，代码可读性会差一点。
+3. 包内导入
+当代码放进目录结构里时，通常会按包来导入。
+例如目录结构：
+project/
+  app/
+    main.py
+    utils.py
+main.py 中可以这样写：
+# 从 app 包中的 utils 模块导入 add
+from app.utils import add
+这种写法更适合项目代码。模块不在当前文件同目录下时，也优先通过包路径导入，而不是手动改 sys.path。只有在临时脚本场景下，才会看到 sys.path 相关写法，但这类方式不适合作为常规项目结构。
+4. 相对导入
+在包内部，也会看到相对导入写法。
+例如：">
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Posts",
+      "item": "/posts/"
+    }
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Python常用模块与网络请求",
+      "item": "/posts/python/python_modules_network/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Python常用模块与网络请求",
+  "name": "Python常用模块与网络请求",
+  "description": "这篇文章主要整理 Python 里常见的模块导入方式、日常脚本开发中经常会用到的标准库，以及常见网络库的基础用法。\n模块导入 Python 代码通常会拆到不同文件中，拆分后的代码会通过导入来组织和复用。\n1. 同目录下导入整个模块 假设有一个 tools.py 文件：\n# 定义一个简单函数 def add(a, b): return a + b 在另一个文件中这样使用：\n# 导入整个 tools 模块 import tools # 通过 模块名.函数名 调用 print(tools.add(1, 2)) 这种写法比较直接，适合区分“函数来自哪个模块”。\n2. 同目录下导入指定内容 也可以只导入需要的函数：\n# 只导入 add 函数 from tools import add # 直接调用函数名 print(add(1, 2)) 这种写法更简洁，但项目变大后，如果导入太多同名函数，代码可读性会差一点。\n3. 包内导入 当代码放进目录结构里时，通常会按包来导入。\n例如目录结构：\nproject/ app/ main.py utils.py main.py 中可以这样写：\n# 从 app 包中的 utils 模块导入 add from app.utils import add 这种写法更适合项目代码。模块不在当前文件同目录下时，也优先通过包路径导入，而不是手动改 sys.path。只有在临时脚本场景下，才会看到 sys.path 相关写法，但这类方式不适合作为常规项目结构。\n4. 相对导入 在包内部，也会看到相对导入写法。\n例如：\n",
+  "keywords": [
+    "Python"
+  ],
+  "articleBody": "这篇文章主要整理 Python 里常见的模块导入方式、日常脚本开发中经常会用到的标准库，以及常见网络库的基础用法。\n模块导入 Python 代码通常会拆到不同文件中，拆分后的代码会通过导入来组织和复用。\n1. 同目录下导入整个模块 假设有一个 tools.py 文件：\n# 定义一个简单函数 def add(a, b): return a + b 在另一个文件中这样使用：\n# 导入整个 tools 模块 import tools # 通过 模块名.函数名 调用 print(tools.add(1, 2)) 这种写法比较直接，适合区分“函数来自哪个模块”。\n2. 同目录下导入指定内容 也可以只导入需要的函数：\n# 只导入 add 函数 from tools import add # 直接调用函数名 print(add(1, 2)) 这种写法更简洁，但项目变大后，如果导入太多同名函数，代码可读性会差一点。\n3. 包内导入 当代码放进目录结构里时，通常会按包来导入。\n例如目录结构：\nproject/ app/ main.py utils.py main.py 中可以这样写：\n# 从 app 包中的 utils 模块导入 add from app.utils import add 这种写法更适合项目代码。模块不在当前文件同目录下时，也优先通过包路径导入，而不是手动改 sys.path。只有在临时脚本场景下，才会看到 sys.path 相关写法，但这类方式不适合作为常规项目结构。\n4. 相对导入 在包内部，也会看到相对导入写法。\n例如：\n# 从当前包中的 utils 模块导入 add from .utils import add 这种写法常见于包内部模块互相引用，但前提是代码本身运行在包结构里，而不是直接把单个文件当脚本执行。\n导入失败的常见原因通常包括：工作目录不对、包路径不正确、直接运行单个文件导致相对导入失效。\n常用标准库 Python 自带很多标准库，日常脚本里常见的有下面几类：\n模块 说明 os 获取系统信息、环境变量、当前工作目录 pathlib 处理文件和目录路径 json 处理 JSON 字符串与 Python 对象转换 random 生成随机数和随机选择 datetime 获取时间和格式化时间 subprocess 在脚本里执行系统命令 1. os 适合获取环境变量、当前目录等系统信息。\n常见方法：\nos.getcwd()：获取当前工作目录，返回 str os.environ.get(\"HOME\")：获取环境变量，返回 str 或 None import os # 获取当前工作目录 print(os.getcwd()) # 获取环境变量，不存在时返回 None print(os.environ.get(\"HOME\")) 2. pathlib 适合处理文件路径，写法比字符串拼接更稳妥。\n常见方法：\nPath(\"data\")：创建路径对象，返回 Path path.exists()：判断路径是否存在，返回 bool from pathlib import Path # 拼接路径对象 path = Path(\"data\") / \"users.json\" # 查看路径是否存在 print(path.exists()) # 输出路径字符串表现 print(path) 3. json 适合处理接口返回值、本地配置文件、导出的结构化数据。\n常见方法：\njson.dumps(obj)：对象转 JSON 字符串，返回 str json.loads(text)：JSON 字符串转 Python 对象，通常返回 dict 或 list import json data = {\"name\": \"Tom\", \"age\": 18} # 对象转 JSON 字符串 text = json.dumps(data, ensure_ascii=False) # JSON 字符串转回对象 obj = json.loads(text) print(obj) 日常处理接口返回值时，如果 json.loads() 的结果是 dict，更推荐优先使用 get() 取值：\nimport json text = '{\"name\": \"Tom\"}' obj = json.loads(text) print(obj.get(\"name\")) print(obj.get(\"city\")) obj[\"name\"] 在字段不存在时会抛出 KeyError，obj.get(\"name\") 则会返回 None。如果后续代码依赖字段类型，再补充 isinstance() 判断即可。\n4. random 适合生成测试数据或随机结果。\n常见方法：\nrandom.randint(1, 10)：生成区间内随机整数，返回 int random.choice(seq)：从序列中随机取一个元素，返回对应元素 import random # 生成 1 到 10 之间的随机整数 print(random.randint(1, 10)) # 从列表里随机取一个值 print(random.choice([\"Tom\", \"Jerry\", \"Alice\"])) 5. datetime 适合处理时间格式化和时间计算。\n常见方法：\ndatetime.now()：获取当前时间，返回 datetime strftime(\"%Y-%m-%d\")：格式化时间，返回 str from datetime import datetime # 按指定格式输出当前时间 print(datetime.now().strftime(\"%Y-%m-%d\")) 6. subprocess 适合在 Python 脚本里执行系统命令。\n常见方法：\nsubprocess.run(...)：执行命令，返回 CompletedProcess result.stdout：读取标准输出，返回 str import subprocess # 执行命令并获取输出 result = subprocess.run([\"pwd\"], capture_output=True, text=True) print(result.stdout) 常见网络库 网络请求也是模块使用里很常见的一类场景。\n除了标准库，日常开发里最常见的网络请求方案通常是 requests 和 urllib。\n库 说明 requests 最常见的 HTTP 请求库，适合调用接口 urllib Python 标准库里的网络请求工具，功能基础但够用 1. requests requests 是最常见的第三方网络库，写法直接，适合大多数接口调用场景。\n常见方法：\nrequests.get(url)：发送 GET 请求 requests.post(url, json=data)：发送 POST 请求 response.json()：把响应内容转成 Python 对象，通常是 dict 或 list 返回 JSON 时通常使用 response.json()，返回普通文本时则更常用 response.text。\nGET 请求示例：\nimport requests # 发送 GET 请求，并设置 5 秒超时 response = requests.get(\"https://example.com/api/users\", timeout=5) # 把响应内容转成 Python 对象 data = response.json() print(data) 实际使用时，通常还会关注 response.status_code，或者直接调用 response.raise_for_status() 判断请求是否成功。\nPOST 请求示例：\nimport requests payload = {\"name\": \"Tom\", \"age\": 18} # 发送 POST 请求，并以 JSON 形式传参 response = requests.post( \"https://example.com/api/users\", json=payload, timeout=5 ) print(response.json()) 基础错误处理示例：\nimport requests try: response = requests.get(\"https://example.com/api/users\", timeout=5) response.raise_for_status() print(response.json()) except requests.RequestException as e: print(f\"request failed: {e}\") 2. urllib urllib 是标准库自带的网络请求工具，不安装第三方包时可以直接使用。\nGET 请求示例：\nfrom urllib import request # 发送请求并设置 5 秒超时 with request.urlopen(\"https://example.com\", timeout=5) as resp: text = resp.read().decode(\"utf-8\") print(text) urllib 请求失败时通常会直接抛异常，所以更适合基础场景或不想额外安装第三方库时使用。\nPOST 请求示例：\nfrom urllib import request import json payload = {\"name\": \"Tom\", \"age\": 18} data = json.dumps(payload).encode(\"utf-8\") # 构造 POST 请求 req = request.Request( \"https://example.com/api/users\", data=data, headers={\"Content-Type\": \"application/json\"}, method=\"POST\" ) with request.urlopen(req, timeout=5) as resp: text = resp.read().decode(\"utf-8\") print(text) 基础错误处理示例：\nfrom urllib import request, error try: with request.urlopen(\"https://example.com\", timeout=5) as resp: print(resp.read().decode(\"utf-8\")) except error.URLError as e: print(f\"request failed: {e}\") 小结 把模块导入方式、常用标准库和基础网络请求串起来，写日常 Python 脚本时会更顺手。\n",
+  "wordCount" : "468",
+  "inLanguage": "en",
+  "datePublished": "2026-04-12T23:14:08+08:00",
+  "dateModified": "2026-04-12T23:14:08+08:00",
+  "author":[{
+    "@type": "Person",
+    "name": "夏天的小西瓜"
+  }],
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "/posts/python/python_modules_network/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "缥缈夏鸢",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "/favicon.ico"
+    }
+  }
+}
+</script>
+</head>
+
+<body class="" id="top">
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.body.classList.add('dark');
+    } else if (localStorage.getItem("pref-theme") === "light") {
+        document.body.classList.remove('dark')
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.body.classList.add('dark');
+    }
+
+</script>
+
+<header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="/" accesskey="h" title="缥缈夏鸢 (Alt + H)">缥缈夏鸢</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" accesskey="t" title="(Alt + T)">
+                    <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu">
+            <li>
+                <a href="/" title="首页">
+                    <span>首页</span>
+                </a>
+            </li>
+            <li>
+                <a href="/posts/" title="文章">
+                    <span>文章</span>
+                </a>
+            </li>
+            <li>
+                <a href="/categories/" title="分类">
+                    <span>分类</span>
+                </a>
+            </li>
+            <li>
+                <a href="/tags/" title="标签">
+                    <span>标签</span>
+                </a>
+            </li>
+            <li>
+                <a href="/archives/" title="归档">
+                    <span>归档</span>
+                </a>
+            </li>
+            <li>
+                <a href="/search/" title="搜索">
+                    <span>搜索</span>
+                </a>
+            </li>
+            <li>
+                <a href="/about/" title="关于">
+                    <span>关于</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <div class="breadcrumbs"><a href="/">Home</a>&nbsp;»&nbsp;<a href="/posts/">Posts</a></div>
+    <h1 class="post-title entry-hint-parent">
+      Python常用模块与网络请求
+    </h1>
+    <div class="post-meta"><span title='2026-04-12 23:14:08 +0800 CST'>April 12, 2026</span>&nbsp;·&nbsp;3 min&nbsp;·&nbsp;468 words&nbsp;·&nbsp;夏天的小西瓜
+
+</div>
+  </header> <aside id="toc-container" class="toc-container wide">
+    <div class="toc">
+        <details  open>
+            <summary accesskey="c" title="(Alt + C)">
+                <span class="details">Table of Contents</span>
+            </summary>
+
+            <div class="inner"><ul>
+                    <li>
+                        <a href="#%e6%a8%a1%e5%9d%97%e5%af%bc%e5%85%a5" aria-label="模块导入">模块导入</a><ul>
+                            
+                    <li>
+                        <a href="#1-%e5%90%8c%e7%9b%ae%e5%bd%95%e4%b8%8b%e5%af%bc%e5%85%a5%e6%95%b4%e4%b8%aa%e6%a8%a1%e5%9d%97" aria-label="1. 同目录下导入整个模块">1. 同目录下导入整个模块</a></li>
+                    <li>
+                        <a href="#2-%e5%90%8c%e7%9b%ae%e5%bd%95%e4%b8%8b%e5%af%bc%e5%85%a5%e6%8c%87%e5%ae%9a%e5%86%85%e5%ae%b9" aria-label="2. 同目录下导入指定内容">2. 同目录下导入指定内容</a></li>
+                    <li>
+                        <a href="#3-%e5%8c%85%e5%86%85%e5%af%bc%e5%85%a5" aria-label="3. 包内导入">3. 包内导入</a></li>
+                    <li>
+                        <a href="#4-%e7%9b%b8%e5%af%b9%e5%af%bc%e5%85%a5" aria-label="4. 相对导入">4. 相对导入</a></li></ul>
+                    </li>
+                    <li>
+                        <a href="#%e5%b8%b8%e7%94%a8%e6%a0%87%e5%87%86%e5%ba%93" aria-label="常用标准库">常用标准库</a><ul>
+                            
+                    <li>
+                        <a href="#1-os" aria-label="1. os">1. os</a></li>
+                    <li>
+                        <a href="#2-pathlib" aria-label="2. pathlib">2. pathlib</a></li>
+                    <li>
+                        <a href="#3-json" aria-label="3. json">3. json</a></li>
+                    <li>
+                        <a href="#4-random" aria-label="4. random">4. random</a></li>
+                    <li>
+                        <a href="#5-datetime" aria-label="5. datetime">5. datetime</a></li>
+                    <li>
+                        <a href="#6-subprocess" aria-label="6. subprocess">6. subprocess</a></li></ul>
+                    </li>
+                    <li>
+                        <a href="#%e5%b8%b8%e8%a7%81%e7%bd%91%e7%bb%9c%e5%ba%93" aria-label="常见网络库">常见网络库</a><ul>
+                            
+                    <li>
+                        <a href="#1-requests" aria-label="1. requests">1. requests</a></li>
+                    <li>
+                        <a href="#2-urllib" aria-label="2. urllib">2. urllib</a></li></ul>
+                    </li>
+                    <li>
+                        <a href="#%e5%b0%8f%e7%bb%93" aria-label="小结">小结</a>
+                    </li>
+                </ul>
+            </div>
+        </details>
+    </div>
+</aside>
+<script>
+    let activeElement;
+    let elements;
+    window.addEventListener('DOMContentLoaded', function (event) {
+        checkTocPosition();
+
+        elements = document.querySelectorAll('h1[id],h2[id],h3[id],h4[id],h5[id],h6[id]');
+         
+         activeElement = elements[0];
+         const id = encodeURI(activeElement.getAttribute('id')).toLowerCase();
+         document.querySelector(`.inner ul li a[href="#${id}"]`).classList.add('active');
+     }, false);
+
+    window.addEventListener('resize', function(event) {
+        checkTocPosition();
+    }, false);
+
+    window.addEventListener('scroll', () => {
+        
+        activeElement = Array.from(elements).find((element) => {
+            if ((getOffsetTop(element) - window.pageYOffset) > 0 && 
+                (getOffsetTop(element) - window.pageYOffset) < window.innerHeight/2) {
+                return element;
+            }
+        }) || activeElement
+
+        elements.forEach(element => {
+             const id = encodeURI(element.getAttribute('id')).toLowerCase();
+             if (element === activeElement){
+                 document.querySelector(`.inner ul li a[href="#${id}"]`).classList.add('active');
+             } else {
+                 document.querySelector(`.inner ul li a[href="#${id}"]`).classList.remove('active');
+             }
+         })
+     }, false);
+
+    const main = parseInt(getComputedStyle(document.body).getPropertyValue('--article-width'), 10);
+    const toc = parseInt(getComputedStyle(document.body).getPropertyValue('--toc-width'), 10);
+    const gap = parseInt(getComputedStyle(document.body).getPropertyValue('--gap'), 10);
+
+    function checkTocPosition() {
+        const width = document.body.scrollWidth;
+
+        if (width - main - (toc * 2) - (gap * 4) > 0) {
+            document.getElementById("toc-container").classList.add("wide");
+        } else {
+            document.getElementById("toc-container").classList.remove("wide");
+        }
+    }
+
+    function getOffsetTop(element) {
+        if (!element.getClientRects().length) {
+            return 0;
+        }
+        let rect = element.getBoundingClientRect();
+        let win = element.ownerDocument.defaultView;
+        return rect.top + win.pageYOffset;   
+    }
+</script>
+
+  <div class="post-content"><p>这篇文章主要整理 Python 里常见的模块导入方式、日常脚本开发中经常会用到的标准库，以及常见网络库的基础用法。</p>
+<h2 id="模块导入">模块导入<a hidden class="anchor" aria-hidden="true" href="#模块导入">#</a></h2>
+<p>Python 代码通常会拆到不同文件中，拆分后的代码会通过导入来组织和复用。</p>
+<h3 id="1-同目录下导入整个模块">1. 同目录下导入整个模块<a hidden class="anchor" aria-hidden="true" href="#1-同目录下导入整个模块">#</a></h3>
+<p>假设有一个 <code>tools.py</code> 文件：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="c1"># 定义一个简单函数</span>
+</span></span><span class="line"><span class="cl"><span class="k">def</span> <span class="nf">add</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="n">a</span> <span class="o">+</span> <span class="n">b</span>
+</span></span></code></pre></div><p>在另一个文件中这样使用：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="c1"># 导入整个 tools 模块</span>
+</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">tools</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 通过 模块名.函数名 调用</span>
+</span></span><span class="line"><span class="cl"><span class="nb">print</span><span class="p">(</span><span class="n">tools</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+</span></span></code></pre></div><p>这种写法比较直接，适合区分“函数来自哪个模块”。</p>
+<h3 id="2-同目录下导入指定内容">2. 同目录下导入指定内容<a hidden class="anchor" aria-hidden="true" href="#2-同目录下导入指定内容">#</a></h3>
+<p>也可以只导入需要的函数：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="c1"># 只导入 add 函数</span>
+</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">tools</span> <span class="kn">import</span> <span class="n">add</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 直接调用函数名</span>
+</span></span><span class="line"><span class="cl"><span class="nb">print</span><span class="p">(</span><span class="n">add</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+</span></span></code></pre></div><p>这种写法更简洁，但项目变大后，如果导入太多同名函数，代码可读性会差一点。</p>
+<h3 id="3-包内导入">3. 包内导入<a hidden class="anchor" aria-hidden="true" href="#3-包内导入">#</a></h3>
+<p>当代码放进目录结构里时，通常会按包来导入。</p>
+<p>例如目录结构：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="cl">project/
+</span></span><span class="line"><span class="cl">  app/
+</span></span><span class="line"><span class="cl">    main.py
+</span></span><span class="line"><span class="cl">    utils.py
+</span></span></code></pre></div><p><code>main.py</code> 中可以这样写：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="c1"># 从 app 包中的 utils 模块导入 add</span>
+</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">app.utils</span> <span class="kn">import</span> <span class="n">add</span>
+</span></span></code></pre></div><p>这种写法更适合项目代码。模块不在当前文件同目录下时，也优先通过包路径导入，而不是手动改 <code>sys.path</code>。只有在临时脚本场景下，才会看到 <code>sys.path</code> 相关写法，但这类方式不适合作为常规项目结构。</p>
+<h3 id="4-相对导入">4. 相对导入<a hidden class="anchor" aria-hidden="true" href="#4-相对导入">#</a></h3>
+<p>在包内部，也会看到相对导入写法。</p>
+<p>例如：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="c1"># 从当前包中的 utils 模块导入 add</span>
+</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">.utils</span> <span class="kn">import</span> <span class="n">add</span>
+</span></span></code></pre></div><p>这种写法常见于包内部模块互相引用，但前提是代码本身运行在包结构里，而不是直接把单个文件当脚本执行。</p>
+<p>导入失败的常见原因通常包括：工作目录不对、包路径不正确、直接运行单个文件导致相对导入失效。</p>
+<h2 id="常用标准库">常用标准库<a hidden class="anchor" aria-hidden="true" href="#常用标准库">#</a></h2>
+<p>Python 自带很多标准库，日常脚本里常见的有下面几类：</p>
+<table>
+  <thead>
+      <tr>
+          <th>模块</th>
+          <th>说明</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>os</code></td>
+          <td>获取系统信息、环境变量、当前工作目录</td>
+      </tr>
+      <tr>
+          <td><code>pathlib</code></td>
+          <td>处理文件和目录路径</td>
+      </tr>
+      <tr>
+          <td><code>json</code></td>
+          <td>处理 JSON 字符串与 Python 对象转换</td>
+      </tr>
+      <tr>
+          <td><code>random</code></td>
+          <td>生成随机数和随机选择</td>
+      </tr>
+      <tr>
+          <td><code>datetime</code></td>
+          <td>获取时间和格式化时间</td>
+      </tr>
+      <tr>
+          <td><code>subprocess</code></td>
+          <td>在脚本里执行系统命令</td>
+      </tr>
+  </tbody>
+</table>
+<h3 id="1-os">1. os<a hidden class="anchor" aria-hidden="true" href="#1-os">#</a></h3>
+<p>适合获取环境变量、当前目录等系统信息。</p>
+<p>常见方法：</p>
+<ul>
+<li><code>os.getcwd()</code>：获取当前工作目录，返回 <code>str</code></li>
+<li><code>os.environ.get(&quot;HOME&quot;)</code>：获取环境变量，返回 <code>str</code> 或 <code>None</code></li>
+</ul>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">os</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 获取当前工作目录</span>
+</span></span><span class="line"><span class="cl"><span class="nb">print</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">())</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 获取环境变量，不存在时返回 None</span>
+</span></span><span class="line"><span class="cl"><span class="nb">print</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&#34;HOME&#34;</span><span class="p">))</span>
+</span></span></code></pre></div><h3 id="2-pathlib">2. pathlib<a hidden class="anchor" aria-hidden="true" href="#2-pathlib">#</a></h3>
+<p>适合处理文件路径，写法比字符串拼接更稳妥。</p>
+<p>常见方法：</p>
+<ul>
+<li><code>Path(&quot;data&quot;)</code>：创建路径对象，返回 <code>Path</code></li>
+<li><code>path.exists()</code>：判断路径是否存在，返回 <code>bool</code></li>
+</ul>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 拼接路径对象</span>
+</span></span><span class="line"><span class="cl"><span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&#34;data&#34;</span><span class="p">)</span> <span class="o">/</span> <span class="s2">&#34;users.json&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># 查看路径是否存在</span>
+</span></span><span class="line"><span class="cl"><span class="nb">print</span><span class="p">(</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">())</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># 输出路径字符串表现</span>
+</span></span><span class="line"><span class="cl"><span class="nb">print</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+</span></span></code></pre></div><h3 id="3-json">3. json<a hidden class="anchor" aria-hidden="true" href="#3-json">#</a></h3>
+<p>适合处理接口返回值、本地配置文件、导出的结构化数据。</p>
+<p>常见方法：</p>
+<ul>
+<li><code>json.dumps(obj)</code>：对象转 JSON 字符串，返回 <code>str</code></li>
+<li><code>json.loads(text)</code>：JSON 字符串转 Python 对象，通常返回 <code>dict</code> 或 <code>list</code></li>
+</ul>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">json</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;Tom&#34;</span><span class="p">,</span> <span class="s2">&#34;age&#34;</span><span class="p">:</span> <span class="mi">18</span><span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># 对象转 JSON 字符串</span>
+</span></span><span class="line"><span class="cl"><span class="n">text</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">ensure_ascii</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># JSON 字符串转回对象</span>
+</span></span><span class="line"><span class="cl"><span class="n">obj</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="nb">print</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+</span></span></code></pre></div><p>日常处理接口返回值时，如果 <code>json.loads()</code> 的结果是 <code>dict</code>，更推荐优先使用 <code>get()</code> 取值：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">json</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">text</span> <span class="o">=</span> <span class="s1">&#39;{&#34;name&#34;: &#34;Tom&#34;}&#39;</span>
+</span></span><span class="line"><span class="cl"><span class="n">obj</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="nb">print</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&#34;name&#34;</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl"><span class="nb">print</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&#34;city&#34;</span><span class="p">))</span>
+</span></span></code></pre></div><p><code>obj[&quot;name&quot;]</code> 在字段不存在时会抛出 <code>KeyError</code>，<code>obj.get(&quot;name&quot;)</code> 则会返回 <code>None</code>。如果后续代码依赖字段类型，再补充 <code>isinstance()</code> 判断即可。</p>
+<h3 id="4-random">4. random<a hidden class="anchor" aria-hidden="true" href="#4-random">#</a></h3>
+<p>适合生成测试数据或随机结果。</p>
+<p>常见方法：</p>
+<ul>
+<li><code>random.randint(1, 10)</code>：生成区间内随机整数，返回 <code>int</code></li>
+<li><code>random.choice(seq)</code>：从序列中随机取一个元素，返回对应元素</li>
+</ul>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">random</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 生成 1 到 10 之间的随机整数</span>
+</span></span><span class="line"><span class="cl"><span class="nb">print</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">10</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 从列表里随机取一个值</span>
+</span></span><span class="line"><span class="cl"><span class="nb">print</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">([</span><span class="s2">&#34;Tom&#34;</span><span class="p">,</span> <span class="s2">&#34;Jerry&#34;</span><span class="p">,</span> <span class="s2">&#34;Alice&#34;</span><span class="p">]))</span>
+</span></span></code></pre></div><h3 id="5-datetime">5. datetime<a hidden class="anchor" aria-hidden="true" href="#5-datetime">#</a></h3>
+<p>适合处理时间格式化和时间计算。</p>
+<p>常见方法：</p>
+<ul>
+<li><code>datetime.now()</code>：获取当前时间，返回 <code>datetime</code></li>
+<li><code>strftime(&quot;%Y-%m-%d&quot;)</code>：格式化时间，返回 <code>str</code></li>
+</ul>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 按指定格式输出当前时间</span>
+</span></span><span class="line"><span class="cl"><span class="nb">print</span><span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&#34;%Y-%m-</span><span class="si">%d</span><span class="s2">&#34;</span><span class="p">))</span>
+</span></span></code></pre></div><h3 id="6-subprocess">6. subprocess<a hidden class="anchor" aria-hidden="true" href="#6-subprocess">#</a></h3>
+<p>适合在 Python 脚本里执行系统命令。</p>
+<p>常见方法：</p>
+<ul>
+<li><code>subprocess.run(...)</code>：执行命令，返回 <code>CompletedProcess</code></li>
+<li><code>result.stdout</code>：读取标准输出，返回 <code>str</code></li>
+</ul>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">subprocess</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 执行命令并获取输出</span>
+</span></span><span class="line"><span class="cl"><span class="n">result</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">([</span><span class="s2">&#34;pwd&#34;</span><span class="p">],</span> <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">stdout</span><span class="p">)</span>
+</span></span></code></pre></div><h2 id="常见网络库">常见网络库<a hidden class="anchor" aria-hidden="true" href="#常见网络库">#</a></h2>
+<p>网络请求也是模块使用里很常见的一类场景。</p>
+<p>除了标准库，日常开发里最常见的网络请求方案通常是 <code>requests</code> 和 <code>urllib</code>。</p>
+<table>
+  <thead>
+      <tr>
+          <th>库</th>
+          <th>说明</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>requests</code></td>
+          <td>最常见的 HTTP 请求库，适合调用接口</td>
+      </tr>
+      <tr>
+          <td><code>urllib</code></td>
+          <td>Python 标准库里的网络请求工具，功能基础但够用</td>
+      </tr>
+  </tbody>
+</table>
+<h3 id="1-requests">1. requests<a hidden class="anchor" aria-hidden="true" href="#1-requests">#</a></h3>
+<p><code>requests</code> 是最常见的第三方网络库，写法直接，适合大多数接口调用场景。</p>
+<p>常见方法：</p>
+<ul>
+<li><code>requests.get(url)</code>：发送 GET 请求</li>
+<li><code>requests.post(url, json=data)</code>：发送 POST 请求</li>
+<li><code>response.json()</code>：把响应内容转成 Python 对象，通常是 <code>dict</code> 或 <code>list</code></li>
+</ul>
+<p>返回 JSON 时通常使用 <code>response.json()</code>，返回普通文本时则更常用 <code>response.text</code>。</p>
+<p>GET 请求示例：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">requests</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 发送 GET 请求，并设置 5 秒超时</span>
+</span></span><span class="line"><span class="cl"><span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&#34;https://example.com/api/users&#34;</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 把响应内容转成 Python 对象</span>
+</span></span><span class="line"><span class="cl"><span class="n">data</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl"><span class="nb">print</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+</span></span></code></pre></div><p>实际使用时，通常还会关注 <code>response.status_code</code>，或者直接调用 <code>response.raise_for_status()</code> 判断请求是否成功。</p>
+<p>POST 请求示例：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">requests</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">payload</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;Tom&#34;</span><span class="p">,</span> <span class="s2">&#34;age&#34;</span><span class="p">:</span> <span class="mi">18</span><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 发送 POST 请求，并以 JSON 形式传参</span>
+</span></span><span class="line"><span class="cl"><span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;https://example.com/api/users&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">json</span><span class="o">=</span><span class="n">payload</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">timeout</span><span class="o">=</span><span class="mi">5</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="nb">print</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">())</span>
+</span></span></code></pre></div><p>基础错误处理示例：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">requests</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">try</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">    <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&#34;https://example.com/api/users&#34;</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="n">response</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">    <span class="nb">print</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">())</span>
+</span></span><span class="line"><span class="cl"><span class="k">except</span> <span class="n">requests</span><span class="o">.</span><span class="n">RequestException</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;request failed: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
+</span></span></code></pre></div><h3 id="2-urllib">2. urllib<a hidden class="anchor" aria-hidden="true" href="#2-urllib">#</a></h3>
+<p><code>urllib</code> 是标准库自带的网络请求工具，不安装第三方包时可以直接使用。</p>
+<p>GET 请求示例：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">urllib</span> <span class="kn">import</span> <span class="n">request</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 发送请求并设置 5 秒超时</span>
+</span></span><span class="line"><span class="cl"><span class="k">with</span> <span class="n">request</span><span class="o">.</span><span class="n">urlopen</span><span class="p">(</span><span class="s2">&#34;https://example.com&#34;</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span> <span class="k">as</span> <span class="n">resp</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">    <span class="n">text</span> <span class="o">=</span> <span class="n">resp</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&#34;utf-8&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="nb">print</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+</span></span></code></pre></div><p><code>urllib</code> 请求失败时通常会直接抛异常，所以更适合基础场景或不想额外安装第三方库时使用。</p>
+<p>POST 请求示例：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">urllib</span> <span class="kn">import</span> <span class="n">request</span>
+</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">json</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">payload</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;Tom&#34;</span><span class="p">,</span> <span class="s2">&#34;age&#34;</span><span class="p">:</span> <span class="mi">18</span><span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">payload</span><span class="p">)</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&#34;utf-8&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 构造 POST 请求</span>
+</span></span><span class="line"><span class="cl"><span class="n">req</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">Request</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;https://example.com/api/users&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">headers</span><span class="o">=</span><span class="p">{</span><span class="s2">&#34;Content-Type&#34;</span><span class="p">:</span> <span class="s2">&#34;application/json&#34;</span><span class="p">},</span>
+</span></span><span class="line"><span class="cl">    <span class="n">method</span><span class="o">=</span><span class="s2">&#34;POST&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">with</span> <span class="n">request</span><span class="o">.</span><span class="n">urlopen</span><span class="p">(</span><span class="n">req</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span> <span class="k">as</span> <span class="n">resp</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">    <span class="n">text</span> <span class="o">=</span> <span class="n">resp</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&#34;utf-8&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="nb">print</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+</span></span></code></pre></div><p>基础错误处理示例：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">urllib</span> <span class="kn">import</span> <span class="n">request</span><span class="p">,</span> <span class="n">error</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">try</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">    <span class="k">with</span> <span class="n">request</span><span class="o">.</span><span class="n">urlopen</span><span class="p">(</span><span class="s2">&#34;https://example.com&#34;</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span> <span class="k">as</span> <span class="n">resp</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">        <span class="nb">print</span><span class="p">(</span><span class="n">resp</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&#34;utf-8&#34;</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl"><span class="k">except</span> <span class="n">error</span><span class="o">.</span><span class="n">URLError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;request failed: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
+</span></span></code></pre></div><h2 id="小结">小结<a hidden class="anchor" aria-hidden="true" href="#小结">#</a></h2>
+<p>把模块导入方式、常用标准库和基础网络请求串起来，写日常 Python 脚本时会更顺手。</p>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="/tags/python/">Python</a></li>
+    </ul>
+<nav class="paginav">
+  <a class="prev" href="/posts/python/python_async_review/">
+    <span class="title">« Prev</span>
+    <br>
+    <span>Python异步回顾</span>
+  </a>
+  <a class="next" href="/posts/python/python_setup/">
+    <span class="title">Next »</span>
+    <br>
+    <span>Python环境设置</span>
+  </a>
+</nav>
+
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2026 <a href="/">缥缈夏鸢</a></span> · 
+
+    <span>
+        Powered by
+        <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+        <path d="M12 6H0l6-6z" />
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu')
+    if (menu) {
+        menu.scrollLeft = localStorage.getItem("menu-scroll-position");
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        if (document.body.className.includes("dark")) {
+            document.body.classList.remove('dark');
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            document.body.classList.add('dark');
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerHTML = 'copy';
+
+        function copyingDone() {
+            copybutton.innerHTML = 'copied!';
+            setTimeout(() => {
+                copybutton.innerHTML = 'copy';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+</body>
+
+</html>

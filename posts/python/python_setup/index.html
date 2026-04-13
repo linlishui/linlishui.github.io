@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>Python环境设置 | 缥缈夏鸢</title>
+<meta name="keywords" content="Python">
+<meta name="description" content="这篇文章主要整理 Python 环境相关的常用概念和配置方式，包括 python 与 python3、pip 与 pip3、虚拟环境 venv、以及安装独立工具时常见的 pipx。
+Python、python3、pip 与 pip3
+在日常使用里，这几个命令很容易混淆：
+
+python：启动 Python 解释器
+python3：明确使用 Python 3 解释器
+pip：Python 包管理工具
+pip3：通常表示给 Python 3 安装包
+
+更实用的理解方式是：python3 和 pip3 往往是一组，尽量配套使用。
+例如：
+# 查看 Python 3 版本
+python3 --version
+# 查看 pip3 对应的版本与安装位置
+pip3 --version
+如果机器上同时存在多个 Python 版本，优先使用 python3 和 pip3，歧义更少。
+1. 怎么确认当前命令对应的是哪个环境
+环境问题里最常见的坑，不是命令不会用，而是命令实际指向的解释器和包安装位置不一致。
+常见检查方式：
+# 查看 python3 的实际路径
+which python3
+
+# 查看 pip3 的实际路径
+which pip3
+
+# 查看 pip3 安装到了哪个 Python 环境
+pip3 --version
+如果 python3 和 pip3 指向的环境不一致，安装完包后就可能出现“命令执行了，但代码里还是导入失败”的问题。">
+<meta name="author" content="夏天的小西瓜">
+<link rel="canonical" href="/posts/python/python_setup/">
+<meta name="google-site-verification" content="XYZabc">
+<meta name="msvalidate.01" content="XYZabc">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.44278f16c6e7e77192a15a0565fb5b0f220c56128442fcfa6937b4d84456ecf0.css" integrity="sha256-RCePFsbn53GSoVoFZftbDyIMVhKEQvz6aTe02ERW7PA=" rel="preload stylesheet" as="style">
+<link rel="icon" href="/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="mask-icon" href="/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="en" href="/posts/python/python_setup/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-track {
+                background: 0 0;
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-thumb {
+                border-color: var(--theme);
+            }
+        }
+
+    </style>
+</noscript><script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+<script>
+
+const config = {
+    startOnLoad:true,
+    
+    themeVariables: {
+        lineColor: "#ffffff"    
+    },
+    flowchart: {
+        useMaxWidth:false,
+        htmlLabels:true
+    }
+};
+mermaid.initialize(config);
+
+
+window.onload = () => {
+    window.mermaid.init(undefined, document.querySelectorAll('.language-mermaid'));
+}
+</script><meta property="og:url" content="/posts/python/python_setup/">
+  <meta property="og:site_name" content="缥缈夏鸢">
+  <meta property="og:title" content="Python环境设置">
+  <meta property="og:description" content="这篇文章主要整理 Python 环境相关的常用概念和配置方式，包括 python 与 python3、pip 与 pip3、虚拟环境 venv、以及安装独立工具时常见的 pipx。
+Python、python3、pip 与 pip3 在日常使用里，这几个命令很容易混淆：
+python：启动 Python 解释器 python3：明确使用 Python 3 解释器 pip：Python 包管理工具 pip3：通常表示给 Python 3 安装包 更实用的理解方式是：python3 和 pip3 往往是一组，尽量配套使用。
+例如：
+# 查看 Python 3 版本 python3 --version # 查看 pip3 对应的版本与安装位置 pip3 --version 如果机器上同时存在多个 Python 版本，优先使用 python3 和 pip3，歧义更少。
+1. 怎么确认当前命令对应的是哪个环境 环境问题里最常见的坑，不是命令不会用，而是命令实际指向的解释器和包安装位置不一致。
+常见检查方式：
+# 查看 python3 的实际路径 which python3 # 查看 pip3 的实际路径 which pip3 # 查看 pip3 安装到了哪个 Python 环境 pip3 --version 如果 python3 和 pip3 指向的环境不一致，安装完包后就可能出现“命令执行了，但代码里还是导入失败”的问题。">
+  <meta property="og:locale" content="en-us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2026-04-12T23:14:08+08:00">
+    <meta property="article:modified_time" content="2026-04-12T23:14:08+08:00">
+    <meta property="article:tag" content="Python">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Python环境设置">
+<meta name="twitter:description" content="这篇文章主要整理 Python 环境相关的常用概念和配置方式，包括 python 与 python3、pip 与 pip3、虚拟环境 venv、以及安装独立工具时常见的 pipx。
+Python、python3、pip 与 pip3
+在日常使用里，这几个命令很容易混淆：
+
+python：启动 Python 解释器
+python3：明确使用 Python 3 解释器
+pip：Python 包管理工具
+pip3：通常表示给 Python 3 安装包
+
+更实用的理解方式是：python3 和 pip3 往往是一组，尽量配套使用。
+例如：
+# 查看 Python 3 版本
+python3 --version
+# 查看 pip3 对应的版本与安装位置
+pip3 --version
+如果机器上同时存在多个 Python 版本，优先使用 python3 和 pip3，歧义更少。
+1. 怎么确认当前命令对应的是哪个环境
+环境问题里最常见的坑，不是命令不会用，而是命令实际指向的解释器和包安装位置不一致。
+常见检查方式：
+# 查看 python3 的实际路径
+which python3
+
+# 查看 pip3 的实际路径
+which pip3
+
+# 查看 pip3 安装到了哪个 Python 环境
+pip3 --version
+如果 python3 和 pip3 指向的环境不一致，安装完包后就可能出现“命令执行了，但代码里还是导入失败”的问题。">
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Posts",
+      "item": "/posts/"
+    }
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Python环境设置",
+      "item": "/posts/python/python_setup/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Python环境设置",
+  "name": "Python环境设置",
+  "description": "这篇文章主要整理 Python 环境相关的常用概念和配置方式，包括 python 与 python3、pip 与 pip3、虚拟环境 venv、以及安装独立工具时常见的 pipx。\nPython、python3、pip 与 pip3 在日常使用里，这几个命令很容易混淆：\npython：启动 Python 解释器 python3：明确使用 Python 3 解释器 pip：Python 包管理工具 pip3：通常表示给 Python 3 安装包 更实用的理解方式是：python3 和 pip3 往往是一组，尽量配套使用。\n例如：\n# 查看 Python 3 版本 python3 --version # 查看 pip3 对应的版本与安装位置 pip3 --version 如果机器上同时存在多个 Python 版本，优先使用 python3 和 pip3，歧义更少。\n1. 怎么确认当前命令对应的是哪个环境 环境问题里最常见的坑，不是命令不会用，而是命令实际指向的解释器和包安装位置不一致。\n常见检查方式：\n# 查看 python3 的实际路径 which python3 # 查看 pip3 的实际路径 which pip3 # 查看 pip3 安装到了哪个 Python 环境 pip3 --version 如果 python3 和 pip3 指向的环境不一致，安装完包后就可能出现“命令执行了，但代码里还是导入失败”的问题。\n",
+  "keywords": [
+    "Python"
+  ],
+  "articleBody": "这篇文章主要整理 Python 环境相关的常用概念和配置方式，包括 python 与 python3、pip 与 pip3、虚拟环境 venv、以及安装独立工具时常见的 pipx。\nPython、python3、pip 与 pip3 在日常使用里，这几个命令很容易混淆：\npython：启动 Python 解释器 python3：明确使用 Python 3 解释器 pip：Python 包管理工具 pip3：通常表示给 Python 3 安装包 更实用的理解方式是：python3 和 pip3 往往是一组，尽量配套使用。\n例如：\n# 查看 Python 3 版本 python3 --version # 查看 pip3 对应的版本与安装位置 pip3 --version 如果机器上同时存在多个 Python 版本，优先使用 python3 和 pip3，歧义更少。\n1. 怎么确认当前命令对应的是哪个环境 环境问题里最常见的坑，不是命令不会用，而是命令实际指向的解释器和包安装位置不一致。\n常见检查方式：\n# 查看 python3 的实际路径 which python3 # 查看 pip3 的实际路径 which pip3 # 查看 pip3 安装到了哪个 Python 环境 pip3 --version 如果 python3 和 pip3 指向的环境不一致，安装完包后就可能出现“命令执行了，但代码里还是导入失败”的问题。\npip3 与 pipx 在 Python 中，pip 是 Python Package Installer（Python 包安装器）的缩写，是 Python 生态中最重要的工具之一，用于安装、升级、卸载和管理第三方库（包）。\n本文后续命令统一使用 pip3。\n1. pip3 常用命令：\npip3 list：查看已安装的包\npip3 show 包名：查看包详情\npip3 freeze \u003e requirements.txt：导出当前环境的所有包\npip3 install 包名：安装第三方库\npip3 install requests # 安装 requests 库 pip3 install numpy==1.24.0 # 安装指定版本 pip3 install -r requirements.txt # 批量安装指定包 pip3 install --upgrade 包名：升级包\npip3 install --upgrade pip # 升级 pip 自身 pip3 install --upgrade requests pip3 uninstall 包名：卸载包\n更稳妥的习惯是：只在当前虚拟环境里执行 pip3 install，尽量不要直接往全局环境里装项目依赖。\n在高版本python3上，使用pip3安装包会报错 “externally-managed-environment” ，具体信息可查阅pep-0668。\n此时更推荐使用虚拟环境安装包。\n虚拟环境 虚拟环境用于隔离项目依赖，避免不同项目之间的包版本互相影响。日常开发里，只要项目需要安装第三方包，通常就应该先创建虚拟环境。\n最常见的做法是使用 venv：\n# 创建虚拟环境 python3 -m venv .venv # 激活虚拟环境 source .venv/bin/activate # Linux/macOS # 在虚拟环境中安装包 pip3 install 包名 使用完毕后，可通过 deactivate 退出虚拟环境。\n如果只是临时运行一个独立项目，venv 通常已经够用了。\n常见的日常流程通常是：\n# 1. 创建虚拟环境 python3 -m venv .venv # 2. 激活虚拟环境 source .venv/bin/activate # 3. 安装依赖 pip3 install requests # 4. 导出依赖 pip3 freeze \u003e requirements.txt # 5. 退出虚拟环境 deactivate 如果只是运行已有项目，通常还会先执行：\npip3 install -r requirements.txt 激活后，通常可以通过下面两种方式确认当前已经进入虚拟环境：\n# 查看当前 python3 是否指向 .venv which python3 # 查看当前 pip3 是否指向 .venv which pip3 很多终端提示符前面也会出现类似 (.venv) 的前缀。\n1. venv 与 pip3 的关系 可以把 venv 理解成“创建隔离环境”，把 pip3 理解成“在当前环境里安装包”。\n也就是说：\nvenv 负责隔离环境 pip3 负责往这个环境里装依赖 两者通常是配套使用的。\n2. pipx pipx 适合安装独立的 Python 命令行工具，它会为每个工具创建单独的虚拟环境，避免把工具直接装到全局环境里。\n常见场景包括：\n安装格式化工具，例如 black 安装命令行工具，例如 httpie 安装项目管理工具，例如 poetry 可以简单这样区分：\n项目依赖，用 venv + pip3 独立命令行工具，用 pipx 下面以 macOS 为例进行配置：\n# 安装pipx，会触发一系列依赖安装 brew install pipx # 将其添加到 PATH 中 pipx ensurepath 安装工具的例子：\n# 安装代码格式化工具 pipx install black # 安装命令行 HTTP 工具 pipx install httpie 附录 Python 官方参考文档 venv 官方文档 Search results · PyPI ",
+  "wordCount" : "305",
+  "inLanguage": "en",
+  "datePublished": "2026-04-12T23:14:08+08:00",
+  "dateModified": "2026-04-12T23:14:08+08:00",
+  "author":[{
+    "@type": "Person",
+    "name": "夏天的小西瓜"
+  }],
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "/posts/python/python_setup/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "缥缈夏鸢",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "/favicon.ico"
+    }
+  }
+}
+</script>
+</head>
+
+<body class="" id="top">
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.body.classList.add('dark');
+    } else if (localStorage.getItem("pref-theme") === "light") {
+        document.body.classList.remove('dark')
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.body.classList.add('dark');
+    }
+
+</script>
+
+<header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="/" accesskey="h" title="缥缈夏鸢 (Alt + H)">缥缈夏鸢</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" accesskey="t" title="(Alt + T)">
+                    <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu">
+            <li>
+                <a href="/" title="首页">
+                    <span>首页</span>
+                </a>
+            </li>
+            <li>
+                <a href="/posts/" title="文章">
+                    <span>文章</span>
+                </a>
+            </li>
+            <li>
+                <a href="/categories/" title="分类">
+                    <span>分类</span>
+                </a>
+            </li>
+            <li>
+                <a href="/tags/" title="标签">
+                    <span>标签</span>
+                </a>
+            </li>
+            <li>
+                <a href="/archives/" title="归档">
+                    <span>归档</span>
+                </a>
+            </li>
+            <li>
+                <a href="/search/" title="搜索">
+                    <span>搜索</span>
+                </a>
+            </li>
+            <li>
+                <a href="/about/" title="关于">
+                    <span>关于</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <div class="breadcrumbs"><a href="/">Home</a>&nbsp;»&nbsp;<a href="/posts/">Posts</a></div>
+    <h1 class="post-title entry-hint-parent">
+      Python环境设置
+    </h1>
+    <div class="post-meta"><span title='2026-04-12 23:14:08 +0800 CST'>April 12, 2026</span>&nbsp;·&nbsp;2 min&nbsp;·&nbsp;305 words&nbsp;·&nbsp;夏天的小西瓜
+
+</div>
+  </header> <aside id="toc-container" class="toc-container wide">
+    <div class="toc">
+        <details  open>
+            <summary accesskey="c" title="(Alt + C)">
+                <span class="details">Table of Contents</span>
+            </summary>
+
+            <div class="inner"><ul>
+                    <li>
+                        <a href="#pythonpython3pip-%e4%b8%8e-pip3" aria-label="Python、python3、pip 与 pip3">Python、python3、pip 与 pip3</a><ul>
+                            
+                    <li>
+                        <a href="#1-%e6%80%8e%e4%b9%88%e7%a1%ae%e8%ae%a4%e5%bd%93%e5%89%8d%e5%91%bd%e4%bb%a4%e5%af%b9%e5%ba%94%e7%9a%84%e6%98%af%e5%93%aa%e4%b8%aa%e7%8e%af%e5%a2%83" aria-label="1. 怎么确认当前命令对应的是哪个环境">1. 怎么确认当前命令对应的是哪个环境</a></li></ul>
+                    </li>
+                    <li>
+                        <a href="#pip3-%e4%b8%8e-pipx" aria-label="pip3 与 pipx">pip3 与 pipx</a><ul>
+                            
+                    <li>
+                        <a href="#1-pip3" aria-label="1. pip3">1. pip3</a></li></ul>
+                    </li>
+                    <li>
+                        <a href="#%e8%99%9a%e6%8b%9f%e7%8e%af%e5%a2%83" aria-label="虚拟环境">虚拟环境</a><ul>
+                            
+                    <li>
+                        <a href="#1-venv-%e4%b8%8e-pip3-%e7%9a%84%e5%85%b3%e7%b3%bb" aria-label="1. venv 与 pip3 的关系">1. venv 与 pip3 的关系</a></li>
+                    <li>
+                        <a href="#2-pipx" aria-label="2. pipx">2. pipx</a></li></ul>
+                    </li>
+                    <li>
+                        <a href="#%e9%99%84%e5%bd%95" aria-label="附录">附录</a>
+                    </li>
+                </ul>
+            </div>
+        </details>
+    </div>
+</aside>
+<script>
+    let activeElement;
+    let elements;
+    window.addEventListener('DOMContentLoaded', function (event) {
+        checkTocPosition();
+
+        elements = document.querySelectorAll('h1[id],h2[id],h3[id],h4[id],h5[id],h6[id]');
+         
+         activeElement = elements[0];
+         const id = encodeURI(activeElement.getAttribute('id')).toLowerCase();
+         document.querySelector(`.inner ul li a[href="#${id}"]`).classList.add('active');
+     }, false);
+
+    window.addEventListener('resize', function(event) {
+        checkTocPosition();
+    }, false);
+
+    window.addEventListener('scroll', () => {
+        
+        activeElement = Array.from(elements).find((element) => {
+            if ((getOffsetTop(element) - window.pageYOffset) > 0 && 
+                (getOffsetTop(element) - window.pageYOffset) < window.innerHeight/2) {
+                return element;
+            }
+        }) || activeElement
+
+        elements.forEach(element => {
+             const id = encodeURI(element.getAttribute('id')).toLowerCase();
+             if (element === activeElement){
+                 document.querySelector(`.inner ul li a[href="#${id}"]`).classList.add('active');
+             } else {
+                 document.querySelector(`.inner ul li a[href="#${id}"]`).classList.remove('active');
+             }
+         })
+     }, false);
+
+    const main = parseInt(getComputedStyle(document.body).getPropertyValue('--article-width'), 10);
+    const toc = parseInt(getComputedStyle(document.body).getPropertyValue('--toc-width'), 10);
+    const gap = parseInt(getComputedStyle(document.body).getPropertyValue('--gap'), 10);
+
+    function checkTocPosition() {
+        const width = document.body.scrollWidth;
+
+        if (width - main - (toc * 2) - (gap * 4) > 0) {
+            document.getElementById("toc-container").classList.add("wide");
+        } else {
+            document.getElementById("toc-container").classList.remove("wide");
+        }
+    }
+
+    function getOffsetTop(element) {
+        if (!element.getClientRects().length) {
+            return 0;
+        }
+        let rect = element.getBoundingClientRect();
+        let win = element.ownerDocument.defaultView;
+        return rect.top + win.pageYOffset;   
+    }
+</script>
+
+  <div class="post-content"><p>这篇文章主要整理 Python 环境相关的常用概念和配置方式，包括 <code>python</code> 与 <code>python3</code>、<code>pip</code> 与 <code>pip3</code>、虚拟环境 <code>venv</code>、以及安装独立工具时常见的 <code>pipx</code>。</p>
+<h2 id="pythonpython3pip-与-pip3">Python、python3、pip 与 pip3<a hidden class="anchor" aria-hidden="true" href="#pythonpython3pip-与-pip3">#</a></h2>
+<p>在日常使用里，这几个命令很容易混淆：</p>
+<ul>
+<li><code>python</code>：启动 Python 解释器</li>
+<li><code>python3</code>：明确使用 Python 3 解释器</li>
+<li><code>pip</code>：Python 包管理工具</li>
+<li><code>pip3</code>：通常表示给 Python 3 安装包</li>
+</ul>
+<p>更实用的理解方式是：<code>python3</code> 和 <code>pip3</code> 往往是一组，尽量配套使用。</p>
+<p>例如：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl"><span class="c1"># 查看 Python 3 版本</span>
+</span></span><span class="line"><span class="cl">python3 --version
+</span></span><span class="line"><span class="cl"><span class="c1"># 查看 pip3 对应的版本与安装位置</span>
+</span></span><span class="line"><span class="cl">pip3 --version
+</span></span></code></pre></div><p>如果机器上同时存在多个 Python 版本，优先使用 <code>python3</code> 和 <code>pip3</code>，歧义更少。</p>
+<h3 id="1-怎么确认当前命令对应的是哪个环境">1. 怎么确认当前命令对应的是哪个环境<a hidden class="anchor" aria-hidden="true" href="#1-怎么确认当前命令对应的是哪个环境">#</a></h3>
+<p>环境问题里最常见的坑，不是命令不会用，而是命令实际指向的解释器和包安装位置不一致。</p>
+<p>常见检查方式：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl"><span class="c1"># 查看 python3 的实际路径</span>
+</span></span><span class="line"><span class="cl">which python3
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 查看 pip3 的实际路径</span>
+</span></span><span class="line"><span class="cl">which pip3
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 查看 pip3 安装到了哪个 Python 环境</span>
+</span></span><span class="line"><span class="cl">pip3 --version
+</span></span></code></pre></div><p>如果 <code>python3</code> 和 <code>pip3</code> 指向的环境不一致，安装完包后就可能出现“命令执行了，但代码里还是导入失败”的问题。</p>
+<h2 id="pip3-与-pipx">pip3 与 pipx<a hidden class="anchor" aria-hidden="true" href="#pip3-与-pipx">#</a></h2>
+<p>在 Python 中，<code>pip</code> 是 <strong>Python Package Installer</strong>（Python 包安装器）的缩写，是 Python 生态中最重要的工具之一，用于安装、升级、卸载和管理第三方库（包）。</p>
+<p>本文后续命令统一使用 <code>pip3</code>。</p>
+<h3 id="1-pip3">1. pip3<a hidden class="anchor" aria-hidden="true" href="#1-pip3">#</a></h3>
+<p>常用命令：</p>
+<ul>
+<li>
+<p><code>pip3 list</code>：查看已安装的包</p>
+</li>
+<li>
+<p><code>pip3 show 包名</code>：查看包详情</p>
+</li>
+<li>
+<p><code>pip3 freeze &gt; requirements.txt</code>：导出当前环境的所有包</p>
+</li>
+<li>
+<p><code>pip3 install 包名</code>：安装第三方库</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">pip3 install requests   <span class="c1"># 安装 requests 库</span>
+</span></span><span class="line"><span class="cl">pip3 install <span class="nv">numpy</span><span class="o">==</span>1.24.0  <span class="c1"># 安装指定版本</span>
+</span></span><span class="line"><span class="cl">pip3 install -r requirements.txt  <span class="c1"># 批量安装指定包</span>
+</span></span></code></pre></div></li>
+<li>
+<p><code>pip3 install --upgrade 包名</code>：升级包</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">pip3 install --upgrade pip  <span class="c1"># 升级 pip 自身</span>
+</span></span><span class="line"><span class="cl">pip3 install --upgrade requests
+</span></span></code></pre></div></li>
+<li>
+<p><code>pip3 uninstall 包名</code>：卸载包</p>
+</li>
+</ul>
+<p>更稳妥的习惯是：只在当前虚拟环境里执行 <code>pip3 install</code>，尽量不要直接往全局环境里装项目依赖。</p>
+<p>在高版本python3上，使用pip3安装包会报错 <strong>&ldquo;externally-managed-environment&rdquo;</strong> ，具体信息可查阅<a href="https://peps.python.org/pep-0668/">pep-0668</a>。</p>
+<p>此时更推荐使用虚拟环境安装包。</p>
+<h2 id="虚拟环境">虚拟环境<a hidden class="anchor" aria-hidden="true" href="#虚拟环境">#</a></h2>
+<p>虚拟环境用于隔离项目依赖，避免不同项目之间的包版本互相影响。日常开发里，只要项目需要安装第三方包，通常就应该先创建虚拟环境。</p>
+<p>最常见的做法是使用 <code>venv</code>：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl"><span class="c1"># 创建虚拟环境</span>
+</span></span><span class="line"><span class="cl">python3 -m venv .venv
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 激活虚拟环境</span>
+</span></span><span class="line"><span class="cl"><span class="nb">source</span> .venv/bin/activate  <span class="c1"># Linux/macOS</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 在虚拟环境中安装包</span>
+</span></span><span class="line"><span class="cl">pip3 install 包名
+</span></span></code></pre></div><p>使用完毕后，可通过 <strong>deactivate</strong> 退出虚拟环境。</p>
+<p>如果只是临时运行一个独立项目，<code>venv</code> 通常已经够用了。</p>
+<p>常见的日常流程通常是：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl"><span class="c1"># 1. 创建虚拟环境</span>
+</span></span><span class="line"><span class="cl">python3 -m venv .venv
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 2. 激活虚拟环境</span>
+</span></span><span class="line"><span class="cl"><span class="nb">source</span> .venv/bin/activate
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 3. 安装依赖</span>
+</span></span><span class="line"><span class="cl">pip3 install requests
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 4. 导出依赖</span>
+</span></span><span class="line"><span class="cl">pip3 freeze &gt; requirements.txt
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 5. 退出虚拟环境</span>
+</span></span><span class="line"><span class="cl">deactivate
+</span></span></code></pre></div><p>如果只是运行已有项目，通常还会先执行：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">pip3 install -r requirements.txt
+</span></span></code></pre></div><p>激活后，通常可以通过下面两种方式确认当前已经进入虚拟环境：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl"><span class="c1"># 查看当前 python3 是否指向 .venv</span>
+</span></span><span class="line"><span class="cl">which python3
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 查看当前 pip3 是否指向 .venv</span>
+</span></span><span class="line"><span class="cl">which pip3
+</span></span></code></pre></div><p>很多终端提示符前面也会出现类似 <code>(.venv)</code> 的前缀。</p>
+<h3 id="1-venv-与-pip3-的关系">1. venv 与 pip3 的关系<a hidden class="anchor" aria-hidden="true" href="#1-venv-与-pip3-的关系">#</a></h3>
+<p>可以把 <code>venv</code> 理解成“创建隔离环境”，把 <code>pip3</code> 理解成“在当前环境里安装包”。</p>
+<p>也就是说：</p>
+<ul>
+<li><code>venv</code> 负责隔离环境</li>
+<li><code>pip3</code> 负责往这个环境里装依赖</li>
+</ul>
+<p>两者通常是配套使用的。</p>
+<h3 id="2-pipx">2. pipx<a hidden class="anchor" aria-hidden="true" href="#2-pipx">#</a></h3>
+<p><code>pipx</code> 适合安装独立的 Python 命令行工具，它会为每个工具创建单独的虚拟环境，避免把工具直接装到全局环境里。</p>
+<p>常见场景包括：</p>
+<ul>
+<li>安装格式化工具，例如 <code>black</code></li>
+<li>安装命令行工具，例如 <code>httpie</code></li>
+<li>安装项目管理工具，例如 <code>poetry</code></li>
+</ul>
+<p>可以简单这样区分：</p>
+<ul>
+<li>项目依赖，用 <code>venv + pip3</code></li>
+<li>独立命令行工具，用 <code>pipx</code></li>
+</ul>
+<p>下面以 macOS 为例进行配置：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl"><span class="c1"># 安装pipx，会触发一系列依赖安装</span>
+</span></span><span class="line"><span class="cl">brew install pipx
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 将其添加到 PATH 中</span>
+</span></span><span class="line"><span class="cl">pipx ensurepath
+</span></span></code></pre></div><p>安装工具的例子：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl"><span class="c1"># 安装代码格式化工具</span>
+</span></span><span class="line"><span class="cl">pipx install black
+</span></span><span class="line"><span class="cl"><span class="c1"># 安装命令行 HTTP 工具</span>
+</span></span><span class="line"><span class="cl">pipx install httpie
+</span></span></code></pre></div><h2 id="附录">附录<a hidden class="anchor" aria-hidden="true" href="#附录">#</a></h2>
+<ul>
+<li><a href="https://docs.python.org/zh-cn/3/">Python 官方参考文档</a></li>
+<li><a href="https://docs.python.org/zh-cn/3/library/venv.html">venv 官方文档</a></li>
+<li><a href="https://pypi.org/search/">Search results · PyPI</a></li>
+</ul>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="/tags/python/">Python</a></li>
+    </ul>
+<nav class="paginav">
+  <a class="prev" href="/posts/python/python_modules_network/">
+    <span class="title">« Prev</span>
+    <br>
+    <span>Python常用模块与网络请求</span>
+  </a>
+  <a class="next" href="/posts/python/python_intro/">
+    <span class="title">Next »</span>
+    <br>
+    <span>Python常用基础回顾</span>
+  </a>
+</nav>
+
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2026 <a href="/">缥缈夏鸢</a></span> · 
+
+    <span>
+        Powered by
+        <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+        <path d="M12 6H0l6-6z" />
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu')
+    if (menu) {
+        menu.scrollLeft = localStorage.getItem("menu-scroll-position");
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        if (document.body.className.includes("dark")) {
+            document.body.classList.remove('dark');
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            document.body.classList.add('dark');
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerHTML = 'copy';
+
+        function copyingDone() {
+            copybutton.innerHTML = 'copied!';
+            setTimeout(() => {
+                copybutton.innerHTML = 'copy';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+</body>
+
+</html>
