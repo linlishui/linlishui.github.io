@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>Docker | 缥缈夏鸢</title>
+<meta name="keywords" content="">
+<meta name="description" content="Android 开发工程师，持续探索 Agent 应用开发，长期关注全栈能力建设。">
+<meta name="author" content="夏天的小西瓜">
+<link rel="canonical" href="/tags/docker/">
+<meta name="google-site-verification" content="XYZabc">
+<meta name="msvalidate.01" content="XYZabc">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.44278f16c6e7e77192a15a0565fb5b0f220c56128442fcfa6937b4d84456ecf0.css" integrity="sha256-RCePFsbn53GSoVoFZftbDyIMVhKEQvz6aTe02ERW7PA=" rel="preload stylesheet" as="style">
+<link rel="icon" href="/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="mask-icon" href="/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" type="application/rss+xml" href="/tags/docker/index.xml">
+<link rel="alternate" hreflang="en" href="/tags/docker/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-track {
+                background: 0 0;
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-thumb {
+                border-color: var(--theme);
+            }
+        }
+
+    </style>
+</noscript><script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+<script>
+
+const config = {
+    startOnLoad:true,
+    
+    themeVariables: {
+        lineColor: "#ffffff"    
+    },
+    flowchart: {
+        useMaxWidth:false,
+        htmlLabels:true
+    }
+};
+mermaid.initialize(config);
+
+
+window.onload = () => {
+    window.mermaid.init(undefined, document.querySelectorAll('.language-mermaid'));
+}
+</script><meta property="og:url" content="/tags/docker/">
+  <meta property="og:site_name" content="缥缈夏鸢">
+  <meta property="og:title" content="Docker">
+  <meta property="og:description" content="Android 开发工程师，持续探索 Agent 应用开发，长期关注全栈能力建设。">
+  <meta property="og:locale" content="en-us">
+  <meta property="og:type" content="website">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Docker">
+<meta name="twitter:description" content="Android 开发工程师，持续探索 Agent 应用开发，长期关注全栈能力建设。">
+
+</head>
+
+<body class="list" id="top">
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.body.classList.add('dark');
+    } else if (localStorage.getItem("pref-theme") === "light") {
+        document.body.classList.remove('dark')
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.body.classList.add('dark');
+    }
+
+</script>
+
+<header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="/" accesskey="h" title="缥缈夏鸢 (Alt + H)">缥缈夏鸢</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" accesskey="t" title="(Alt + T)">
+                    <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu">
+            <li>
+                <a href="/" title="首页">
+                    <span>首页</span>
+                </a>
+            </li>
+            <li>
+                <a href="/posts/" title="文章">
+                    <span>文章</span>
+                </a>
+            </li>
+            <li>
+                <a href="/categories/" title="分类">
+                    <span>分类</span>
+                </a>
+            </li>
+            <li>
+                <a href="/tags/" title="标签">
+                    <span>标签</span>
+                </a>
+            </li>
+            <li>
+                <a href="/archives/" title="归档">
+                    <span>归档</span>
+                </a>
+            </li>
+            <li>
+                <a href="/search/" title="搜索">
+                    <span>搜索</span>
+                </a>
+            </li>
+            <li>
+                <a href="/about/" title="关于">
+                    <span>关于</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main"> 
+<header class="page-header"><div class="breadcrumbs"><a href="/">Home</a>&nbsp;»&nbsp;<a href="/tags/">Tags</a></div>
+  <h1>
+    Docker
+    <a href="/tags/docker/index.xml" title="RSS" aria-label="RSS">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" height="23">
+        <path d="M4 11a9 9 0 0 1 9 9" />
+        <path d="M4 4a16 16 0 0 1 16 16" />
+        <circle cx="5" cy="19" r="1" />
+      </svg>
+    </a>
+  </h1>
+</header>
+
+<article class="post-entry tag-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">Docker 从入门到实践
+    </h2>
+  </header>
+  <div class="entry-content">
+    <p>概述 如果你已经有一定工程经验，Docker 最有价值的点，不是“会几个命令”，而是把项目运行环境、依赖和服务编排变成一套可重复执行的工程描述。
+这篇文章不打算把 Docker 的全部概念讲一遍，而是围绕一个完整的本地项目场景，串起从入门到实践最常用的部分：
+用 Docker 跑一个 Nginx 静态站点 用 Docker 构建一个 Node.js 或 Python/FastAPI 应用 用 Docker Compose 编排 MySQL &#43; Redis &#43; App 理解镜像、容器、端口、卷、网络这些真正会影响日常开发的核心概念 先说结论：
+镜像是“运行模板”，容器是“运行中的实例” docker run 适合单服务验证，docker compose 更适合真实项目 真正落地时，最容易出问题的不是“命令不会写”，而是端口、卷、网络、启动顺序和环境变量 对工程项目来说，Compose 文件和 Dockerfile 本身就是运行文档 Docker 到底解决什么问题 对有基础的工程师来说，Docker 的价值主要有三点：
+1. 环境一致性 本地能跑、测试能跑、线上也能跑，依赖的是同一套镜像和配置，而不是“我电脑上正好装过”。
+2. 服务隔离 MySQL、Redis、App 不需要都直接装在宿主机上。每个服务跑在自己的容器里，依赖边界更清晰。
+3. 低成本复现 拉代码、执行命令、启动编排，整个项目环境就能快速恢复。对多人协作、本地调试、临时排障都很有用。
+先理解 4 个最核心概念 1. 镜像 镜像可以理解为容器的只读模板，里面包含应用代码、运行时、依赖和启动命令。
+常见操作：
+docker pull nginx:latest docker images 2. 容器 容器是镜像启动后的运行实例。一个镜像可以启动多个容器。
+常见操作：
+...</p>
+  </div>
+  <footer class="entry-footer"><span title='2026-04-13 20:34:03 +0800 CST'>April 13, 2026</span>&nbsp;·&nbsp;4 min&nbsp;·&nbsp;669 words&nbsp;·&nbsp;夏天的小西瓜</footer>
+  <a class="entry-link" aria-label="post link to Docker 从入门到实践" href="/posts/tools/docker_intro_to_practice/"></a>
+</article>
+
+<article class="post-entry tag-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">Mac 环境下使用 OrbStack 运行 Docker
+    </h2>
+  </header>
+  <div class="entry-content">
+    <p>概述 在 Mac 上跑 Docker，很多人第一反应还是 Docker Desktop。但如果你的诉求主要是本地容器开发，而不是完整的桌面管理功能，OrbStack 通常是更轻量的一种选择。
+结论先说在前面：
+OrbStack 本质上提供的是一套兼容 Docker CLI 的运行环境 日常使用时，docker、docker compose、镜像构建、端口映射这些命令基本不用改 真正需要关注的是 Docker context、已有 Docker Desktop 的并存关系，以及卷挂载和网络行为 本文只讨论在 Mac 环境下，如何把 OrbStack 当成 Docker 运行时来使用。
+为什么在 Mac 上用 OrbStack Mac 不能像 Linux 一样直接原生运行 Docker Engine，通常都要借助虚拟化层。Docker Desktop 和 OrbStack 都是在解决这个问题，只是侧重点不同。
+OrbStack 更适合下面这类场景：
+主要需求是本地开发、调试和运行容器 希望启动速度更快，常驻资源占用更小 希望继续保留熟悉的 Docker 命令行工作流 经常使用 docker compose 启多个本地服务 如果你的团队脚本、Makefile、CI 辅助命令已经大量使用 docker，那么迁移到 OrbStack 的成本通常比较低，因为多数命令不用改。
+安装 OrbStack 在 Mac 上更推荐直接用 Homebrew 安装：
+brew install --cask orbstack 安装完成后启动 OrbStack，按提示完成初始化即可。
+...</p>
+  </div>
+  <footer class="entry-footer"><span title='2026-04-13 19:48:36 +0800 CST'>April 13, 2026</span>&nbsp;·&nbsp;2 min&nbsp;·&nbsp;308 words&nbsp;·&nbsp;夏天的小西瓜</footer>
+  <a class="entry-link" aria-label="post link to Mac 环境下使用 OrbStack 运行 Docker" href="/posts/tools/orbstack_docker_on_mac/"></a>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2026 <a href="/">缥缈夏鸢</a></span> · 
+
+    <span>
+        Powered by
+        <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+        <path d="M12 6H0l6-6z" />
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu')
+    if (menu) {
+        menu.scrollLeft = localStorage.getItem("menu-scroll-position");
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        if (document.body.className.includes("dark")) {
+            document.body.classList.remove('dark');
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            document.body.classList.add('dark');
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+</body>
+
+</html>

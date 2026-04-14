@@ -6,8 +6,47 @@
     <description>Recent content in MySQL on 缥缈夏鸢</description>
     <generator>Hugo -- 0.138.0</generator>
     <language>en-us</language>
-    <lastBuildDate>Fri, 10 Apr 2026 12:01:51 +0800</lastBuildDate>
+    <lastBuildDate>Mon, 13 Apr 2026 20:34:03 +0800</lastBuildDate>
     <atom:link href="/tags/mysql/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Docker 从入门到实践</title>
+      <link>/posts/tools/docker_intro_to_practice/</link>
+      <pubDate>Mon, 13 Apr 2026 20:34:03 +0800</pubDate>
+      <guid>/posts/tools/docker_intro_to_practice/</guid>
+      <description>&lt;h2 id=&#34;概述&#34;&gt;概述&lt;/h2&gt;
+&lt;p&gt;如果你已经有一定工程经验，Docker 最有价值的点，不是“会几个命令”，而是把项目运行环境、依赖和服务编排变成一套可重复执行的工程描述。&lt;/p&gt;
+&lt;p&gt;这篇文章不打算把 Docker 的全部概念讲一遍，而是围绕一个完整的本地项目场景，串起从入门到实践最常用的部分：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;用 Docker 跑一个 Nginx 静态站点&lt;/li&gt;
+&lt;li&gt;用 Docker 构建一个 Node.js 或 Python/FastAPI 应用&lt;/li&gt;
+&lt;li&gt;用 Docker Compose 编排 &lt;code&gt;MySQL + Redis + App&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;理解镜像、容器、端口、卷、网络这些真正会影响日常开发的核心概念&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;先说结论：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;镜像是“运行模板”，容器是“运行中的实例”&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;docker run&lt;/code&gt; 适合单服务验证，&lt;code&gt;docker compose&lt;/code&gt; 更适合真实项目&lt;/li&gt;
+&lt;li&gt;真正落地时，最容易出问题的不是“命令不会写”，而是端口、卷、网络、启动顺序和环境变量&lt;/li&gt;
+&lt;li&gt;对工程项目来说，Compose 文件和 Dockerfile 本身就是运行文档&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;docker-到底解决什么问题&#34;&gt;Docker 到底解决什么问题&lt;/h2&gt;
+&lt;p&gt;对有基础的工程师来说，Docker 的价值主要有三点：&lt;/p&gt;
+&lt;h3 id=&#34;1-环境一致性&#34;&gt;1. 环境一致性&lt;/h3&gt;
+&lt;p&gt;本地能跑、测试能跑、线上也能跑，依赖的是同一套镜像和配置，而不是“我电脑上正好装过”。&lt;/p&gt;
+&lt;h3 id=&#34;2-服务隔离&#34;&gt;2. 服务隔离&lt;/h3&gt;
+&lt;p&gt;MySQL、Redis、App 不需要都直接装在宿主机上。每个服务跑在自己的容器里，依赖边界更清晰。&lt;/p&gt;
+&lt;h3 id=&#34;3-低成本复现&#34;&gt;3. 低成本复现&lt;/h3&gt;
+&lt;p&gt;拉代码、执行命令、启动编排，整个项目环境就能快速恢复。对多人协作、本地调试、临时排障都很有用。&lt;/p&gt;
+&lt;h2 id=&#34;先理解-4-个最核心概念&#34;&gt;先理解 4 个最核心概念&lt;/h2&gt;
+&lt;h3 id=&#34;1-镜像&#34;&gt;1. 镜像&lt;/h3&gt;
+&lt;p&gt;镜像可以理解为容器的只读模板，里面包含应用代码、运行时、依赖和启动命令。&lt;/p&gt;
+&lt;p&gt;常见操作：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;docker pull nginx:latest
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;docker images
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;2-容器&#34;&gt;2. 容器&lt;/h3&gt;
+&lt;p&gt;容器是镜像启动后的运行实例。一个镜像可以启动多个容器。&lt;/p&gt;
+&lt;p&gt;常见操作：&lt;/p&gt;</description>
+    </item>
     <item>
       <title>MySQL 基础用法</title>
       <link>/posts/database/mysql_basic/</link>

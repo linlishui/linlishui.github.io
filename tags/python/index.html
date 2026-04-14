@@ -185,6 +185,27 @@ window.onload = () => {
 
 <article class="post-entry tag-entry"> 
   <header class="entry-header">
+    <h2 class="entry-hint-parent">FastAPI快速入门：写第一个REST API
+    </h2>
+  </header>
+  <div class="entry-content">
+    <p>如果你现在学 Python 后端，目标多半不是做传统服务端页面，而是写接口、接数据库、加中间件，给前端或 AI 服务提供 API。这个方向下，FastAPI 比 Flask 更贴近现代开发习惯。
+这篇文章不展开讲框架历史，重点只放在实战入门：
+写第一个 REST API 理解中间件和数据库接入入口 搞清楚状态码和接口命名规范 先跑起来 安装依赖：
+pip install fastapi uvicorn 新建 main.py：
+from fastapi import FastAPI app = FastAPI() @app.get(&#34;/&#34;) def read_root(): return {&#34;message&#34;: &#34;hello&#34;} 运行：
+uvicorn main:app --reload 启动后访问：
+http://127.0.0.1:8000/ http://127.0.0.1:8000/docs /docs 是 FastAPI 很实用的一点。接口定义完，文档就能直接看和调试。
+写第一个 REST API 先用一个 items 资源做例子：
+from fastapi import FastAPI, HTTPException, status from pydantic import BaseModel app = FastAPI() # 用内存字典模拟数据库，方便先理解接口结构 items_db = { 1: {&#34;id&#34;: 1, &#34;name&#34;: &#34;keyboard&#34;, &#34;price&#34;: 199.0} } class ItemIn(BaseModel): name: str price: float @app.get(&#34;/items&#34;) def list_items(): # 查询资源列表 return list(items_db.values()) @app.get(&#34;/items/{item_id}&#34;) def get_item(item_id: int): # 按资源 ID 查询单个对象 item = items_db.get(item_id) if item is None: raise HTTPException(status_code=404, detail=&#34;item not found&#34;) return item @app.post(&#34;/items&#34;, status_code=status.HTTP_201_CREATED) def create_item(item: ItemIn): # 创建资源时生成新 ID，并返回 201 new_id = max(items_db.keys(), default=0) &#43; 1 new_item = {&#34;id&#34;: new_id, **item.model_dump()} items_db[new_id] = new_item return new_item @app.put(&#34;/items/{item_id}&#34;) def update_item(item_id: int, item: ItemIn): # PUT 表示整体更新，目标资源不存在时返回 404 if item_id not in items_db: raise HTTPException(status_code=404, detail=&#34;item not found&#34;) items_db[item_id] = {&#34;id&#34;: item_id, **item.model_dump()} return items_db[item_id] @app.delete(&#34;/items/{item_id}&#34;, status_code=status.HTTP_204_NO_CONTENT) def delete_item(item_id: int): # 删除成功时返回 204，一般不再返回响应体 if item_id not in items_db: raise HTTPException(status_code=404, detail=&#34;item not found&#34;) del items_db[item_id] 这段代码已经覆盖了最常见的 REST 操作：
+...</p>
+  </div>
+  <footer class="entry-footer"><span title='2026-04-13 16:30:00 +0800 CST'>April 13, 2026</span>&nbsp;·&nbsp;2 min&nbsp;·&nbsp;375 words&nbsp;·&nbsp;夏天的小西瓜</footer>
+  <a class="entry-link" aria-label="post link to FastAPI快速入门：写第一个REST API" href="/posts/python/fastapi_quick_start/"></a>
+</article>
+
+<article class="post-entry tag-entry"> 
+  <header class="entry-header">
     <h2 class="entry-hint-parent">Python异步回顾
     </h2>
   </header>

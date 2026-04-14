@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>Docker 从入门到实践 | 缥缈夏鸢</title>
+<meta name="keywords" content="Docker, Docker Compose, FastAPI, MySQL, Redis">
+<meta name="description" content="概述
+如果你已经有一定工程经验，Docker 最有价值的点，不是“会几个命令”，而是把项目运行环境、依赖和服务编排变成一套可重复执行的工程描述。
+这篇文章不打算把 Docker 的全部概念讲一遍，而是围绕一个完整的本地项目场景，串起从入门到实践最常用的部分：
+
+用 Docker 跑一个 Nginx 静态站点
+用 Docker 构建一个 Node.js 或 Python/FastAPI 应用
+用 Docker Compose 编排 MySQL &#43; Redis &#43; App
+理解镜像、容器、端口、卷、网络这些真正会影响日常开发的核心概念
+
+先说结论：
+
+镜像是“运行模板”，容器是“运行中的实例”
+docker run 适合单服务验证，docker compose 更适合真实项目
+真正落地时，最容易出问题的不是“命令不会写”，而是端口、卷、网络、启动顺序和环境变量
+对工程项目来说，Compose 文件和 Dockerfile 本身就是运行文档
+
+Docker 到底解决什么问题
+对有基础的工程师来说，Docker 的价值主要有三点：
+1. 环境一致性
+本地能跑、测试能跑、线上也能跑，依赖的是同一套镜像和配置，而不是“我电脑上正好装过”。
+2. 服务隔离
+MySQL、Redis、App 不需要都直接装在宿主机上。每个服务跑在自己的容器里，依赖边界更清晰。
+3. 低成本复现
+拉代码、执行命令、启动编排，整个项目环境就能快速恢复。对多人协作、本地调试、临时排障都很有用。
+先理解 4 个最核心概念
+1. 镜像
+镜像可以理解为容器的只读模板，里面包含应用代码、运行时、依赖和启动命令。
+常见操作：
+docker pull nginx:latest
+docker images
+2. 容器
+容器是镜像启动后的运行实例。一个镜像可以启动多个容器。
+常见操作：">
+<meta name="author" content="夏天的小西瓜">
+<link rel="canonical" href="/posts/tools/docker_intro_to_practice/">
+<meta name="google-site-verification" content="XYZabc">
+<meta name="msvalidate.01" content="XYZabc">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.44278f16c6e7e77192a15a0565fb5b0f220c56128442fcfa6937b4d84456ecf0.css" integrity="sha256-RCePFsbn53GSoVoFZftbDyIMVhKEQvz6aTe02ERW7PA=" rel="preload stylesheet" as="style">
+<link rel="icon" href="/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="mask-icon" href="/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="en" href="/posts/tools/docker_intro_to_practice/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-track {
+                background: 0 0;
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-thumb {
+                border-color: var(--theme);
+            }
+        }
+
+    </style>
+</noscript><script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+<script>
+
+const config = {
+    startOnLoad:true,
+    
+    themeVariables: {
+        lineColor: "#ffffff"    
+    },
+    flowchart: {
+        useMaxWidth:false,
+        htmlLabels:true
+    }
+};
+mermaid.initialize(config);
+
+
+window.onload = () => {
+    window.mermaid.init(undefined, document.querySelectorAll('.language-mermaid'));
+}
+</script><meta property="og:url" content="/posts/tools/docker_intro_to_practice/">
+  <meta property="og:site_name" content="缥缈夏鸢">
+  <meta property="og:title" content="Docker 从入门到实践">
+  <meta property="og:description" content="概述 如果你已经有一定工程经验，Docker 最有价值的点，不是“会几个命令”，而是把项目运行环境、依赖和服务编排变成一套可重复执行的工程描述。
+这篇文章不打算把 Docker 的全部概念讲一遍，而是围绕一个完整的本地项目场景，串起从入门到实践最常用的部分：
+用 Docker 跑一个 Nginx 静态站点 用 Docker 构建一个 Node.js 或 Python/FastAPI 应用 用 Docker Compose 编排 MySQL &#43; Redis &#43; App 理解镜像、容器、端口、卷、网络这些真正会影响日常开发的核心概念 先说结论：
+镜像是“运行模板”，容器是“运行中的实例” docker run 适合单服务验证，docker compose 更适合真实项目 真正落地时，最容易出问题的不是“命令不会写”，而是端口、卷、网络、启动顺序和环境变量 对工程项目来说，Compose 文件和 Dockerfile 本身就是运行文档 Docker 到底解决什么问题 对有基础的工程师来说，Docker 的价值主要有三点：
+1. 环境一致性 本地能跑、测试能跑、线上也能跑，依赖的是同一套镜像和配置，而不是“我电脑上正好装过”。
+2. 服务隔离 MySQL、Redis、App 不需要都直接装在宿主机上。每个服务跑在自己的容器里，依赖边界更清晰。
+3. 低成本复现 拉代码、执行命令、启动编排，整个项目环境就能快速恢复。对多人协作、本地调试、临时排障都很有用。
+先理解 4 个最核心概念 1. 镜像 镜像可以理解为容器的只读模板，里面包含应用代码、运行时、依赖和启动命令。
+常见操作：
+docker pull nginx:latest docker images 2. 容器 容器是镜像启动后的运行实例。一个镜像可以启动多个容器。
+常见操作：">
+  <meta property="og:locale" content="en-us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2026-04-13T20:34:03+08:00">
+    <meta property="article:modified_time" content="2026-04-13T20:34:03+08:00">
+    <meta property="article:tag" content="Docker">
+    <meta property="article:tag" content="Docker Compose">
+    <meta property="article:tag" content="FastAPI">
+    <meta property="article:tag" content="MySQL">
+    <meta property="article:tag" content="Redis">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Docker 从入门到实践">
+<meta name="twitter:description" content="概述
+如果你已经有一定工程经验，Docker 最有价值的点，不是“会几个命令”，而是把项目运行环境、依赖和服务编排变成一套可重复执行的工程描述。
+这篇文章不打算把 Docker 的全部概念讲一遍，而是围绕一个完整的本地项目场景，串起从入门到实践最常用的部分：
+
+用 Docker 跑一个 Nginx 静态站点
+用 Docker 构建一个 Node.js 或 Python/FastAPI 应用
+用 Docker Compose 编排 MySQL &#43; Redis &#43; App
+理解镜像、容器、端口、卷、网络这些真正会影响日常开发的核心概念
+
+先说结论：
+
+镜像是“运行模板”，容器是“运行中的实例”
+docker run 适合单服务验证，docker compose 更适合真实项目
+真正落地时，最容易出问题的不是“命令不会写”，而是端口、卷、网络、启动顺序和环境变量
+对工程项目来说，Compose 文件和 Dockerfile 本身就是运行文档
+
+Docker 到底解决什么问题
+对有基础的工程师来说，Docker 的价值主要有三点：
+1. 环境一致性
+本地能跑、测试能跑、线上也能跑，依赖的是同一套镜像和配置，而不是“我电脑上正好装过”。
+2. 服务隔离
+MySQL、Redis、App 不需要都直接装在宿主机上。每个服务跑在自己的容器里，依赖边界更清晰。
+3. 低成本复现
+拉代码、执行命令、启动编排，整个项目环境就能快速恢复。对多人协作、本地调试、临时排障都很有用。
+先理解 4 个最核心概念
+1. 镜像
+镜像可以理解为容器的只读模板，里面包含应用代码、运行时、依赖和启动命令。
+常见操作：
+docker pull nginx:latest
+docker images
+2. 容器
+容器是镜像启动后的运行实例。一个镜像可以启动多个容器。
+常见操作：">
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Posts",
+      "item": "/posts/"
+    }
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Docker 从入门到实践",
+      "item": "/posts/tools/docker_intro_to_practice/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Docker 从入门到实践",
+  "name": "Docker 从入门到实践",
+  "description": "概述 如果你已经有一定工程经验，Docker 最有价值的点，不是“会几个命令”，而是把项目运行环境、依赖和服务编排变成一套可重复执行的工程描述。\n这篇文章不打算把 Docker 的全部概念讲一遍，而是围绕一个完整的本地项目场景，串起从入门到实践最常用的部分：\n用 Docker 跑一个 Nginx 静态站点 用 Docker 构建一个 Node.js 或 Python/FastAPI 应用 用 Docker Compose 编排 MySQL + Redis + App 理解镜像、容器、端口、卷、网络这些真正会影响日常开发的核心概念 先说结论：\n镜像是“运行模板”，容器是“运行中的实例” docker run 适合单服务验证，docker compose 更适合真实项目 真正落地时，最容易出问题的不是“命令不会写”，而是端口、卷、网络、启动顺序和环境变量 对工程项目来说，Compose 文件和 Dockerfile 本身就是运行文档 Docker 到底解决什么问题 对有基础的工程师来说，Docker 的价值主要有三点：\n1. 环境一致性 本地能跑、测试能跑、线上也能跑，依赖的是同一套镜像和配置，而不是“我电脑上正好装过”。\n2. 服务隔离 MySQL、Redis、App 不需要都直接装在宿主机上。每个服务跑在自己的容器里，依赖边界更清晰。\n3. 低成本复现 拉代码、执行命令、启动编排，整个项目环境就能快速恢复。对多人协作、本地调试、临时排障都很有用。\n先理解 4 个最核心概念 1. 镜像 镜像可以理解为容器的只读模板，里面包含应用代码、运行时、依赖和启动命令。\n常见操作：\ndocker pull nginx:latest docker images 2. 容器 容器是镜像启动后的运行实例。一个镜像可以启动多个容器。\n常见操作：\n",
+  "keywords": [
+    "Docker", "Docker Compose", "FastAPI", "MySQL", "Redis"
+  ],
+  "articleBody": "概述 如果你已经有一定工程经验，Docker 最有价值的点，不是“会几个命令”，而是把项目运行环境、依赖和服务编排变成一套可重复执行的工程描述。\n这篇文章不打算把 Docker 的全部概念讲一遍，而是围绕一个完整的本地项目场景，串起从入门到实践最常用的部分：\n用 Docker 跑一个 Nginx 静态站点 用 Docker 构建一个 Node.js 或 Python/FastAPI 应用 用 Docker Compose 编排 MySQL + Redis + App 理解镜像、容器、端口、卷、网络这些真正会影响日常开发的核心概念 先说结论：\n镜像是“运行模板”，容器是“运行中的实例” docker run 适合单服务验证，docker compose 更适合真实项目 真正落地时，最容易出问题的不是“命令不会写”，而是端口、卷、网络、启动顺序和环境变量 对工程项目来说，Compose 文件和 Dockerfile 本身就是运行文档 Docker 到底解决什么问题 对有基础的工程师来说，Docker 的价值主要有三点：\n1. 环境一致性 本地能跑、测试能跑、线上也能跑，依赖的是同一套镜像和配置，而不是“我电脑上正好装过”。\n2. 服务隔离 MySQL、Redis、App 不需要都直接装在宿主机上。每个服务跑在自己的容器里，依赖边界更清晰。\n3. 低成本复现 拉代码、执行命令、启动编排，整个项目环境就能快速恢复。对多人协作、本地调试、临时排障都很有用。\n先理解 4 个最核心概念 1. 镜像 镜像可以理解为容器的只读模板，里面包含应用代码、运行时、依赖和启动命令。\n常见操作：\ndocker pull nginx:latest docker images 2. 容器 容器是镜像启动后的运行实例。一个镜像可以启动多个容器。\n常见操作：\ndocker ps docker ps -a docker logs docker exec -it sh docker rm -f 3. 端口映射 容器内部端口默认不能直接从宿主机访问，需要用 -p 映射出来。\ndocker run -d --name web -p 8080:80 nginx:latest 这里的含义是：把宿主机 8080 映射到容器内的 80。\n4. 数据卷 容器删掉后，容器内部数据可能一起消失。数据库、日志、上传文件这类需要持久化的数据，通常要挂载卷。\ndocker run -d --name mysql \\ -v mysql_data:/var/lib/mysql \\ -e MYSQL_ROOT_PASSWORD=123456 \\ mysql:8 如何理解 Dockerfile 与 compose.yaml 可以把两者这样理解：\nDockerfile 解决的是“一个服务怎么被做出来” compose.yaml 解决的是“多个服务怎么一起跑起来” 更具体一点：\n1. Dockerfile 是镜像构建说明书 它定义基础镜像、工作目录、依赖安装、代码拷贝、暴露端口、启动命令，最终产出的是一个镜像。\n典型命令：\ndocker build -t my_app:latest . 2. compose.yaml 是运行编排说明书 它定义有哪些服务、每个服务用哪个镜像或哪个 Dockerfile 构建、端口怎么映射、环境变量怎么传、卷怎么挂、服务之间怎么连，最终产出的是一组一起协作的容器。\n典型命令：\ndocker compose up -d 3. 两者在项目里的关系 一个常见项目里，app 服务会有自己的 Dockerfile，而 compose.yaml 负责把 app、mysql、redis 等服务组织起来。\nservices: app: build: . mysql: image: mysql:8 redis: image: redis:7-alpine 这里的含义是：\napp 使用当前目录里的 Dockerfile 构建 mysql 和 redis 直接使用现成镜像 最后由 Compose 统一启动和管理 如果只记一句话，可以记成：\nDockerfile 关注“怎么构建单个服务镜像” compose.yaml 关注“怎么组织整个项目运行” 从一个 Nginx 静态站点开始 先从最简单的场景入手。假设当前目录下有一个 index.html：\n\u003c!DOCTYPE html\u003e \u003chtml\u003e \u003chead\u003e \u003cmeta charset=\"utf-8\" /\u003e \u003ctitle\u003eDocker Demo\u003c/title\u003e \u003c/head\u003e \u003cbody\u003e \u003ch1\u003eHello Docker\u003c/h1\u003e \u003c/body\u003e \u003c/html\u003e 再写一个最小 Dockerfile：\nFROM nginx:alpine COPY . /usr/share/nginx/html 构建并运行：\ndocker build -t demo-nginx:latest . docker run --rm -p 8080:80 demo-nginx:latest 浏览器访问 http://localhost:8080，能看到页面就说明整条链路已经通了：\nDockerfile 定义镜像 docker build 构建镜像 docker run 启动容器 -p 暴露服务端口 这是 Docker 最小可用闭环。\n应用服务如何容器化 真实项目里，通常不只是静态页面，还会有应用服务。下面分别看 Node.js 和 FastAPI 两种常见写法。\n1. Node.js 应用 一个最小 Node.js Dockerfile 可以这样写：\nFROM node:20-alpine WORKDIR /app COPY package*.json ./ RUN npm install COPY . . EXPOSE 3000 CMD [\"npm\", \"run\", \"start\"] 构建和运行：\ndocker build -t demo-node:latest . docker run --rm -p 3000:3000 demo-node:latest 2. Python / FastAPI 应用 一个最小 FastAPI Dockerfile：\nFROM python:3.12-slim WORKDIR /app COPY requirements.txt ./ RUN pip install --no-cache-dir -r requirements.txt COPY . . EXPOSE 8000 CMD [\"uvicorn\", \"main:app\", \"--host\", \"0.0.0.0\", \"--port\", \"8000\"] 构建和运行：\ndocker build -t demo-fastapi:latest . docker run --rm -p 8000:8000 demo-fastapi:latest 这里有一个关键点：应用必须监听 0.0.0.0，不能只监听 127.0.0.1。否则容器外部访问不到。\n为什么真实项目更适合 Docker Compose 单个服务可以直接用 docker run，但一旦项目变成：\n一个 App 一个 MySQL 一个 Redis 可能还有 Nginx 反向代理 继续手写多个 docker run 就会迅速失控。这个时候应该交给 docker compose。\nCompose 的作用，不只是“批量启动容器”，更重要的是用一个 YAML 文件把服务关系、环境变量、端口、挂载、依赖都描述清楚。\n一个最小项目实战：MySQL + Redis + FastAPI 下面给一个典型本地开发编排示例：\nversion: \"3.9\" services: app: build: . container_name: demo_app ports: - \"8000:8000\" environment: MYSQL_HOST: mysql MYSQL_PORT: 3306 MYSQL_USER: root MYSQL_PASSWORD: 123456 MYSQL_DB: demo REDIS_HOST: redis REDIS_PORT: 6379 depends_on: - mysql - redis mysql: image: mysql:8 container_name: demo_mysql ports: - \"3306:3306\" environment: MYSQL_ROOT_PASSWORD: 123456 MYSQL_DATABASE: demo volumes: - mysql_data:/var/lib/mysql redis: image: redis:7-alpine container_name: demo_redis ports: - \"6379:6379\" volumes: mysql_data: 启动命令：\ndocker compose up -d docker compose ps docker compose logs -f 停止并清理：\ndocker compose down 如果连卷也一起清理：\ndocker compose down -v 这个示例里有几个很关键的实践点：\n1. 服务之间通过服务名通信 应用连接 MySQL 时，不应该写 localhost，而应该写 mysql；连接 Redis 时写 redis。\n因为在 Compose 网络里，服务名本身就是可解析的主机名。\n2. depends_on 不等于“服务已就绪” depends_on 只能保证启动顺序，不能保证 MySQL 已经初始化完成。\n所以 App 如果在启动时立刻连数据库，仍然可能失败。更稳妥的方式是：\nApp 里自己做重试 或增加健康检查与等待逻辑 这是很多人第一次用 Compose 时最容易误解的点。\n3. 数据库一定要考虑持久化 MySQL 这种服务如果不挂卷，容器删掉后数据就没了。\nvolumes: - mysql_data:/var/lib/mysql 这不是“可选优化”，而是本地开发最基本的保护。\nNginx 在项目里怎么用 Nginx 在 Docker 场景里常见有两种角色：\n1. 静态资源服务 前端打包产物直接交给 Nginx 托管，适合纯静态站点或前后端分离项目中的静态资源层。\n2. 反向代理入口 把 /api 转发给 App，把 / 指向静态资源。这样本地环境更接近真实部署结构。\n一个最小 nginx.conf 示例：\nserver { listen 80; location / { root /usr/share/nginx/html; index index.html; try_files $uri $uri/ /index.html; } location /api/ { proxy_pass http://app:8000/; proxy_set_header Host $host; proxy_set_header X-Real-IP $remote_addr; } } 这里 proxy_pass 指向的是 Compose 里的服务名 app，不是宿主机地址。\n日常最常用的命令 对工程项目来说，下面这些命令最常用：\ndocker ps docker logs -f docker exec -it sh docker images docker build -t . docker run --rm -p 8080:80 docker compose up -d docker compose down docker compose ps docker compose logs -f app 如果只记一套核心命令，这些基本够覆盖大多数本地开发场景。\n常见坑点 1. 宿主机端口冲突 最常见的问题不是容器没起来，而是端口早就被占了。\n比如本机已经装了 MySQL，再执行：\ndocker compose up -d 如果 Compose 里也映射了 3306:3306，就会直接冲突。\n2. 容器里不能用 localhost 连其他服务 在容器里，localhost 指向的是容器自己，不是宿主机，也不是 Compose 里的其他服务。\n所以：\nApp 连 MySQL 应写 mysql App 连 Redis 应写 redis 3. 应用监听地址写错 很多 Web 服务默认只监听 127.0.0.1。在容器里这通常不够，应该监听 0.0.0.0。\n否则端口虽然映射了，外面依然访问不到。\n4. 只会重启，不会看日志 容器启动失败时，第一反应不应该是不断 up 和 restart，而应该先看日志：\ndocker logs docker compose logs -f app Docker 排障的第一入口，通常就是日志。\n5. 把容器当虚拟机用 容器不是给你长期手工改环境的。正确思路是：\n改 Dockerfile 改 Compose 配置 重新构建 重新启动 如果每次都靠 exec 进容器手改，最后环境一定不可复现。\n小结 对有基础的工程师来说，Docker 真正需要掌握的不是“命令大全”，而是三件事：\n知道镜像、容器、端口、卷分别解决什么问题 知道单服务用 docker run，多服务用 docker compose 知道真实项目里最容易出问题的是网络、持久化、启动时序和配置管理 如果你只是想快速验证一个服务，docker build 加 docker run 就够了。 如果你在跑一个完整项目，尽早把环境描述收敛到 Dockerfile + compose.yaml，后续维护成本会低很多。\n",
+  "wordCount" : "669",
+  "inLanguage": "en",
+  "datePublished": "2026-04-13T20:34:03+08:00",
+  "dateModified": "2026-04-13T20:34:03+08:00",
+  "author":[{
+    "@type": "Person",
+    "name": "夏天的小西瓜"
+  }],
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "/posts/tools/docker_intro_to_practice/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "缥缈夏鸢",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "/favicon.ico"
+    }
+  }
+}
+</script>
+</head>
+
+<body class="" id="top">
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.body.classList.add('dark');
+    } else if (localStorage.getItem("pref-theme") === "light") {
+        document.body.classList.remove('dark')
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.body.classList.add('dark');
+    }
+
+</script>
+
+<header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="/" accesskey="h" title="缥缈夏鸢 (Alt + H)">缥缈夏鸢</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" accesskey="t" title="(Alt + T)">
+                    <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu">
+            <li>
+                <a href="/" title="首页">
+                    <span>首页</span>
+                </a>
+            </li>
+            <li>
+                <a href="/posts/" title="文章">
+                    <span>文章</span>
+                </a>
+            </li>
+            <li>
+                <a href="/categories/" title="分类">
+                    <span>分类</span>
+                </a>
+            </li>
+            <li>
+                <a href="/tags/" title="标签">
+                    <span>标签</span>
+                </a>
+            </li>
+            <li>
+                <a href="/archives/" title="归档">
+                    <span>归档</span>
+                </a>
+            </li>
+            <li>
+                <a href="/search/" title="搜索">
+                    <span>搜索</span>
+                </a>
+            </li>
+            <li>
+                <a href="/about/" title="关于">
+                    <span>关于</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <div class="breadcrumbs"><a href="/">Home</a>&nbsp;»&nbsp;<a href="/posts/">Posts</a></div>
+    <h1 class="post-title entry-hint-parent">
+      Docker 从入门到实践
+    </h1>
+    <div class="post-meta"><span title='2026-04-13 20:34:03 +0800 CST'>April 13, 2026</span>&nbsp;·&nbsp;4 min&nbsp;·&nbsp;669 words&nbsp;·&nbsp;夏天的小西瓜
+
+</div>
+  </header> <aside id="toc-container" class="toc-container wide">
+    <div class="toc">
+        <details  open>
+            <summary accesskey="c" title="(Alt + C)">
+                <span class="details">Table of Contents</span>
+            </summary>
+
+            <div class="inner"><ul>
+                    <li>
+                        <a href="#%e6%a6%82%e8%bf%b0" aria-label="概述">概述</a></li>
+                    <li>
+                        <a href="#docker-%e5%88%b0%e5%ba%95%e8%a7%a3%e5%86%b3%e4%bb%80%e4%b9%88%e9%97%ae%e9%a2%98" aria-label="Docker 到底解决什么问题">Docker 到底解决什么问题</a><ul>
+                            
+                    <li>
+                        <a href="#1-%e7%8e%af%e5%a2%83%e4%b8%80%e8%87%b4%e6%80%a7" aria-label="1. 环境一致性">1. 环境一致性</a></li>
+                    <li>
+                        <a href="#2-%e6%9c%8d%e5%8a%a1%e9%9a%94%e7%a6%bb" aria-label="2. 服务隔离">2. 服务隔离</a></li>
+                    <li>
+                        <a href="#3-%e4%bd%8e%e6%88%90%e6%9c%ac%e5%a4%8d%e7%8e%b0" aria-label="3. 低成本复现">3. 低成本复现</a></li></ul>
+                    </li>
+                    <li>
+                        <a href="#%e5%85%88%e7%90%86%e8%a7%a3-4-%e4%b8%aa%e6%9c%80%e6%a0%b8%e5%bf%83%e6%a6%82%e5%bf%b5" aria-label="先理解 4 个最核心概念">先理解 4 个最核心概念</a><ul>
+                            
+                    <li>
+                        <a href="#1-%e9%95%9c%e5%83%8f" aria-label="1. 镜像">1. 镜像</a></li>
+                    <li>
+                        <a href="#2-%e5%ae%b9%e5%99%a8" aria-label="2. 容器">2. 容器</a></li>
+                    <li>
+                        <a href="#3-%e7%ab%af%e5%8f%a3%e6%98%a0%e5%b0%84" aria-label="3. 端口映射">3. 端口映射</a></li>
+                    <li>
+                        <a href="#4-%e6%95%b0%e6%8d%ae%e5%8d%b7" aria-label="4. 数据卷">4. 数据卷</a></li></ul>
+                    </li>
+                    <li>
+                        <a href="#%e5%a6%82%e4%bd%95%e7%90%86%e8%a7%a3-dockerfile-%e4%b8%8e-composeyaml" aria-label="如何理解 Dockerfile 与 compose.yaml">如何理解 Dockerfile 与 compose.yaml</a><ul>
+                            
+                    <li>
+                        <a href="#1-dockerfile-%e6%98%af%e9%95%9c%e5%83%8f%e6%9e%84%e5%bb%ba%e8%af%b4%e6%98%8e%e4%b9%a6" aria-label="1. Dockerfile 是镜像构建说明书">1. Dockerfile 是镜像构建说明书</a></li>
+                    <li>
+                        <a href="#2-composeyaml-%e6%98%af%e8%bf%90%e8%a1%8c%e7%bc%96%e6%8e%92%e8%af%b4%e6%98%8e%e4%b9%a6" aria-label="2. compose.yaml 是运行编排说明书">2. compose.yaml 是运行编排说明书</a></li>
+                    <li>
+                        <a href="#3-%e4%b8%a4%e8%80%85%e5%9c%a8%e9%a1%b9%e7%9b%ae%e9%87%8c%e7%9a%84%e5%85%b3%e7%b3%bb" aria-label="3. 两者在项目里的关系">3. 两者在项目里的关系</a></li></ul>
+                    </li>
+                    <li>
+                        <a href="#%e4%bb%8e%e4%b8%80%e4%b8%aa-nginx-%e9%9d%99%e6%80%81%e7%ab%99%e7%82%b9%e5%bc%80%e5%a7%8b" aria-label="从一个 Nginx 静态站点开始">从一个 Nginx 静态站点开始</a></li>
+                    <li>
+                        <a href="#%e5%ba%94%e7%94%a8%e6%9c%8d%e5%8a%a1%e5%a6%82%e4%bd%95%e5%ae%b9%e5%99%a8%e5%8c%96" aria-label="应用服务如何容器化">应用服务如何容器化</a><ul>
+                            
+                    <li>
+                        <a href="#1-nodejs-%e5%ba%94%e7%94%a8" aria-label="1. Node.js 应用">1. Node.js 应用</a></li>
+                    <li>
+                        <a href="#2-python--fastapi-%e5%ba%94%e7%94%a8" aria-label="2. Python / FastAPI 应用">2. Python / FastAPI 应用</a></li></ul>
+                    </li>
+                    <li>
+                        <a href="#%e4%b8%ba%e4%bb%80%e4%b9%88%e7%9c%9f%e5%ae%9e%e9%a1%b9%e7%9b%ae%e6%9b%b4%e9%80%82%e5%90%88-docker-compose" aria-label="为什么真实项目更适合 Docker Compose">为什么真实项目更适合 Docker Compose</a></li>
+                    <li>
+                        <a href="#%e4%b8%80%e4%b8%aa%e6%9c%80%e5%b0%8f%e9%a1%b9%e7%9b%ae%e5%ae%9e%e6%88%98mysql--redis--fastapi" aria-label="一个最小项目实战：MySQL &#43; Redis &#43; FastAPI">一个最小项目实战：MySQL + Redis + FastAPI</a><ul>
+                            
+                    <li>
+                        <a href="#1-%e6%9c%8d%e5%8a%a1%e4%b9%8b%e9%97%b4%e9%80%9a%e8%bf%87%e6%9c%8d%e5%8a%a1%e5%90%8d%e9%80%9a%e4%bf%a1" aria-label="1. 服务之间通过服务名通信">1. 服务之间通过服务名通信</a></li>
+                    <li>
+                        <a href="#2-depends_on-%e4%b8%8d%e7%ad%89%e4%ba%8e%e6%9c%8d%e5%8a%a1%e5%b7%b2%e5%b0%b1%e7%bb%aa" aria-label="2. depends_on 不等于“服务已就绪”">2. <code>depends_on</code> 不等于“服务已就绪”</a></li>
+                    <li>
+                        <a href="#3-%e6%95%b0%e6%8d%ae%e5%ba%93%e4%b8%80%e5%ae%9a%e8%a6%81%e8%80%83%e8%99%91%e6%8c%81%e4%b9%85%e5%8c%96" aria-label="3. 数据库一定要考虑持久化">3. 数据库一定要考虑持久化</a></li></ul>
+                    </li>
+                    <li>
+                        <a href="#nginx-%e5%9c%a8%e9%a1%b9%e7%9b%ae%e9%87%8c%e6%80%8e%e4%b9%88%e7%94%a8" aria-label="Nginx 在项目里怎么用">Nginx 在项目里怎么用</a><ul>
+                            
+                    <li>
+                        <a href="#1-%e9%9d%99%e6%80%81%e8%b5%84%e6%ba%90%e6%9c%8d%e5%8a%a1" aria-label="1. 静态资源服务">1. 静态资源服务</a></li>
+                    <li>
+                        <a href="#2-%e5%8f%8d%e5%90%91%e4%bb%a3%e7%90%86%e5%85%a5%e5%8f%a3" aria-label="2. 反向代理入口">2. 反向代理入口</a></li></ul>
+                    </li>
+                    <li>
+                        <a href="#%e6%97%a5%e5%b8%b8%e6%9c%80%e5%b8%b8%e7%94%a8%e7%9a%84%e5%91%bd%e4%bb%a4" aria-label="日常最常用的命令">日常最常用的命令</a></li>
+                    <li>
+                        <a href="#%e5%b8%b8%e8%a7%81%e5%9d%91%e7%82%b9" aria-label="常见坑点">常见坑点</a><ul>
+                            
+                    <li>
+                        <a href="#1-%e5%ae%bf%e4%b8%bb%e6%9c%ba%e7%ab%af%e5%8f%a3%e5%86%b2%e7%aa%81" aria-label="1. 宿主机端口冲突">1. 宿主机端口冲突</a></li>
+                    <li>
+                        <a href="#2-%e5%ae%b9%e5%99%a8%e9%87%8c%e4%b8%8d%e8%83%bd%e7%94%a8-localhost-%e8%bf%9e%e5%85%b6%e4%bb%96%e6%9c%8d%e5%8a%a1" aria-label="2. 容器里不能用 localhost 连其他服务">2. 容器里不能用 <code>localhost</code> 连其他服务</a></li>
+                    <li>
+                        <a href="#3-%e5%ba%94%e7%94%a8%e7%9b%91%e5%90%ac%e5%9c%b0%e5%9d%80%e5%86%99%e9%94%99" aria-label="3. 应用监听地址写错">3. 应用监听地址写错</a></li>
+                    <li>
+                        <a href="#4-%e5%8f%aa%e4%bc%9a%e9%87%8d%e5%90%af%e4%b8%8d%e4%bc%9a%e7%9c%8b%e6%97%a5%e5%bf%97" aria-label="4. 只会重启，不会看日志">4. 只会重启，不会看日志</a></li>
+                    <li>
+                        <a href="#5-%e6%8a%8a%e5%ae%b9%e5%99%a8%e5%bd%93%e8%99%9a%e6%8b%9f%e6%9c%ba%e7%94%a8" aria-label="5. 把容器当虚拟机用">5. 把容器当虚拟机用</a></li></ul>
+                    </li>
+                    <li>
+                        <a href="#%e5%b0%8f%e7%bb%93" aria-label="小结">小结</a>
+                    </li>
+                </ul>
+            </div>
+        </details>
+    </div>
+</aside>
+<script>
+    let activeElement;
+    let elements;
+    window.addEventListener('DOMContentLoaded', function (event) {
+        checkTocPosition();
+
+        elements = document.querySelectorAll('h1[id],h2[id],h3[id],h4[id],h5[id],h6[id]');
+         
+         activeElement = elements[0];
+         const id = encodeURI(activeElement.getAttribute('id')).toLowerCase();
+         document.querySelector(`.inner ul li a[href="#${id}"]`).classList.add('active');
+     }, false);
+
+    window.addEventListener('resize', function(event) {
+        checkTocPosition();
+    }, false);
+
+    window.addEventListener('scroll', () => {
+        
+        activeElement = Array.from(elements).find((element) => {
+            if ((getOffsetTop(element) - window.pageYOffset) > 0 && 
+                (getOffsetTop(element) - window.pageYOffset) < window.innerHeight/2) {
+                return element;
+            }
+        }) || activeElement
+
+        elements.forEach(element => {
+             const id = encodeURI(element.getAttribute('id')).toLowerCase();
+             if (element === activeElement){
+                 document.querySelector(`.inner ul li a[href="#${id}"]`).classList.add('active');
+             } else {
+                 document.querySelector(`.inner ul li a[href="#${id}"]`).classList.remove('active');
+             }
+         })
+     }, false);
+
+    const main = parseInt(getComputedStyle(document.body).getPropertyValue('--article-width'), 10);
+    const toc = parseInt(getComputedStyle(document.body).getPropertyValue('--toc-width'), 10);
+    const gap = parseInt(getComputedStyle(document.body).getPropertyValue('--gap'), 10);
+
+    function checkTocPosition() {
+        const width = document.body.scrollWidth;
+
+        if (width - main - (toc * 2) - (gap * 4) > 0) {
+            document.getElementById("toc-container").classList.add("wide");
+        } else {
+            document.getElementById("toc-container").classList.remove("wide");
+        }
+    }
+
+    function getOffsetTop(element) {
+        if (!element.getClientRects().length) {
+            return 0;
+        }
+        let rect = element.getBoundingClientRect();
+        let win = element.ownerDocument.defaultView;
+        return rect.top + win.pageYOffset;   
+    }
+</script>
+
+  <div class="post-content"><h2 id="概述">概述<a hidden class="anchor" aria-hidden="true" href="#概述">#</a></h2>
+<p>如果你已经有一定工程经验，Docker 最有价值的点，不是“会几个命令”，而是把项目运行环境、依赖和服务编排变成一套可重复执行的工程描述。</p>
+<p>这篇文章不打算把 Docker 的全部概念讲一遍，而是围绕一个完整的本地项目场景，串起从入门到实践最常用的部分：</p>
+<ul>
+<li>用 Docker 跑一个 Nginx 静态站点</li>
+<li>用 Docker 构建一个 Node.js 或 Python/FastAPI 应用</li>
+<li>用 Docker Compose 编排 <code>MySQL + Redis + App</code></li>
+<li>理解镜像、容器、端口、卷、网络这些真正会影响日常开发的核心概念</li>
+</ul>
+<p>先说结论：</p>
+<ul>
+<li>镜像是“运行模板”，容器是“运行中的实例”</li>
+<li><code>docker run</code> 适合单服务验证，<code>docker compose</code> 更适合真实项目</li>
+<li>真正落地时，最容易出问题的不是“命令不会写”，而是端口、卷、网络、启动顺序和环境变量</li>
+<li>对工程项目来说，Compose 文件和 Dockerfile 本身就是运行文档</li>
+</ul>
+<h2 id="docker-到底解决什么问题">Docker 到底解决什么问题<a hidden class="anchor" aria-hidden="true" href="#docker-到底解决什么问题">#</a></h2>
+<p>对有基础的工程师来说，Docker 的价值主要有三点：</p>
+<h3 id="1-环境一致性">1. 环境一致性<a hidden class="anchor" aria-hidden="true" href="#1-环境一致性">#</a></h3>
+<p>本地能跑、测试能跑、线上也能跑，依赖的是同一套镜像和配置，而不是“我电脑上正好装过”。</p>
+<h3 id="2-服务隔离">2. 服务隔离<a hidden class="anchor" aria-hidden="true" href="#2-服务隔离">#</a></h3>
+<p>MySQL、Redis、App 不需要都直接装在宿主机上。每个服务跑在自己的容器里，依赖边界更清晰。</p>
+<h3 id="3-低成本复现">3. 低成本复现<a hidden class="anchor" aria-hidden="true" href="#3-低成本复现">#</a></h3>
+<p>拉代码、执行命令、启动编排，整个项目环境就能快速恢复。对多人协作、本地调试、临时排障都很有用。</p>
+<h2 id="先理解-4-个最核心概念">先理解 4 个最核心概念<a hidden class="anchor" aria-hidden="true" href="#先理解-4-个最核心概念">#</a></h2>
+<h3 id="1-镜像">1. 镜像<a hidden class="anchor" aria-hidden="true" href="#1-镜像">#</a></h3>
+<p>镜像可以理解为容器的只读模板，里面包含应用代码、运行时、依赖和启动命令。</p>
+<p>常见操作：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">docker pull nginx:latest
+</span></span><span class="line"><span class="cl">docker images
+</span></span></code></pre></div><h3 id="2-容器">2. 容器<a hidden class="anchor" aria-hidden="true" href="#2-容器">#</a></h3>
+<p>容器是镜像启动后的运行实例。一个镜像可以启动多个容器。</p>
+<p>常见操作：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">docker ps
+</span></span><span class="line"><span class="cl">docker ps -a
+</span></span><span class="line"><span class="cl">docker logs &lt;container_name&gt;
+</span></span><span class="line"><span class="cl">docker <span class="nb">exec</span> -it &lt;container_name&gt; sh
+</span></span><span class="line"><span class="cl">docker rm -f &lt;container_name&gt;
+</span></span></code></pre></div><h3 id="3-端口映射">3. 端口映射<a hidden class="anchor" aria-hidden="true" href="#3-端口映射">#</a></h3>
+<p>容器内部端口默认不能直接从宿主机访问，需要用 <code>-p</code> 映射出来。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">docker run -d --name web -p 8080:80 nginx:latest
+</span></span></code></pre></div><p>这里的含义是：把宿主机 <code>8080</code> 映射到容器内的 <code>80</code>。</p>
+<h3 id="4-数据卷">4. 数据卷<a hidden class="anchor" aria-hidden="true" href="#4-数据卷">#</a></h3>
+<p>容器删掉后，容器内部数据可能一起消失。数据库、日志、上传文件这类需要持久化的数据，通常要挂载卷。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">docker run -d --name mysql <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>  -v mysql_data:/var/lib/mysql <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>  -e <span class="nv">MYSQL_ROOT_PASSWORD</span><span class="o">=</span><span class="m">123456</span> <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>  mysql:8
+</span></span></code></pre></div><h2 id="如何理解-dockerfile-与-composeyaml">如何理解 Dockerfile 与 compose.yaml<a hidden class="anchor" aria-hidden="true" href="#如何理解-dockerfile-与-composeyaml">#</a></h2>
+<p>可以把两者这样理解：</p>
+<ul>
+<li><code>Dockerfile</code> 解决的是“一个服务怎么被做出来”</li>
+<li><code>compose.yaml</code> 解决的是“多个服务怎么一起跑起来”</li>
+</ul>
+<p>更具体一点：</p>
+<h3 id="1-dockerfile-是镜像构建说明书">1. Dockerfile 是镜像构建说明书<a hidden class="anchor" aria-hidden="true" href="#1-dockerfile-是镜像构建说明书">#</a></h3>
+<p>它定义基础镜像、工作目录、依赖安装、代码拷贝、暴露端口、启动命令，最终产出的是一个镜像。</p>
+<p>典型命令：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">docker build -t my_app:latest .
+</span></span></code></pre></div><h3 id="2-composeyaml-是运行编排说明书">2. compose.yaml 是运行编排说明书<a hidden class="anchor" aria-hidden="true" href="#2-composeyaml-是运行编排说明书">#</a></h3>
+<p>它定义有哪些服务、每个服务用哪个镜像或哪个 <code>Dockerfile</code> 构建、端口怎么映射、环境变量怎么传、卷怎么挂、服务之间怎么连，最终产出的是一组一起协作的容器。</p>
+<p>典型命令：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">docker compose up -d
+</span></span></code></pre></div><h3 id="3-两者在项目里的关系">3. 两者在项目里的关系<a hidden class="anchor" aria-hidden="true" href="#3-两者在项目里的关系">#</a></h3>
+<p>一个常见项目里，<code>app</code> 服务会有自己的 <code>Dockerfile</code>，而 <code>compose.yaml</code> 负责把 <code>app</code>、<code>mysql</code>、<code>redis</code> 等服务组织起来。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl"><span class="nt">services</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">app</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">build</span><span class="p">:</span><span class="w"> </span><span class="l">.</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">mysql</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l">mysql:8</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">redis</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l">redis:7-alpine</span><span class="w">
+</span></span></span></code></pre></div><p>这里的含义是：</p>
+<ul>
+<li><code>app</code> 使用当前目录里的 <code>Dockerfile</code> 构建</li>
+<li><code>mysql</code> 和 <code>redis</code> 直接使用现成镜像</li>
+<li>最后由 Compose 统一启动和管理</li>
+</ul>
+<p>如果只记一句话，可以记成：</p>
+<ul>
+<li><code>Dockerfile</code> 关注“怎么构建单个服务镜像”</li>
+<li><code>compose.yaml</code> 关注“怎么组织整个项目运行”</li>
+</ul>
+<h2 id="从一个-nginx-静态站点开始">从一个 Nginx 静态站点开始<a hidden class="anchor" aria-hidden="true" href="#从一个-nginx-静态站点开始">#</a></h2>
+<p>先从最简单的场景入手。假设当前目录下有一个 <code>index.html</code>：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-html" data-lang="html"><span class="line"><span class="cl"><span class="cp">&lt;!DOCTYPE html&gt;</span>
+</span></span><span class="line"><span class="cl"><span class="p">&lt;</span><span class="nt">html</span><span class="p">&gt;</span>
+</span></span><span class="line"><span class="cl"><span class="p">&lt;</span><span class="nt">head</span><span class="p">&gt;</span>
+</span></span><span class="line"><span class="cl">  <span class="p">&lt;</span><span class="nt">meta</span> <span class="na">charset</span><span class="o">=</span><span class="s">&#34;utf-8&#34;</span> <span class="p">/&gt;</span>
+</span></span><span class="line"><span class="cl">  <span class="p">&lt;</span><span class="nt">title</span><span class="p">&gt;</span>Docker Demo<span class="p">&lt;/</span><span class="nt">title</span><span class="p">&gt;</span>
+</span></span><span class="line"><span class="cl"><span class="p">&lt;/</span><span class="nt">head</span><span class="p">&gt;</span>
+</span></span><span class="line"><span class="cl"><span class="p">&lt;</span><span class="nt">body</span><span class="p">&gt;</span>
+</span></span><span class="line"><span class="cl">  <span class="p">&lt;</span><span class="nt">h1</span><span class="p">&gt;</span>Hello Docker<span class="p">&lt;/</span><span class="nt">h1</span><span class="p">&gt;</span>
+</span></span><span class="line"><span class="cl"><span class="p">&lt;/</span><span class="nt">body</span><span class="p">&gt;</span>
+</span></span><span class="line"><span class="cl"><span class="p">&lt;/</span><span class="nt">html</span><span class="p">&gt;</span>
+</span></span></code></pre></div><p>再写一个最小 <code>Dockerfile</code>：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-dockerfile" data-lang="dockerfile"><span class="line"><span class="cl"><span class="k">FROM</span><span class="s"> nginx:alpine</span><span class="err">
+</span></span></span><span class="line"><span class="cl"><span class="err"></span><span class="k">COPY</span> . /usr/share/nginx/html<span class="err">
+</span></span></span></code></pre></div><p>构建并运行：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">docker build -t demo-nginx:latest .
+</span></span><span class="line"><span class="cl">docker run --rm -p 8080:80 demo-nginx:latest
+</span></span></code></pre></div><p>浏览器访问 <code>http://localhost:8080</code>，能看到页面就说明整条链路已经通了：</p>
+<ul>
+<li>Dockerfile 定义镜像</li>
+<li><code>docker build</code> 构建镜像</li>
+<li><code>docker run</code> 启动容器</li>
+<li><code>-p</code> 暴露服务端口</li>
+</ul>
+<p>这是 Docker 最小可用闭环。</p>
+<h2 id="应用服务如何容器化">应用服务如何容器化<a hidden class="anchor" aria-hidden="true" href="#应用服务如何容器化">#</a></h2>
+<p>真实项目里，通常不只是静态页面，还会有应用服务。下面分别看 Node.js 和 FastAPI 两种常见写法。</p>
+<h3 id="1-nodejs-应用">1. Node.js 应用<a hidden class="anchor" aria-hidden="true" href="#1-nodejs-应用">#</a></h3>
+<p>一个最小 Node.js Dockerfile 可以这样写：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-dockerfile" data-lang="dockerfile"><span class="line"><span class="cl"><span class="k">FROM</span><span class="s"> node:20-alpine</span><span class="err">
+</span></span></span><span class="line"><span class="cl"><span class="err">
+</span></span></span><span class="line"><span class="cl"><span class="err"></span><span class="k">WORKDIR</span><span class="s"> /app</span><span class="err">
+</span></span></span><span class="line"><span class="cl"><span class="err">
+</span></span></span><span class="line"><span class="cl"><span class="err"></span><span class="k">COPY</span> package*.json ./<span class="err">
+</span></span></span><span class="line"><span class="cl"><span class="err"></span><span class="k">RUN</span> npm install<span class="err">
+</span></span></span><span class="line"><span class="cl"><span class="err">
+</span></span></span><span class="line"><span class="cl"><span class="err"></span><span class="k">COPY</span> . .<span class="err">
+</span></span></span><span class="line"><span class="cl"><span class="err">
+</span></span></span><span class="line"><span class="cl"><span class="err"></span><span class="k">EXPOSE</span><span class="s"> 3000</span><span class="err">
+</span></span></span><span class="line"><span class="cl"><span class="err"></span><span class="k">CMD</span> <span class="p">[</span><span class="s2">&#34;npm&#34;</span><span class="p">,</span> <span class="s2">&#34;run&#34;</span><span class="p">,</span> <span class="s2">&#34;start&#34;</span><span class="p">]</span><span class="err">
+</span></span></span></code></pre></div><p>构建和运行：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">docker build -t demo-node:latest .
+</span></span><span class="line"><span class="cl">docker run --rm -p 3000:3000 demo-node:latest
+</span></span></code></pre></div><h3 id="2-python--fastapi-应用">2. Python / FastAPI 应用<a hidden class="anchor" aria-hidden="true" href="#2-python--fastapi-应用">#</a></h3>
+<p>一个最小 FastAPI Dockerfile：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-dockerfile" data-lang="dockerfile"><span class="line"><span class="cl"><span class="k">FROM</span><span class="s"> python:3.12-slim</span><span class="err">
+</span></span></span><span class="line"><span class="cl"><span class="err">
+</span></span></span><span class="line"><span class="cl"><span class="err"></span><span class="k">WORKDIR</span><span class="s"> /app</span><span class="err">
+</span></span></span><span class="line"><span class="cl"><span class="err">
+</span></span></span><span class="line"><span class="cl"><span class="err"></span><span class="k">COPY</span> requirements.txt ./<span class="err">
+</span></span></span><span class="line"><span class="cl"><span class="err"></span><span class="k">RUN</span> pip install --no-cache-dir -r requirements.txt<span class="err">
+</span></span></span><span class="line"><span class="cl"><span class="err">
+</span></span></span><span class="line"><span class="cl"><span class="err"></span><span class="k">COPY</span> . .<span class="err">
+</span></span></span><span class="line"><span class="cl"><span class="err">
+</span></span></span><span class="line"><span class="cl"><span class="err"></span><span class="k">EXPOSE</span><span class="s"> 8000</span><span class="err">
+</span></span></span><span class="line"><span class="cl"><span class="err"></span><span class="k">CMD</span> <span class="p">[</span><span class="s2">&#34;uvicorn&#34;</span><span class="p">,</span> <span class="s2">&#34;main:app&#34;</span><span class="p">,</span> <span class="s2">&#34;--host&#34;</span><span class="p">,</span> <span class="s2">&#34;0.0.0.0&#34;</span><span class="p">,</span> <span class="s2">&#34;--port&#34;</span><span class="p">,</span> <span class="s2">&#34;8000&#34;</span><span class="p">]</span><span class="err">
+</span></span></span></code></pre></div><p>构建和运行：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">docker build -t demo-fastapi:latest .
+</span></span><span class="line"><span class="cl">docker run --rm -p 8000:8000 demo-fastapi:latest
+</span></span></code></pre></div><p>这里有一个关键点：应用必须监听 <code>0.0.0.0</code>，不能只监听 <code>127.0.0.1</code>。否则容器外部访问不到。</p>
+<h2 id="为什么真实项目更适合-docker-compose">为什么真实项目更适合 Docker Compose<a hidden class="anchor" aria-hidden="true" href="#为什么真实项目更适合-docker-compose">#</a></h2>
+<p>单个服务可以直接用 <code>docker run</code>，但一旦项目变成：</p>
+<ul>
+<li>一个 App</li>
+<li>一个 MySQL</li>
+<li>一个 Redis</li>
+<li>可能还有 Nginx 反向代理</li>
+</ul>
+<p>继续手写多个 <code>docker run</code> 就会迅速失控。这个时候应该交给 <code>docker compose</code>。</p>
+<p>Compose 的作用，不只是“批量启动容器”，更重要的是用一个 YAML 文件把服务关系、环境变量、端口、挂载、依赖都描述清楚。</p>
+<h2 id="一个最小项目实战mysql--redis--fastapi">一个最小项目实战：MySQL + Redis + FastAPI<a hidden class="anchor" aria-hidden="true" href="#一个最小项目实战mysql--redis--fastapi">#</a></h2>
+<p>下面给一个典型本地开发编排示例：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl"><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;3.9&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="nt">services</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">app</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">build</span><span class="p">:</span><span class="w"> </span><span class="l">.</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">container_name</span><span class="p">:</span><span class="w"> </span><span class="l">demo_app</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">ports</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="s2">&#34;8000:8000&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">environment</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nt">MYSQL_HOST</span><span class="p">:</span><span class="w"> </span><span class="l">mysql</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nt">MYSQL_PORT</span><span class="p">:</span><span class="w"> </span><span class="m">3306</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nt">MYSQL_USER</span><span class="p">:</span><span class="w"> </span><span class="l">root</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nt">MYSQL_PASSWORD</span><span class="p">:</span><span class="w"> </span><span class="m">123456</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nt">MYSQL_DB</span><span class="p">:</span><span class="w"> </span><span class="l">demo</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nt">REDIS_HOST</span><span class="p">:</span><span class="w"> </span><span class="l">redis</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nt">REDIS_PORT</span><span class="p">:</span><span class="w"> </span><span class="m">6379</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">depends_on</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="l">mysql</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="l">redis</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">mysql</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l">mysql:8</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">container_name</span><span class="p">:</span><span class="w"> </span><span class="l">demo_mysql</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">ports</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="s2">&#34;3306:3306&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">environment</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nt">MYSQL_ROOT_PASSWORD</span><span class="p">:</span><span class="w"> </span><span class="m">123456</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nt">MYSQL_DATABASE</span><span class="p">:</span><span class="w"> </span><span class="l">demo</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">volumes</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="l">mysql_data:/var/lib/mysql</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">redis</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l">redis:7-alpine</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">container_name</span><span class="p">:</span><span class="w"> </span><span class="l">demo_redis</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">ports</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="s2">&#34;6379:6379&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="nt">volumes</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">mysql_data</span><span class="p">:</span><span class="w">
+</span></span></span></code></pre></div><p>启动命令：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">docker compose up -d
+</span></span><span class="line"><span class="cl">docker compose ps
+</span></span><span class="line"><span class="cl">docker compose logs -f
+</span></span></code></pre></div><p>停止并清理：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">docker compose down
+</span></span></code></pre></div><p>如果连卷也一起清理：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">docker compose down -v
+</span></span></code></pre></div><p>这个示例里有几个很关键的实践点：</p>
+<h3 id="1-服务之间通过服务名通信">1. 服务之间通过服务名通信<a hidden class="anchor" aria-hidden="true" href="#1-服务之间通过服务名通信">#</a></h3>
+<p>应用连接 MySQL 时，不应该写 <code>localhost</code>，而应该写 <code>mysql</code>；连接 Redis 时写 <code>redis</code>。</p>
+<p>因为在 Compose 网络里，服务名本身就是可解析的主机名。</p>
+<h3 id="2-depends_on-不等于服务已就绪">2. <code>depends_on</code> 不等于“服务已就绪”<a hidden class="anchor" aria-hidden="true" href="#2-depends_on-不等于服务已就绪">#</a></h3>
+<p><code>depends_on</code> 只能保证启动顺序，不能保证 MySQL 已经初始化完成。</p>
+<p>所以 App 如果在启动时立刻连数据库，仍然可能失败。更稳妥的方式是：</p>
+<ul>
+<li>App 里自己做重试</li>
+<li>或增加健康检查与等待逻辑</li>
+</ul>
+<p>这是很多人第一次用 Compose 时最容易误解的点。</p>
+<h3 id="3-数据库一定要考虑持久化">3. 数据库一定要考虑持久化<a hidden class="anchor" aria-hidden="true" href="#3-数据库一定要考虑持久化">#</a></h3>
+<p>MySQL 这种服务如果不挂卷，容器删掉后数据就没了。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl"><span class="nt">volumes</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span>- <span class="l">mysql_data:/var/lib/mysql</span><span class="w">
+</span></span></span></code></pre></div><p>这不是“可选优化”，而是本地开发最基本的保护。</p>
+<h2 id="nginx-在项目里怎么用">Nginx 在项目里怎么用<a hidden class="anchor" aria-hidden="true" href="#nginx-在项目里怎么用">#</a></h2>
+<p>Nginx 在 Docker 场景里常见有两种角色：</p>
+<h3 id="1-静态资源服务">1. 静态资源服务<a hidden class="anchor" aria-hidden="true" href="#1-静态资源服务">#</a></h3>
+<p>前端打包产物直接交给 Nginx 托管，适合纯静态站点或前后端分离项目中的静态资源层。</p>
+<h3 id="2-反向代理入口">2. 反向代理入口<a hidden class="anchor" aria-hidden="true" href="#2-反向代理入口">#</a></h3>
+<p>把 <code>/api</code> 转发给 App，把 <code>/</code> 指向静态资源。这样本地环境更接近真实部署结构。</p>
+<p>一个最小 <code>nginx.conf</code> 示例：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-nginx" data-lang="nginx"><span class="line"><span class="cl"><span class="k">server</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kn">listen</span> <span class="mi">80</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kn">location</span> <span class="s">/</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="kn">root</span> <span class="s">/usr/share/nginx/html</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="kn">index</span> <span class="s">index.html</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="kn">try_files</span> <span class="nv">$uri</span> <span class="nv">$uri/</span> <span class="s">/index.html</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kn">location</span> <span class="s">/api/</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="kn">proxy_pass</span> <span class="s">http://app:8000/</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="kn">proxy_set_header</span> <span class="s">Host</span> <span class="nv">$host</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="kn">proxy_set_header</span> <span class="s">X-Real-IP</span> <span class="nv">$remote_addr</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>这里 <code>proxy_pass</code> 指向的是 Compose 里的服务名 <code>app</code>，不是宿主机地址。</p>
+<h2 id="日常最常用的命令">日常最常用的命令<a hidden class="anchor" aria-hidden="true" href="#日常最常用的命令">#</a></h2>
+<p>对工程项目来说，下面这些命令最常用：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">docker ps
+</span></span><span class="line"><span class="cl">docker logs -f &lt;container_name&gt;
+</span></span><span class="line"><span class="cl">docker <span class="nb">exec</span> -it &lt;container_name&gt; sh
+</span></span><span class="line"><span class="cl">docker images
+</span></span><span class="line"><span class="cl">docker build -t &lt;image_name&gt; .
+</span></span><span class="line"><span class="cl">docker run --rm -p 8080:80 &lt;image_name&gt;
+</span></span><span class="line"><span class="cl">docker compose up -d
+</span></span><span class="line"><span class="cl">docker compose down
+</span></span><span class="line"><span class="cl">docker compose ps
+</span></span><span class="line"><span class="cl">docker compose logs -f app
+</span></span></code></pre></div><p>如果只记一套核心命令，这些基本够覆盖大多数本地开发场景。</p>
+<h2 id="常见坑点">常见坑点<a hidden class="anchor" aria-hidden="true" href="#常见坑点">#</a></h2>
+<h3 id="1-宿主机端口冲突">1. 宿主机端口冲突<a hidden class="anchor" aria-hidden="true" href="#1-宿主机端口冲突">#</a></h3>
+<p>最常见的问题不是容器没起来，而是端口早就被占了。</p>
+<p>比如本机已经装了 MySQL，再执行：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">docker compose up -d
+</span></span></code></pre></div><p>如果 Compose 里也映射了 <code>3306:3306</code>，就会直接冲突。</p>
+<h3 id="2-容器里不能用-localhost-连其他服务">2. 容器里不能用 <code>localhost</code> 连其他服务<a hidden class="anchor" aria-hidden="true" href="#2-容器里不能用-localhost-连其他服务">#</a></h3>
+<p>在容器里，<code>localhost</code> 指向的是容器自己，不是宿主机，也不是 Compose 里的其他服务。</p>
+<p>所以：</p>
+<ul>
+<li>App 连 MySQL 应写 <code>mysql</code></li>
+<li>App 连 Redis 应写 <code>redis</code></li>
+</ul>
+<h3 id="3-应用监听地址写错">3. 应用监听地址写错<a hidden class="anchor" aria-hidden="true" href="#3-应用监听地址写错">#</a></h3>
+<p>很多 Web 服务默认只监听 <code>127.0.0.1</code>。在容器里这通常不够，应该监听 <code>0.0.0.0</code>。</p>
+<p>否则端口虽然映射了，外面依然访问不到。</p>
+<h3 id="4-只会重启不会看日志">4. 只会重启，不会看日志<a hidden class="anchor" aria-hidden="true" href="#4-只会重启不会看日志">#</a></h3>
+<p>容器启动失败时，第一反应不应该是不断 <code>up</code> 和 <code>restart</code>，而应该先看日志：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">docker logs &lt;container_name&gt;
+</span></span><span class="line"><span class="cl">docker compose logs -f app
+</span></span></code></pre></div><p>Docker 排障的第一入口，通常就是日志。</p>
+<h3 id="5-把容器当虚拟机用">5. 把容器当虚拟机用<a hidden class="anchor" aria-hidden="true" href="#5-把容器当虚拟机用">#</a></h3>
+<p>容器不是给你长期手工改环境的。正确思路是：</p>
+<ul>
+<li>改 Dockerfile</li>
+<li>改 Compose 配置</li>
+<li>重新构建</li>
+<li>重新启动</li>
+</ul>
+<p>如果每次都靠 <code>exec</code> 进容器手改，最后环境一定不可复现。</p>
+<h2 id="小结">小结<a hidden class="anchor" aria-hidden="true" href="#小结">#</a></h2>
+<p>对有基础的工程师来说，Docker 真正需要掌握的不是“命令大全”，而是三件事：</p>
+<ul>
+<li>知道镜像、容器、端口、卷分别解决什么问题</li>
+<li>知道单服务用 <code>docker run</code>，多服务用 <code>docker compose</code></li>
+<li>知道真实项目里最容易出问题的是网络、持久化、启动时序和配置管理</li>
+</ul>
+<p>如果你只是想快速验证一个服务，<code>docker build</code> 加 <code>docker run</code> 就够了。
+如果你在跑一个完整项目，尽早把环境描述收敛到 <code>Dockerfile + compose.yaml</code>，后续维护成本会低很多。</p>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="/tags/docker/">Docker</a></li>
+      <li><a href="/tags/docker-compose/">Docker Compose</a></li>
+      <li><a href="/tags/fastapi/">FastAPI</a></li>
+      <li><a href="/tags/mysql/">MySQL</a></li>
+      <li><a href="/tags/redis/">Redis</a></li>
+    </ul>
+<nav class="paginav">
+  <a class="next" href="/posts/tools/orbstack_docker_on_mac/">
+    <span class="title">Next »</span>
+    <br>
+    <span>Mac 环境下使用 OrbStack 运行 Docker</span>
+  </a>
+</nav>
+
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2026 <a href="/">缥缈夏鸢</a></span> · 
+
+    <span>
+        Powered by
+        <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+        <path d="M12 6H0l6-6z" />
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu')
+    if (menu) {
+        menu.scrollLeft = localStorage.getItem("menu-scroll-position");
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        if (document.body.className.includes("dark")) {
+            document.body.classList.remove('dark');
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            document.body.classList.add('dark');
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerHTML = 'copy';
+
+        function copyingDone() {
+            copybutton.innerHTML = 'copied!';
+            setTimeout(() => {
+                copybutton.innerHTML = 'copy';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+</body>
+
+</html>

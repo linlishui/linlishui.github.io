@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>OrbStack on 缥缈夏鸢</title>
+    <link>/tags/orbstack/</link>
+    <description>Recent content in OrbStack on 缥缈夏鸢</description>
+    <generator>Hugo -- 0.138.0</generator>
+    <language>en-us</language>
+    <lastBuildDate>Mon, 13 Apr 2026 19:48:36 +0800</lastBuildDate>
+    <atom:link href="/tags/orbstack/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Mac 环境下使用 OrbStack 运行 Docker</title>
+      <link>/posts/tools/orbstack_docker_on_mac/</link>
+      <pubDate>Mon, 13 Apr 2026 19:48:36 +0800</pubDate>
+      <guid>/posts/tools/orbstack_docker_on_mac/</guid>
+      <description>&lt;h2 id=&#34;概述&#34;&gt;概述&lt;/h2&gt;
+&lt;p&gt;在 Mac 上跑 Docker，很多人第一反应还是 Docker Desktop。但如果你的诉求主要是本地容器开发，而不是完整的桌面管理功能，OrbStack 通常是更轻量的一种选择。&lt;/p&gt;
+&lt;p&gt;结论先说在前面：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;OrbStack 本质上提供的是一套兼容 Docker CLI 的运行环境&lt;/li&gt;
+&lt;li&gt;日常使用时，&lt;code&gt;docker&lt;/code&gt;、&lt;code&gt;docker compose&lt;/code&gt;、镜像构建、端口映射这些命令基本不用改&lt;/li&gt;
+&lt;li&gt;真正需要关注的是 Docker context、已有 Docker Desktop 的并存关系，以及卷挂载和网络行为&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;本文只讨论在 Mac 环境下，如何把 OrbStack 当成 Docker 运行时来使用。&lt;/p&gt;
+&lt;h2 id=&#34;为什么在-mac-上用-orbstack&#34;&gt;为什么在 Mac 上用 OrbStack&lt;/h2&gt;
+&lt;p&gt;Mac 不能像 Linux 一样直接原生运行 Docker Engine，通常都要借助虚拟化层。Docker Desktop 和 OrbStack 都是在解决这个问题，只是侧重点不同。&lt;/p&gt;
+&lt;p&gt;OrbStack 更适合下面这类场景：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;主要需求是本地开发、调试和运行容器&lt;/li&gt;
+&lt;li&gt;希望启动速度更快，常驻资源占用更小&lt;/li&gt;
+&lt;li&gt;希望继续保留熟悉的 Docker 命令行工作流&lt;/li&gt;
+&lt;li&gt;经常使用 &lt;code&gt;docker compose&lt;/code&gt; 启多个本地服务&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;如果你的团队脚本、Makefile、CI 辅助命令已经大量使用 &lt;code&gt;docker&lt;/code&gt;，那么迁移到 OrbStack 的成本通常比较低，因为多数命令不用改。&lt;/p&gt;
+&lt;h2 id=&#34;安装-orbstack&#34;&gt;安装 OrbStack&lt;/h2&gt;
+&lt;p&gt;在 Mac 上更推荐直接用 Homebrew 安装：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;brew install --cask orbstack
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;安装完成后启动 OrbStack，按提示完成初始化即可。&lt;/p&gt;</description>
+    </item>
+  </channel>
+</rss>

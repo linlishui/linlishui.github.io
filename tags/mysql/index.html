@@ -185,6 +185,29 @@ window.onload = () => {
 
 <article class="post-entry tag-entry"> 
   <header class="entry-header">
+    <h2 class="entry-hint-parent">Docker 从入门到实践
+    </h2>
+  </header>
+  <div class="entry-content">
+    <p>概述 如果你已经有一定工程经验，Docker 最有价值的点，不是“会几个命令”，而是把项目运行环境、依赖和服务编排变成一套可重复执行的工程描述。
+这篇文章不打算把 Docker 的全部概念讲一遍，而是围绕一个完整的本地项目场景，串起从入门到实践最常用的部分：
+用 Docker 跑一个 Nginx 静态站点 用 Docker 构建一个 Node.js 或 Python/FastAPI 应用 用 Docker Compose 编排 MySQL &#43; Redis &#43; App 理解镜像、容器、端口、卷、网络这些真正会影响日常开发的核心概念 先说结论：
+镜像是“运行模板”，容器是“运行中的实例” docker run 适合单服务验证，docker compose 更适合真实项目 真正落地时，最容易出问题的不是“命令不会写”，而是端口、卷、网络、启动顺序和环境变量 对工程项目来说，Compose 文件和 Dockerfile 本身就是运行文档 Docker 到底解决什么问题 对有基础的工程师来说，Docker 的价值主要有三点：
+1. 环境一致性 本地能跑、测试能跑、线上也能跑，依赖的是同一套镜像和配置，而不是“我电脑上正好装过”。
+2. 服务隔离 MySQL、Redis、App 不需要都直接装在宿主机上。每个服务跑在自己的容器里，依赖边界更清晰。
+3. 低成本复现 拉代码、执行命令、启动编排，整个项目环境就能快速恢复。对多人协作、本地调试、临时排障都很有用。
+先理解 4 个最核心概念 1. 镜像 镜像可以理解为容器的只读模板，里面包含应用代码、运行时、依赖和启动命令。
+常见操作：
+docker pull nginx:latest docker images 2. 容器 容器是镜像启动后的运行实例。一个镜像可以启动多个容器。
+常见操作：
+...</p>
+  </div>
+  <footer class="entry-footer"><span title='2026-04-13 20:34:03 +0800 CST'>April 13, 2026</span>&nbsp;·&nbsp;4 min&nbsp;·&nbsp;669 words&nbsp;·&nbsp;夏天的小西瓜</footer>
+  <a class="entry-link" aria-label="post link to Docker 从入门到实践" href="/posts/tools/docker_intro_to_practice/"></a>
+</article>
+
+<article class="post-entry tag-entry"> 
+  <header class="entry-header">
     <h2 class="entry-hint-parent">MySQL 基础用法
     </h2>
   </header>
