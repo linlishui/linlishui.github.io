@@ -6,8 +6,15 @@
     <description>Recent content in Categories on 缥缈夏鸢</description>
     <generator>Hugo -- 0.138.0</generator>
     <language>en-us</language>
-    <lastBuildDate>Mon, 13 Apr 2026 20:34:03 +0800</lastBuildDate>
+    <lastBuildDate>Thu, 11 Jun 2026 12:02:24 +0800</lastBuildDate>
     <atom:link href="/categories/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Android</title>
+      <link>/categories/android/</link>
+      <pubDate>Thu, 11 Jun 2026 12:02:24 +0800</pubDate>
+      <guid>/categories/android/</guid>
+      <description></description>
+    </item>
     <item>
       <title>工具</title>
       <link>/categories/%E5%B7%A5%E5%85%B7/</link>
@@ -34,13 +41,6 @@
       <link>/categories/jvm/</link>
       <pubDate>Thu, 15 Jan 2026 14:41:00 +0800</pubDate>
       <guid>/categories/jvm/</guid>
-      <description></description>
-    </item>
-    <item>
-      <title>Android</title>
-      <link>/categories/android/</link>
-      <pubDate>Wed, 14 May 2025 14:30:22 +0800</pubDate>
-      <guid>/categories/android/</guid>
       <description></description>
     </item>
     <item>

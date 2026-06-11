@@ -1,0 +1,1307 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>Android音频路由入门：设备、模式、焦点与音量 | 缥缈夏鸢</title>
+<meta name="keywords" content="AudioManager, AudioDeviceInfo, AudioFocus, 音频路由, 音量控制">
+<meta name="description" content="Android 音频输入输出的核心不是“播放一个声音”或“录一段声音”这么简单，而是系统需要根据场景选择合适的输入设备、输出设备、音频模式、音频焦点和音量类型。
+例如音乐播放通常走扬声器、耳机或蓝牙 A2DP；语音通话通常走听筒、免提、蓝牙通话链路或 USB 耳机；录音则需要选择内置麦克风、耳机麦克风或 USB 麦克风。理解这些概念后，再看 AudioTrack、AudioRecord、MediaPlayer、MediaRecorder 才不会混乱。
+基本概念
+1. 输入和输出
+在 Android 音频系统中，设备通常可以分成两类：
+
+输入设备：给系统提供音频数据，例如内置麦克风、蓝牙耳机麦克风、USB 麦克风。
+输出设备：接收系统播放的音频数据，例如扬声器、听筒、有线耳机、蓝牙耳机、HDMI。
+
+AudioDeviceInfo 用 isSource() 和 isSink() 表示设备方向：
+
+isSource() == true：音频输入设备。
+isSink() == true：音频输出设备。
+
+一个物理设备可能同时包含输入和输出能力。例如带麦克风的有线耳机，耳机部分是输出，麦克风部分是输入。
+2. 常用 API
+常见入口是 AudioManager：
+AudioManager audioManager = getSystemService(AudioManager.class);
+
+// 查询当前连接的输出设备
+AudioDeviceInfo[] outputs =
+        audioManager.getDevices(AudioManager.GET_DEVICES_OUTPUTS);
+
+// 查询当前连接的输入设备
+AudioDeviceInfo[] inputs =
+        audioManager.getDevices(AudioManager.GET_DEVICES_INPUTS);
+getDevices() 返回的是当前系统已连接、符合条件的设备列表，不代表设备一定适合当前业务场景。比如蓝牙耳机可能支持媒体播放，但通话场景还要看是否可作为通信设备使用。
+音频设备类型
+1. 常见输出设备
+
+  
+      
+          类型
+          说明
+          典型场景
+      
+  
+  
+      
+          TYPE_BUILTIN_SPEAKER
+          内置扬声器
+          外放音乐、免提
+      
+      
+          TYPE_BUILTIN_EARPIECE
+          听筒
+          电话、语音通话
+      
+      
+          TYPE_WIRED_HEADPHONES
+          不带麦克风的有线耳机
+          媒体播放
+      
+      
+          TYPE_WIRED_HEADSET
+          带麦克风的有线耳机
+          通话、录音、播放
+      
+      
+          TYPE_BLUETOOTH_A2DP
+          蓝牙媒体音频
+          音乐、视频
+      
+      
+          TYPE_BLUETOOTH_SCO
+          蓝牙通话音频
+          电话、VoIP
+      
+      
+          TYPE_BLE_HEADSET
+          BLE 音频耳机
+          新版蓝牙音频播放或通话
+      
+      
+          TYPE_BLE_SPEAKER
+          BLE 音频音箱
+          外放播放
+      
+      
+          TYPE_USB_DEVICE
+          USB 音频设备
+          外接声卡、USB DAC
+      
+      
+          TYPE_USB_HEADSET
+          USB 耳机
+          通话、播放、录音
+      
+      
+          TYPE_HDMI / TYPE_HDMI_ARC / TYPE_HDMI_EARC
+          HDMI 音频输出
+          电视、功放、家庭影院
+      
+  
+
+2. 常见输入设备
+
+  
+      
+          类型
+          说明
+          典型场景
+      
+  
+  
+      
+          TYPE_BUILTIN_MIC
+          内置麦克风
+          录音、语音识别、通话
+      
+      
+          TYPE_WIRED_HEADSET
+          有线耳机麦克风
+          通话、录音
+      
+      
+          TYPE_BLUETOOTH_SCO
+          蓝牙通话麦克风
+          电话、VoIP
+      
+      
+          TYPE_USB_DEVICE / TYPE_USB_HEADSET
+          USB 输入设备
+          外接麦克风、USB 耳机
+      
+      
+          TYPE_TELEPHONY
+          电话链路相关设备
+          系统电话场景
+      
+      
+          TYPE_REMOTE_SUBMIX
+          远端或虚拟混音设备
+          投屏、录屏、系统级混音
+      
+  
+
+设备类型只是描述“这是什么设备”。实际能不能被当前应用使用，还取决于 Android 版本、权限、当前音频模式、设备连接状态和厂商实现。">
+<meta name="author" content="夏天的小西瓜">
+<link rel="canonical" href="/posts/android/android_audio_io_basic/">
+<meta name="google-site-verification" content="XYZabc">
+<meta name="msvalidate.01" content="XYZabc">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.44278f16c6e7e77192a15a0565fb5b0f220c56128442fcfa6937b4d84456ecf0.css" integrity="sha256-RCePFsbn53GSoVoFZftbDyIMVhKEQvz6aTe02ERW7PA=" rel="preload stylesheet" as="style">
+<link rel="icon" href="/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="mask-icon" href="/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="en" href="/posts/android/android_audio_io_basic/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-track {
+                background: 0 0;
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-thumb {
+                border-color: var(--theme);
+            }
+        }
+
+    </style>
+</noscript><script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+<script>
+
+const config = {
+    startOnLoad:true,
+    
+    themeVariables: {
+        lineColor: "#ffffff"    
+    },
+    flowchart: {
+        useMaxWidth:false,
+        htmlLabels:true
+    }
+};
+mermaid.initialize(config);
+
+
+window.onload = () => {
+    window.mermaid.init(undefined, document.querySelectorAll('.language-mermaid'));
+}
+</script><meta property="og:url" content="/posts/android/android_audio_io_basic/">
+  <meta property="og:site_name" content="缥缈夏鸢">
+  <meta property="og:title" content="Android音频路由入门：设备、模式、焦点与音量">
+  <meta property="og:description" content="Android 音频输入输出的核心不是“播放一个声音”或“录一段声音”这么简单，而是系统需要根据场景选择合适的输入设备、输出设备、音频模式、音频焦点和音量类型。
+例如音乐播放通常走扬声器、耳机或蓝牙 A2DP；语音通话通常走听筒、免提、蓝牙通话链路或 USB 耳机；录音则需要选择内置麦克风、耳机麦克风或 USB 麦克风。理解这些概念后，再看 AudioTrack、AudioRecord、MediaPlayer、MediaRecorder 才不会混乱。
+基本概念 1. 输入和输出 在 Android 音频系统中，设备通常可以分成两类：
+输入设备：给系统提供音频数据，例如内置麦克风、蓝牙耳机麦克风、USB 麦克风。 输出设备：接收系统播放的音频数据，例如扬声器、听筒、有线耳机、蓝牙耳机、HDMI。 AudioDeviceInfo 用 isSource() 和 isSink() 表示设备方向：
+isSource() == true：音频输入设备。 isSink() == true：音频输出设备。 一个物理设备可能同时包含输入和输出能力。例如带麦克风的有线耳机，耳机部分是输出，麦克风部分是输入。
+2. 常用 API 常见入口是 AudioManager：
+AudioManager audioManager = getSystemService(AudioManager.class); // 查询当前连接的输出设备 AudioDeviceInfo[] outputs = audioManager.getDevices(AudioManager.GET_DEVICES_OUTPUTS); // 查询当前连接的输入设备 AudioDeviceInfo[] inputs = audioManager.getDevices(AudioManager.GET_DEVICES_INPUTS); getDevices() 返回的是当前系统已连接、符合条件的设备列表，不代表设备一定适合当前业务场景。比如蓝牙耳机可能支持媒体播放，但通话场景还要看是否可作为通信设备使用。
+音频设备类型 1. 常见输出设备 类型 说明 典型场景 TYPE_BUILTIN_SPEAKER 内置扬声器 外放音乐、免提 TYPE_BUILTIN_EARPIECE 听筒 电话、语音通话 TYPE_WIRED_HEADPHONES 不带麦克风的有线耳机 媒体播放 TYPE_WIRED_HEADSET 带麦克风的有线耳机 通话、录音、播放 TYPE_BLUETOOTH_A2DP 蓝牙媒体音频 音乐、视频 TYPE_BLUETOOTH_SCO 蓝牙通话音频 电话、VoIP TYPE_BLE_HEADSET BLE 音频耳机 新版蓝牙音频播放或通话 TYPE_BLE_SPEAKER BLE 音频音箱 外放播放 TYPE_USB_DEVICE USB 音频设备 外接声卡、USB DAC TYPE_USB_HEADSET USB 耳机 通话、播放、录音 TYPE_HDMI / TYPE_HDMI_ARC / TYPE_HDMI_EARC HDMI 音频输出 电视、功放、家庭影院 2. 常见输入设备 类型 说明 典型场景 TYPE_BUILTIN_MIC 内置麦克风 录音、语音识别、通话 TYPE_WIRED_HEADSET 有线耳机麦克风 通话、录音 TYPE_BLUETOOTH_SCO 蓝牙通话麦克风 电话、VoIP TYPE_USB_DEVICE / TYPE_USB_HEADSET USB 输入设备 外接麦克风、USB 耳机 TYPE_TELEPHONY 电话链路相关设备 系统电话场景 TYPE_REMOTE_SUBMIX 远端或虚拟混音设备 投屏、录屏、系统级混音 设备类型只是描述“这是什么设备”。实际能不能被当前应用使用，还取决于 Android 版本、权限、当前音频模式、设备连接状态和厂商实现。">
+  <meta property="og:locale" content="en-us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2026-06-11T12:02:24+08:00">
+    <meta property="article:modified_time" content="2026-06-11T12:02:24+08:00">
+    <meta property="article:tag" content="AudioManager">
+    <meta property="article:tag" content="AudioDeviceInfo">
+    <meta property="article:tag" content="AudioFocus">
+    <meta property="article:tag" content="音频路由">
+    <meta property="article:tag" content="音量控制">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Android音频路由入门：设备、模式、焦点与音量">
+<meta name="twitter:description" content="Android 音频输入输出的核心不是“播放一个声音”或“录一段声音”这么简单，而是系统需要根据场景选择合适的输入设备、输出设备、音频模式、音频焦点和音量类型。
+例如音乐播放通常走扬声器、耳机或蓝牙 A2DP；语音通话通常走听筒、免提、蓝牙通话链路或 USB 耳机；录音则需要选择内置麦克风、耳机麦克风或 USB 麦克风。理解这些概念后，再看 AudioTrack、AudioRecord、MediaPlayer、MediaRecorder 才不会混乱。
+基本概念
+1. 输入和输出
+在 Android 音频系统中，设备通常可以分成两类：
+
+输入设备：给系统提供音频数据，例如内置麦克风、蓝牙耳机麦克风、USB 麦克风。
+输出设备：接收系统播放的音频数据，例如扬声器、听筒、有线耳机、蓝牙耳机、HDMI。
+
+AudioDeviceInfo 用 isSource() 和 isSink() 表示设备方向：
+
+isSource() == true：音频输入设备。
+isSink() == true：音频输出设备。
+
+一个物理设备可能同时包含输入和输出能力。例如带麦克风的有线耳机，耳机部分是输出，麦克风部分是输入。
+2. 常用 API
+常见入口是 AudioManager：
+AudioManager audioManager = getSystemService(AudioManager.class);
+
+// 查询当前连接的输出设备
+AudioDeviceInfo[] outputs =
+        audioManager.getDevices(AudioManager.GET_DEVICES_OUTPUTS);
+
+// 查询当前连接的输入设备
+AudioDeviceInfo[] inputs =
+        audioManager.getDevices(AudioManager.GET_DEVICES_INPUTS);
+getDevices() 返回的是当前系统已连接、符合条件的设备列表，不代表设备一定适合当前业务场景。比如蓝牙耳机可能支持媒体播放，但通话场景还要看是否可作为通信设备使用。
+音频设备类型
+1. 常见输出设备
+
+  
+      
+          类型
+          说明
+          典型场景
+      
+  
+  
+      
+          TYPE_BUILTIN_SPEAKER
+          内置扬声器
+          外放音乐、免提
+      
+      
+          TYPE_BUILTIN_EARPIECE
+          听筒
+          电话、语音通话
+      
+      
+          TYPE_WIRED_HEADPHONES
+          不带麦克风的有线耳机
+          媒体播放
+      
+      
+          TYPE_WIRED_HEADSET
+          带麦克风的有线耳机
+          通话、录音、播放
+      
+      
+          TYPE_BLUETOOTH_A2DP
+          蓝牙媒体音频
+          音乐、视频
+      
+      
+          TYPE_BLUETOOTH_SCO
+          蓝牙通话音频
+          电话、VoIP
+      
+      
+          TYPE_BLE_HEADSET
+          BLE 音频耳机
+          新版蓝牙音频播放或通话
+      
+      
+          TYPE_BLE_SPEAKER
+          BLE 音频音箱
+          外放播放
+      
+      
+          TYPE_USB_DEVICE
+          USB 音频设备
+          外接声卡、USB DAC
+      
+      
+          TYPE_USB_HEADSET
+          USB 耳机
+          通话、播放、录音
+      
+      
+          TYPE_HDMI / TYPE_HDMI_ARC / TYPE_HDMI_EARC
+          HDMI 音频输出
+          电视、功放、家庭影院
+      
+  
+
+2. 常见输入设备
+
+  
+      
+          类型
+          说明
+          典型场景
+      
+  
+  
+      
+          TYPE_BUILTIN_MIC
+          内置麦克风
+          录音、语音识别、通话
+      
+      
+          TYPE_WIRED_HEADSET
+          有线耳机麦克风
+          通话、录音
+      
+      
+          TYPE_BLUETOOTH_SCO
+          蓝牙通话麦克风
+          电话、VoIP
+      
+      
+          TYPE_USB_DEVICE / TYPE_USB_HEADSET
+          USB 输入设备
+          外接麦克风、USB 耳机
+      
+      
+          TYPE_TELEPHONY
+          电话链路相关设备
+          系统电话场景
+      
+      
+          TYPE_REMOTE_SUBMIX
+          远端或虚拟混音设备
+          投屏、录屏、系统级混音
+      
+  
+
+设备类型只是描述“这是什么设备”。实际能不能被当前应用使用，还取决于 Android 版本、权限、当前音频模式、设备连接状态和厂商实现。">
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Posts",
+      "item": "/posts/"
+    }
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Android音频路由入门：设备、模式、焦点与音量",
+      "item": "/posts/android/android_audio_io_basic/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Android音频路由入门：设备、模式、焦点与音量",
+  "name": "Android音频路由入门：设备、模式、焦点与音量",
+  "description": "Android 音频输入输出的核心不是“播放一个声音”或“录一段声音”这么简单，而是系统需要根据场景选择合适的输入设备、输出设备、音频模式、音频焦点和音量类型。\n例如音乐播放通常走扬声器、耳机或蓝牙 A2DP；语音通话通常走听筒、免提、蓝牙通话链路或 USB 耳机；录音则需要选择内置麦克风、耳机麦克风或 USB 麦克风。理解这些概念后，再看 AudioTrack、AudioRecord、MediaPlayer、MediaRecorder 才不会混乱。\n基本概念 1. 输入和输出 在 Android 音频系统中，设备通常可以分成两类：\n输入设备：给系统提供音频数据，例如内置麦克风、蓝牙耳机麦克风、USB 麦克风。 输出设备：接收系统播放的音频数据，例如扬声器、听筒、有线耳机、蓝牙耳机、HDMI。 AudioDeviceInfo 用 isSource() 和 isSink() 表示设备方向：\nisSource() == true：音频输入设备。 isSink() == true：音频输出设备。 一个物理设备可能同时包含输入和输出能力。例如带麦克风的有线耳机，耳机部分是输出，麦克风部分是输入。\n2. 常用 API 常见入口是 AudioManager：\nAudioManager audioManager = getSystemService(AudioManager.class); // 查询当前连接的输出设备 AudioDeviceInfo[] outputs = audioManager.getDevices(AudioManager.GET_DEVICES_OUTPUTS); // 查询当前连接的输入设备 AudioDeviceInfo[] inputs = audioManager.getDevices(AudioManager.GET_DEVICES_INPUTS); getDevices() 返回的是当前系统已连接、符合条件的设备列表，不代表设备一定适合当前业务场景。比如蓝牙耳机可能支持媒体播放，但通话场景还要看是否可作为通信设备使用。\n音频设备类型 1. 常见输出设备 类型 说明 典型场景 TYPE_BUILTIN_SPEAKER 内置扬声器 外放音乐、免提 TYPE_BUILTIN_EARPIECE 听筒 电话、语音通话 TYPE_WIRED_HEADPHONES 不带麦克风的有线耳机 媒体播放 TYPE_WIRED_HEADSET 带麦克风的有线耳机 通话、录音、播放 TYPE_BLUETOOTH_A2DP 蓝牙媒体音频 音乐、视频 TYPE_BLUETOOTH_SCO 蓝牙通话音频 电话、VoIP TYPE_BLE_HEADSET BLE 音频耳机 新版蓝牙音频播放或通话 TYPE_BLE_SPEAKER BLE 音频音箱 外放播放 TYPE_USB_DEVICE USB 音频设备 外接声卡、USB DAC TYPE_USB_HEADSET USB 耳机 通话、播放、录音 TYPE_HDMI / TYPE_HDMI_ARC / TYPE_HDMI_EARC HDMI 音频输出 电视、功放、家庭影院 2. 常见输入设备 类型 说明 典型场景 TYPE_BUILTIN_MIC 内置麦克风 录音、语音识别、通话 TYPE_WIRED_HEADSET 有线耳机麦克风 通话、录音 TYPE_BLUETOOTH_SCO 蓝牙通话麦克风 电话、VoIP TYPE_USB_DEVICE / TYPE_USB_HEADSET USB 输入设备 外接麦克风、USB 耳机 TYPE_TELEPHONY 电话链路相关设备 系统电话场景 TYPE_REMOTE_SUBMIX 远端或虚拟混音设备 投屏、录屏、系统级混音 设备类型只是描述“这是什么设备”。实际能不能被当前应用使用，还取决于 Android 版本、权限、当前音频模式、设备连接状态和厂商实现。\n",
+  "keywords": [
+    "AudioManager", "AudioDeviceInfo", "AudioFocus", "音频路由", "音量控制"
+  ],
+  "articleBody": "Android 音频输入输出的核心不是“播放一个声音”或“录一段声音”这么简单，而是系统需要根据场景选择合适的输入设备、输出设备、音频模式、音频焦点和音量类型。\n例如音乐播放通常走扬声器、耳机或蓝牙 A2DP；语音通话通常走听筒、免提、蓝牙通话链路或 USB 耳机；录音则需要选择内置麦克风、耳机麦克风或 USB 麦克风。理解这些概念后，再看 AudioTrack、AudioRecord、MediaPlayer、MediaRecorder 才不会混乱。\n基本概念 1. 输入和输出 在 Android 音频系统中，设备通常可以分成两类：\n输入设备：给系统提供音频数据，例如内置麦克风、蓝牙耳机麦克风、USB 麦克风。 输出设备：接收系统播放的音频数据，例如扬声器、听筒、有线耳机、蓝牙耳机、HDMI。 AudioDeviceInfo 用 isSource() 和 isSink() 表示设备方向：\nisSource() == true：音频输入设备。 isSink() == true：音频输出设备。 一个物理设备可能同时包含输入和输出能力。例如带麦克风的有线耳机，耳机部分是输出，麦克风部分是输入。\n2. 常用 API 常见入口是 AudioManager：\nAudioManager audioManager = getSystemService(AudioManager.class); // 查询当前连接的输出设备 AudioDeviceInfo[] outputs = audioManager.getDevices(AudioManager.GET_DEVICES_OUTPUTS); // 查询当前连接的输入设备 AudioDeviceInfo[] inputs = audioManager.getDevices(AudioManager.GET_DEVICES_INPUTS); getDevices() 返回的是当前系统已连接、符合条件的设备列表，不代表设备一定适合当前业务场景。比如蓝牙耳机可能支持媒体播放，但通话场景还要看是否可作为通信设备使用。\n音频设备类型 1. 常见输出设备 类型 说明 典型场景 TYPE_BUILTIN_SPEAKER 内置扬声器 外放音乐、免提 TYPE_BUILTIN_EARPIECE 听筒 电话、语音通话 TYPE_WIRED_HEADPHONES 不带麦克风的有线耳机 媒体播放 TYPE_WIRED_HEADSET 带麦克风的有线耳机 通话、录音、播放 TYPE_BLUETOOTH_A2DP 蓝牙媒体音频 音乐、视频 TYPE_BLUETOOTH_SCO 蓝牙通话音频 电话、VoIP TYPE_BLE_HEADSET BLE 音频耳机 新版蓝牙音频播放或通话 TYPE_BLE_SPEAKER BLE 音频音箱 外放播放 TYPE_USB_DEVICE USB 音频设备 外接声卡、USB DAC TYPE_USB_HEADSET USB 耳机 通话、播放、录音 TYPE_HDMI / TYPE_HDMI_ARC / TYPE_HDMI_EARC HDMI 音频输出 电视、功放、家庭影院 2. 常见输入设备 类型 说明 典型场景 TYPE_BUILTIN_MIC 内置麦克风 录音、语音识别、通话 TYPE_WIRED_HEADSET 有线耳机麦克风 通话、录音 TYPE_BLUETOOTH_SCO 蓝牙通话麦克风 电话、VoIP TYPE_USB_DEVICE / TYPE_USB_HEADSET USB 输入设备 外接麦克风、USB 耳机 TYPE_TELEPHONY 电话链路相关设备 系统电话场景 TYPE_REMOTE_SUBMIX 远端或虚拟混音设备 投屏、录屏、系统级混音 设备类型只是描述“这是什么设备”。实际能不能被当前应用使用，还取决于 Android 版本、权限、当前音频模式、设备连接状态和厂商实现。\n音频模式类型 AudioManager 的 mode 描述当前系统处于什么音频场景。它会影响路由、音量策略以及底层音频链路。\n1. 常见模式 模式 说明 应用建议 MODE_NORMAL 普通模式，没有响铃或通话 音乐、视频、普通播放默认使用 MODE_RINGTONE 响铃模式 通常由系统电话或系统响铃流程使用 MODE_IN_CALL 电话通话模式 普通应用不要使用，主要给系统电话应用 MODE_IN_COMMUNICATION 音视频通话或 VoIP 模式 语音聊天、视频会议常用 MODE_CALL_SCREENING 来电筛选模式 电话相关能力使用 MODE_CALL_REDIRECT 电话重定向模式 电话相关能力使用 MODE_COMMUNICATION_REDIRECT VoIP 音频重定向模式 通信音频被转移到其他设备时使用 MODE_ASSISTANT_CONVERSATION 助手对话模式 交互式语音助手场景 对普通应用来说，最常接触的是两个模式：\n播放音乐、短视频、提示音：保持 MODE_NORMAL。 做语音通话、视频会议、实时对讲：进入 MODE_IN_COMMUNICATION，结束后恢复 MODE_NORMAL。 不要为了“让声音从听筒出来”随便设置 MODE_IN_CALL。这个模式涉及电话层和平台混音行为，普通应用误用后容易导致路由异常、音量异常，甚至影响其他应用。\n通信设备选择 1. Android 12 及以上 Android 12（API 31）开始，通信场景推荐使用 setCommunicationDevice() 选择通话设备。它替代了部分旧的扬声器和蓝牙 SCO 控制方式。\n示例：通话中切到扬声器。\nif (Build.VERSION.SDK_INT \u003e= Build.VERSION_CODES.S) { AudioManager audioManager = getSystemService(AudioManager.class); audioManager.setMode(AudioManager.MODE_IN_COMMUNICATION); AudioDeviceInfo speaker = null; for (AudioDeviceInfo device : audioManager.getAvailableCommunicationDevices()) { if (device.getType() == AudioDeviceInfo.TYPE_BUILTIN_SPEAKER) { speaker = device; break; } } if (speaker != null) { boolean accepted = audioManager.setCommunicationDevice(speaker); if (!accepted) { // 设备不可用，或者系统拒绝本次路由请求。 } } // 通话结束时恢复。 audioManager.clearCommunicationDevice(); audioManager.setMode(AudioManager.MODE_NORMAL); } 这里有两个重点：\nsetCommunicationDevice() 只能选择适合通信场景的设备，输入设备通常由系统自动匹配。 通话结束必须调用 clearCommunicationDevice()，并把 mode 恢复到 MODE_NORMAL。 2. Android 12 之前 旧版本中常见做法是配合 MODE_IN_COMMUNICATION、setSpeakerphoneOn()、蓝牙 SCO 相关 API 做路由控制。但这些 API 在新版本中逐步被替代，兼容代码要按系统版本分支处理。\n如果只是普通媒体播放，不应该主动控制通信设备。普通播放更应该通过 AudioAttributes 表达用途，让系统自己选择合适路由。\n音频焦点 音频焦点解决的是“多个应用同时想发声时，谁该继续播放、谁该暂停或降低音量”的问题。它不是音量大小，也不是输出设备，而是一套应用之间协作的播放仲裁机制。\n1. 什么时候请求焦点 一般规则是：准备真正开始播放前请求焦点，停止播放后释放焦点。\nAudioAttributes attributes = new AudioAttributes.Builder() .setUsage(AudioAttributes.USAGE_MEDIA) .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC) .build(); AudioFocusRequest focusRequest = new AudioFocusRequest.Builder( AudioManager.AUDIOFOCUS_GAIN) .setAudioAttributes(attributes) .setOnAudioFocusChangeListener(focusChange -\u003e { switch (focusChange) { case AudioManager.AUDIOFOCUS_LOSS: // 长时间失去焦点，应该暂停并等待用户重新触发播放。 break; case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT: // 短暂失去焦点，例如来电或语音播报，通常暂停。 break; case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK: // 可以继续播放，但应该降低音量。 break; case AudioManager.AUDIOFOCUS_GAIN: // 重新获得焦点，可以恢复音量或继续播放。 break; } }) .build(); int result = audioManager.requestAudioFocus(focusRequest); if (result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) { // 开始播放。 } // 播放彻底结束后释放焦点。 audioManager.abandonAudioFocusRequest(focusRequest); 上面是 Android 8.0（API 26）及以上推荐的写法。更低版本需要使用旧的 requestAudioFocus(listener, streamType, durationHint) 接口。\n2. 常见焦点类型 类型 含义 典型场景 AUDIOFOCUS_GAIN 长时间获取焦点 音乐、播客、长视频 AUDIOFOCUS_GAIN_TRANSIENT 短时间获取焦点，希望对方暂停 语音播报、短音频 AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK 短时间获取焦点，允许对方降低音量继续播 导航提示音、消息提示音 AUDIOFOCUS_GAIN_TRANSIENT_EXCLUSIVE 短时间独占焦点，不希望其他声音继续 录音、语音识别前的敏感场景 如果应用播放的是语音内容，例如有声书、课程、会议音频，不建议在失去焦点时简单 duck。语音内容被压低后可懂度会明显下降，更合理的策略通常是暂停，等焦点回来后再恢复。\n3. Android 12 之后的变化 Android 12（API 31）之后，系统会更强地介入音频焦点处理。比如媒体或游戏应用失去焦点时，系统可能强制淡出并静音。Android 15（API 35）开始，目标版本较高的应用还需要满足前台应用或前台服务等条件，才能成功请求音频焦点。\n所以音频焦点不能只当成“礼貌回调”。在新系统上，它已经会直接影响应用是否能继续发声。\n音量类型 音量类型解决的是“用户按音量键时调的是哪一路音量”的问题。它和音频焦点、音频设备、音频模式都有关，但不是同一个概念。\n1. 传统 stream 类型 Android 早期主要通过 stream type 表示音量类型：\n类型 说明 常见场景 STREAM_MUSIC 媒体音量 音乐、视频、游戏 STREAM_VOICE_CALL 通话音量 电话、VoIP 通话 STREAM_RING 铃声音量 来电铃声 STREAM_NOTIFICATION 通知音量 通知提示 STREAM_ALARM 闹钟音量 闹钟、倒计时提醒 STREAM_SYSTEM 系统音量 按键音、系统反馈 STREAM_DTMF 拨号音音量 电话拨号音 STREAM_ACCESSIBILITY 无障碍音量 屏幕阅读等无障碍反馈 STREAM_ASSISTANT 助手音量 语音助手反馈 可以通过 AudioManager 查询或调整指定 stream 的音量：\nint current = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC); int max = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC); audioManager.adjustStreamVolume( AudioManager.STREAM_MUSIC, AudioManager.ADJUST_RAISE, AudioManager.FLAG_SHOW_UI); 不过在播放器、提示音、通话这类具体播放对象上，更推荐使用 AudioAttributes 描述用途，而不是只依赖 stream type。\n2. AudioAttributes 更适合描述用途 AudioAttributes 用 usage 描述“为什么播放”，用 content type 描述“播放的是什么”。系统可以据此做更准确的路由、音量和焦点策略。\n常见 usage 对应关系如下：\nusage 含义 常见场景 USAGE_MEDIA 媒体内容 音乐、视频、播客 USAGE_GAME 游戏声音 游戏背景音、音效 USAGE_VOICE_COMMUNICATION 语音通信 VoIP、视频会议 USAGE_VOICE_COMMUNICATION_SIGNALLING 通话信令音 忙音、DTMF USAGE_ALARM 闹钟 闹钟、强提醒 USAGE_NOTIFICATION 通知 普通通知提示 USAGE_NOTIFICATION_RINGTONE 铃声 来电铃声 USAGE_ASSISTANCE_NAVIGATION_GUIDANCE 导航引导 地图导航播报 USAGE_ASSISTANCE_SONIFICATION UI 声音反馈 按键音、操作反馈 USAGE_ASSISTANT 语音助手 助手回答和提示 例如普通音乐播放：\nAudioAttributes mediaAttributes = new AudioAttributes.Builder() .setUsage(AudioAttributes.USAGE_MEDIA) .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC) .build(); 例如 VoIP 通话：\nAudioAttributes callAttributes = new AudioAttributes.Builder() .setUsage(AudioAttributes.USAGE_VOICE_COMMUNICATION) .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH) .build(); 选择正确的 usage，比手动猜测 stream type 更稳。比如通话类音频使用 USAGE_VOICE_COMMUNICATION，系统才更容易匹配通信路由、通话音量和焦点策略。\n3. 音量键到底调哪一路 用户按音量键时，系统会根据当前前台播放、当前 mode、Activity 的音量控制设置和系统策略决定调哪一路音量。\n普通媒体播放页面可以显式指定音量键控制媒体音量：\nsetVolumeControlStream(AudioManager.STREAM_MUSIC); 但这只是 Activity 层面对音量键行为的提示，不等于修改播放器的音频用途，也不等于切换输出设备。真正的播放语义仍然应该放在 AudioAttributes 里。\n常见坑点 1. 设备类型不等于当前路由 getDevices() 查到的是当前连接设备，不代表当前音频一定走这个设备。比如手机同时连接蓝牙耳机和有线耳机时，系统会根据策略选择一路输出。\n如果要判断通信场景当前设备，Android 12 及以上优先看 getCommunicationDevice()。\n2. 蓝牙 A2DP 和 SCO 不是一回事 TYPE_BLUETOOTH_A2DP 更偏媒体播放，音质较好但延迟和麦克风链路不适合传统通话。\nTYPE_BLUETOOTH_SCO 更偏通话，支持麦克风和低延迟通信链路，但音质通常不如 A2DP。\n所以音乐播放器和语音通话应用对蓝牙设备的选择策略通常不同。\n3. mode 是全局状态，不是播放器私有属性 setMode() 影响的是系统音频策略，不是某个播放器实例的局部配置。设置后不恢复，可能影响后续播放、录音、通话路由。\n比较稳妥的习惯是：\ntry { audioManager.setMode(AudioManager.MODE_IN_COMMUNICATION); // 开始通话或实时语音。 } finally { audioManager.clearCommunicationDevice(); audioManager.setMode(AudioManager.MODE_NORMAL); } 实际项目里还要结合 Activity、Service、通话状态和异常退出路径，确保资源一定释放。\n4. 焦点、音量和路由不要混用 音频焦点决定谁该播放，音量类型决定调哪一路音量，音频路由决定声音从哪个设备出入。三者相关，但不能互相替代。\n例如“切到扬声器”不应该通过调大 STREAM_MUSIC 实现；“让导航提示音压低音乐”不应该手动修改系统媒体音量，而应该用合适的音频焦点类型和 AudioAttributes。\n5. 录音需要权限 使用麦克风录音时需要 RECORD_AUDIO 权限。即使能查询到输入设备，没有权限也不能直接采集音频数据。\n",
+  "wordCount" : "614",
+  "inLanguage": "en",
+  "datePublished": "2026-06-11T12:02:24+08:00",
+  "dateModified": "2026-06-11T12:02:24+08:00",
+  "author":[{
+    "@type": "Person",
+    "name": "夏天的小西瓜"
+  }],
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "/posts/android/android_audio_io_basic/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "缥缈夏鸢",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "/favicon.ico"
+    }
+  }
+}
+</script>
+</head>
+
+<body class="" id="top">
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.body.classList.add('dark');
+    } else if (localStorage.getItem("pref-theme") === "light") {
+        document.body.classList.remove('dark')
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.body.classList.add('dark');
+    }
+
+</script>
+
+<header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="/" accesskey="h" title="缥缈夏鸢 (Alt + H)">缥缈夏鸢</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" accesskey="t" title="(Alt + T)">
+                    <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu">
+            <li>
+                <a href="/" title="首页">
+                    <span>首页</span>
+                </a>
+            </li>
+            <li>
+                <a href="/posts/" title="文章">
+                    <span>文章</span>
+                </a>
+            </li>
+            <li>
+                <a href="/categories/" title="分类">
+                    <span>分类</span>
+                </a>
+            </li>
+            <li>
+                <a href="/tags/" title="标签">
+                    <span>标签</span>
+                </a>
+            </li>
+            <li>
+                <a href="/archives/" title="归档">
+                    <span>归档</span>
+                </a>
+            </li>
+            <li>
+                <a href="/search/" title="搜索">
+                    <span>搜索</span>
+                </a>
+            </li>
+            <li>
+                <a href="/about/" title="关于">
+                    <span>关于</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <div class="breadcrumbs"><a href="/">Home</a>&nbsp;»&nbsp;<a href="/posts/">Posts</a></div>
+    <h1 class="post-title entry-hint-parent">
+      Android音频路由入门：设备、模式、焦点与音量
+    </h1>
+    <div class="post-meta"><span title='2026-06-11 12:02:24 +0800 CST'>June 11, 2026</span>&nbsp;·&nbsp;3 min&nbsp;·&nbsp;614 words&nbsp;·&nbsp;夏天的小西瓜
+
+</div>
+  </header> <aside id="toc-container" class="toc-container wide">
+    <div class="toc">
+        <details  open>
+            <summary accesskey="c" title="(Alt + C)">
+                <span class="details">Table of Contents</span>
+            </summary>
+
+            <div class="inner"><ul>
+                    <li>
+                        <a href="#%e5%9f%ba%e6%9c%ac%e6%a6%82%e5%bf%b5" aria-label="基本概念">基本概念</a><ul>
+                            
+                    <li>
+                        <a href="#1-%e8%be%93%e5%85%a5%e5%92%8c%e8%be%93%e5%87%ba" aria-label="1. 输入和输出">1. 输入和输出</a></li>
+                    <li>
+                        <a href="#2-%e5%b8%b8%e7%94%a8-api" aria-label="2. 常用 API">2. 常用 API</a></li></ul>
+                    </li>
+                    <li>
+                        <a href="#%e9%9f%b3%e9%a2%91%e8%ae%be%e5%a4%87%e7%b1%bb%e5%9e%8b" aria-label="音频设备类型">音频设备类型</a><ul>
+                            
+                    <li>
+                        <a href="#1-%e5%b8%b8%e8%a7%81%e8%be%93%e5%87%ba%e8%ae%be%e5%a4%87" aria-label="1. 常见输出设备">1. 常见输出设备</a></li>
+                    <li>
+                        <a href="#2-%e5%b8%b8%e8%a7%81%e8%be%93%e5%85%a5%e8%ae%be%e5%a4%87" aria-label="2. 常见输入设备">2. 常见输入设备</a></li></ul>
+                    </li>
+                    <li>
+                        <a href="#%e9%9f%b3%e9%a2%91%e6%a8%a1%e5%bc%8f%e7%b1%bb%e5%9e%8b" aria-label="音频模式类型">音频模式类型</a><ul>
+                            
+                    <li>
+                        <a href="#1-%e5%b8%b8%e8%a7%81%e6%a8%a1%e5%bc%8f" aria-label="1. 常见模式">1. 常见模式</a></li></ul>
+                    </li>
+                    <li>
+                        <a href="#%e9%80%9a%e4%bf%a1%e8%ae%be%e5%a4%87%e9%80%89%e6%8b%a9" aria-label="通信设备选择">通信设备选择</a><ul>
+                            
+                    <li>
+                        <a href="#1-android-12-%e5%8f%8a%e4%bb%a5%e4%b8%8a" aria-label="1. Android 12 及以上">1. Android 12 及以上</a></li>
+                    <li>
+                        <a href="#2-android-12-%e4%b9%8b%e5%89%8d" aria-label="2. Android 12 之前">2. Android 12 之前</a></li></ul>
+                    </li>
+                    <li>
+                        <a href="#%e9%9f%b3%e9%a2%91%e7%84%a6%e7%82%b9" aria-label="音频焦点">音频焦点</a><ul>
+                            
+                    <li>
+                        <a href="#1-%e4%bb%80%e4%b9%88%e6%97%b6%e5%80%99%e8%af%b7%e6%b1%82%e7%84%a6%e7%82%b9" aria-label="1. 什么时候请求焦点">1. 什么时候请求焦点</a></li>
+                    <li>
+                        <a href="#2-%e5%b8%b8%e8%a7%81%e7%84%a6%e7%82%b9%e7%b1%bb%e5%9e%8b" aria-label="2. 常见焦点类型">2. 常见焦点类型</a></li>
+                    <li>
+                        <a href="#3-android-12-%e4%b9%8b%e5%90%8e%e7%9a%84%e5%8f%98%e5%8c%96" aria-label="3. Android 12 之后的变化">3. Android 12 之后的变化</a></li></ul>
+                    </li>
+                    <li>
+                        <a href="#%e9%9f%b3%e9%87%8f%e7%b1%bb%e5%9e%8b" aria-label="音量类型">音量类型</a><ul>
+                            
+                    <li>
+                        <a href="#1-%e4%bc%a0%e7%bb%9f-stream-%e7%b1%bb%e5%9e%8b" aria-label="1. 传统 stream 类型">1. 传统 stream 类型</a></li>
+                    <li>
+                        <a href="#2-audioattributes-%e6%9b%b4%e9%80%82%e5%90%88%e6%8f%8f%e8%bf%b0%e7%94%a8%e9%80%94" aria-label="2. AudioAttributes 更适合描述用途">2. AudioAttributes 更适合描述用途</a></li>
+                    <li>
+                        <a href="#3-%e9%9f%b3%e9%87%8f%e9%94%ae%e5%88%b0%e5%ba%95%e8%b0%83%e5%93%aa%e4%b8%80%e8%b7%af" aria-label="3. 音量键到底调哪一路">3. 音量键到底调哪一路</a></li></ul>
+                    </li>
+                    <li>
+                        <a href="#%e5%b8%b8%e8%a7%81%e5%9d%91%e7%82%b9" aria-label="常见坑点">常见坑点</a><ul>
+                            
+                    <li>
+                        <a href="#1-%e8%ae%be%e5%a4%87%e7%b1%bb%e5%9e%8b%e4%b8%8d%e7%ad%89%e4%ba%8e%e5%bd%93%e5%89%8d%e8%b7%af%e7%94%b1" aria-label="1. 设备类型不等于当前路由">1. 设备类型不等于当前路由</a></li>
+                    <li>
+                        <a href="#2-%e8%93%9d%e7%89%99-a2dp-%e5%92%8c-sco-%e4%b8%8d%e6%98%af%e4%b8%80%e5%9b%9e%e4%ba%8b" aria-label="2. 蓝牙 A2DP 和 SCO 不是一回事">2. 蓝牙 A2DP 和 SCO 不是一回事</a></li>
+                    <li>
+                        <a href="#3-mode-%e6%98%af%e5%85%a8%e5%b1%80%e7%8a%b6%e6%80%81%e4%b8%8d%e6%98%af%e6%92%ad%e6%94%be%e5%99%a8%e7%a7%81%e6%9c%89%e5%b1%9e%e6%80%a7" aria-label="3. mode 是全局状态，不是播放器私有属性">3. mode 是全局状态，不是播放器私有属性</a></li>
+                    <li>
+                        <a href="#4-%e7%84%a6%e7%82%b9%e9%9f%b3%e9%87%8f%e5%92%8c%e8%b7%af%e7%94%b1%e4%b8%8d%e8%a6%81%e6%b7%b7%e7%94%a8" aria-label="4. 焦点、音量和路由不要混用">4. 焦点、音量和路由不要混用</a></li>
+                    <li>
+                        <a href="#5-%e5%bd%95%e9%9f%b3%e9%9c%80%e8%a6%81%e6%9d%83%e9%99%90" aria-label="5. 录音需要权限">5. 录音需要权限</a></li></ul>
+                    </li>
+                    <li>
+                        <a href="#%e5%b0%8f%e7%bb%93" aria-label="小结">小结</a></li>
+                    <li>
+                        <a href="#%e5%8f%82%e8%80%83" aria-label="参考">参考</a>
+                    </li>
+                </ul>
+            </div>
+        </details>
+    </div>
+</aside>
+<script>
+    let activeElement;
+    let elements;
+    window.addEventListener('DOMContentLoaded', function (event) {
+        checkTocPosition();
+
+        elements = document.querySelectorAll('h1[id],h2[id],h3[id],h4[id],h5[id],h6[id]');
+         
+         activeElement = elements[0];
+         const id = encodeURI(activeElement.getAttribute('id')).toLowerCase();
+         document.querySelector(`.inner ul li a[href="#${id}"]`).classList.add('active');
+     }, false);
+
+    window.addEventListener('resize', function(event) {
+        checkTocPosition();
+    }, false);
+
+    window.addEventListener('scroll', () => {
+        
+        activeElement = Array.from(elements).find((element) => {
+            if ((getOffsetTop(element) - window.pageYOffset) > 0 && 
+                (getOffsetTop(element) - window.pageYOffset) < window.innerHeight/2) {
+                return element;
+            }
+        }) || activeElement
+
+        elements.forEach(element => {
+             const id = encodeURI(element.getAttribute('id')).toLowerCase();
+             if (element === activeElement){
+                 document.querySelector(`.inner ul li a[href="#${id}"]`).classList.add('active');
+             } else {
+                 document.querySelector(`.inner ul li a[href="#${id}"]`).classList.remove('active');
+             }
+         })
+     }, false);
+
+    const main = parseInt(getComputedStyle(document.body).getPropertyValue('--article-width'), 10);
+    const toc = parseInt(getComputedStyle(document.body).getPropertyValue('--toc-width'), 10);
+    const gap = parseInt(getComputedStyle(document.body).getPropertyValue('--gap'), 10);
+
+    function checkTocPosition() {
+        const width = document.body.scrollWidth;
+
+        if (width - main - (toc * 2) - (gap * 4) > 0) {
+            document.getElementById("toc-container").classList.add("wide");
+        } else {
+            document.getElementById("toc-container").classList.remove("wide");
+        }
+    }
+
+    function getOffsetTop(element) {
+        if (!element.getClientRects().length) {
+            return 0;
+        }
+        let rect = element.getBoundingClientRect();
+        let win = element.ownerDocument.defaultView;
+        return rect.top + win.pageYOffset;   
+    }
+</script>
+
+  <div class="post-content"><p>Android 音频输入输出的核心不是“播放一个声音”或“录一段声音”这么简单，而是系统需要根据场景选择合适的输入设备、输出设备、音频模式、音频焦点和音量类型。</p>
+<p>例如音乐播放通常走扬声器、耳机或蓝牙 A2DP；语音通话通常走听筒、免提、蓝牙通话链路或 USB 耳机；录音则需要选择内置麦克风、耳机麦克风或 USB 麦克风。理解这些概念后，再看 <code>AudioTrack</code>、<code>AudioRecord</code>、<code>MediaPlayer</code>、<code>MediaRecorder</code> 才不会混乱。</p>
+<h2 id="基本概念">基本概念<a hidden class="anchor" aria-hidden="true" href="#基本概念">#</a></h2>
+<h3 id="1-输入和输出">1. 输入和输出<a hidden class="anchor" aria-hidden="true" href="#1-输入和输出">#</a></h3>
+<p>在 Android 音频系统中，设备通常可以分成两类：</p>
+<ul>
+<li>输入设备：给系统提供音频数据，例如内置麦克风、蓝牙耳机麦克风、USB 麦克风。</li>
+<li>输出设备：接收系统播放的音频数据，例如扬声器、听筒、有线耳机、蓝牙耳机、HDMI。</li>
+</ul>
+<p><code>AudioDeviceInfo</code> 用 <code>isSource()</code> 和 <code>isSink()</code> 表示设备方向：</p>
+<ul>
+<li><code>isSource() == true</code>：音频输入设备。</li>
+<li><code>isSink() == true</code>：音频输出设备。</li>
+</ul>
+<p>一个物理设备可能同时包含输入和输出能力。例如带麦克风的有线耳机，耳机部分是输出，麦克风部分是输入。</p>
+<h3 id="2-常用-api">2. 常用 API<a hidden class="anchor" aria-hidden="true" href="#2-常用-api">#</a></h3>
+<p>常见入口是 <code>AudioManager</code>：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">AudioManager</span><span class="w"> </span><span class="n">audioManager</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">getSystemService</span><span class="p">(</span><span class="n">AudioManager</span><span class="p">.</span><span class="na">class</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="c1">// 查询当前连接的输出设备</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">AudioDeviceInfo</span><span class="o">[]</span><span class="w"> </span><span class="n">outputs</span><span class="w"> </span><span class="o">=</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">audioManager</span><span class="p">.</span><span class="na">getDevices</span><span class="p">(</span><span class="n">AudioManager</span><span class="p">.</span><span class="na">GET_DEVICES_OUTPUTS</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="c1">// 查询当前连接的输入设备</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">AudioDeviceInfo</span><span class="o">[]</span><span class="w"> </span><span class="n">inputs</span><span class="w"> </span><span class="o">=</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">audioManager</span><span class="p">.</span><span class="na">getDevices</span><span class="p">(</span><span class="n">AudioManager</span><span class="p">.</span><span class="na">GET_DEVICES_INPUTS</span><span class="p">);</span><span class="w">
+</span></span></span></code></pre></div><p><code>getDevices()</code> 返回的是当前系统已连接、符合条件的设备列表，不代表设备一定适合当前业务场景。比如蓝牙耳机可能支持媒体播放，但通话场景还要看是否可作为通信设备使用。</p>
+<h2 id="音频设备类型">音频设备类型<a hidden class="anchor" aria-hidden="true" href="#音频设备类型">#</a></h2>
+<h3 id="1-常见输出设备">1. 常见输出设备<a hidden class="anchor" aria-hidden="true" href="#1-常见输出设备">#</a></h3>
+<table>
+  <thead>
+      <tr>
+          <th>类型</th>
+          <th>说明</th>
+          <th>典型场景</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>TYPE_BUILTIN_SPEAKER</code></td>
+          <td>内置扬声器</td>
+          <td>外放音乐、免提</td>
+      </tr>
+      <tr>
+          <td><code>TYPE_BUILTIN_EARPIECE</code></td>
+          <td>听筒</td>
+          <td>电话、语音通话</td>
+      </tr>
+      <tr>
+          <td><code>TYPE_WIRED_HEADPHONES</code></td>
+          <td>不带麦克风的有线耳机</td>
+          <td>媒体播放</td>
+      </tr>
+      <tr>
+          <td><code>TYPE_WIRED_HEADSET</code></td>
+          <td>带麦克风的有线耳机</td>
+          <td>通话、录音、播放</td>
+      </tr>
+      <tr>
+          <td><code>TYPE_BLUETOOTH_A2DP</code></td>
+          <td>蓝牙媒体音频</td>
+          <td>音乐、视频</td>
+      </tr>
+      <tr>
+          <td><code>TYPE_BLUETOOTH_SCO</code></td>
+          <td>蓝牙通话音频</td>
+          <td>电话、VoIP</td>
+      </tr>
+      <tr>
+          <td><code>TYPE_BLE_HEADSET</code></td>
+          <td>BLE 音频耳机</td>
+          <td>新版蓝牙音频播放或通话</td>
+      </tr>
+      <tr>
+          <td><code>TYPE_BLE_SPEAKER</code></td>
+          <td>BLE 音频音箱</td>
+          <td>外放播放</td>
+      </tr>
+      <tr>
+          <td><code>TYPE_USB_DEVICE</code></td>
+          <td>USB 音频设备</td>
+          <td>外接声卡、USB DAC</td>
+      </tr>
+      <tr>
+          <td><code>TYPE_USB_HEADSET</code></td>
+          <td>USB 耳机</td>
+          <td>通话、播放、录音</td>
+      </tr>
+      <tr>
+          <td><code>TYPE_HDMI</code> / <code>TYPE_HDMI_ARC</code> / <code>TYPE_HDMI_EARC</code></td>
+          <td>HDMI 音频输出</td>
+          <td>电视、功放、家庭影院</td>
+      </tr>
+  </tbody>
+</table>
+<h3 id="2-常见输入设备">2. 常见输入设备<a hidden class="anchor" aria-hidden="true" href="#2-常见输入设备">#</a></h3>
+<table>
+  <thead>
+      <tr>
+          <th>类型</th>
+          <th>说明</th>
+          <th>典型场景</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>TYPE_BUILTIN_MIC</code></td>
+          <td>内置麦克风</td>
+          <td>录音、语音识别、通话</td>
+      </tr>
+      <tr>
+          <td><code>TYPE_WIRED_HEADSET</code></td>
+          <td>有线耳机麦克风</td>
+          <td>通话、录音</td>
+      </tr>
+      <tr>
+          <td><code>TYPE_BLUETOOTH_SCO</code></td>
+          <td>蓝牙通话麦克风</td>
+          <td>电话、VoIP</td>
+      </tr>
+      <tr>
+          <td><code>TYPE_USB_DEVICE</code> / <code>TYPE_USB_HEADSET</code></td>
+          <td>USB 输入设备</td>
+          <td>外接麦克风、USB 耳机</td>
+      </tr>
+      <tr>
+          <td><code>TYPE_TELEPHONY</code></td>
+          <td>电话链路相关设备</td>
+          <td>系统电话场景</td>
+      </tr>
+      <tr>
+          <td><code>TYPE_REMOTE_SUBMIX</code></td>
+          <td>远端或虚拟混音设备</td>
+          <td>投屏、录屏、系统级混音</td>
+      </tr>
+  </tbody>
+</table>
+<p>设备类型只是描述“这是什么设备”。实际能不能被当前应用使用，还取决于 Android 版本、权限、当前音频模式、设备连接状态和厂商实现。</p>
+<h2 id="音频模式类型">音频模式类型<a hidden class="anchor" aria-hidden="true" href="#音频模式类型">#</a></h2>
+<p><code>AudioManager</code> 的 mode 描述当前系统处于什么音频场景。它会影响路由、音量策略以及底层音频链路。</p>
+<h3 id="1-常见模式">1. 常见模式<a hidden class="anchor" aria-hidden="true" href="#1-常见模式">#</a></h3>
+<table>
+  <thead>
+      <tr>
+          <th>模式</th>
+          <th>说明</th>
+          <th>应用建议</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>MODE_NORMAL</code></td>
+          <td>普通模式，没有响铃或通话</td>
+          <td>音乐、视频、普通播放默认使用</td>
+      </tr>
+      <tr>
+          <td><code>MODE_RINGTONE</code></td>
+          <td>响铃模式</td>
+          <td>通常由系统电话或系统响铃流程使用</td>
+      </tr>
+      <tr>
+          <td><code>MODE_IN_CALL</code></td>
+          <td>电话通话模式</td>
+          <td>普通应用不要使用，主要给系统电话应用</td>
+      </tr>
+      <tr>
+          <td><code>MODE_IN_COMMUNICATION</code></td>
+          <td>音视频通话或 VoIP 模式</td>
+          <td>语音聊天、视频会议常用</td>
+      </tr>
+      <tr>
+          <td><code>MODE_CALL_SCREENING</code></td>
+          <td>来电筛选模式</td>
+          <td>电话相关能力使用</td>
+      </tr>
+      <tr>
+          <td><code>MODE_CALL_REDIRECT</code></td>
+          <td>电话重定向模式</td>
+          <td>电话相关能力使用</td>
+      </tr>
+      <tr>
+          <td><code>MODE_COMMUNICATION_REDIRECT</code></td>
+          <td>VoIP 音频重定向模式</td>
+          <td>通信音频被转移到其他设备时使用</td>
+      </tr>
+      <tr>
+          <td><code>MODE_ASSISTANT_CONVERSATION</code></td>
+          <td>助手对话模式</td>
+          <td>交互式语音助手场景</td>
+      </tr>
+  </tbody>
+</table>
+<p>对普通应用来说，最常接触的是两个模式：</p>
+<ul>
+<li>播放音乐、短视频、提示音：保持 <code>MODE_NORMAL</code>。</li>
+<li>做语音通话、视频会议、实时对讲：进入 <code>MODE_IN_COMMUNICATION</code>，结束后恢复 <code>MODE_NORMAL</code>。</li>
+</ul>
+<p>不要为了“让声音从听筒出来”随便设置 <code>MODE_IN_CALL</code>。这个模式涉及电话层和平台混音行为，普通应用误用后容易导致路由异常、音量异常，甚至影响其他应用。</p>
+<h2 id="通信设备选择">通信设备选择<a hidden class="anchor" aria-hidden="true" href="#通信设备选择">#</a></h2>
+<h3 id="1-android-12-及以上">1. Android 12 及以上<a hidden class="anchor" aria-hidden="true" href="#1-android-12-及以上">#</a></h3>
+<p>Android 12（API 31）开始，通信场景推荐使用 <code>setCommunicationDevice()</code> 选择通话设备。它替代了部分旧的扬声器和蓝牙 SCO 控制方式。</p>
+<p>示例：通话中切到扬声器。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">Build</span><span class="p">.</span><span class="na">VERSION</span><span class="p">.</span><span class="na">SDK_INT</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="n">Build</span><span class="p">.</span><span class="na">VERSION_CODES</span><span class="p">.</span><span class="na">S</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">AudioManager</span><span class="w"> </span><span class="n">audioManager</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">getSystemService</span><span class="p">(</span><span class="n">AudioManager</span><span class="p">.</span><span class="na">class</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">audioManager</span><span class="p">.</span><span class="na">setMode</span><span class="p">(</span><span class="n">AudioManager</span><span class="p">.</span><span class="na">MODE_IN_COMMUNICATION</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">AudioDeviceInfo</span><span class="w"> </span><span class="n">speaker</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">null</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="n">AudioDeviceInfo</span><span class="w"> </span><span class="n">device</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">audioManager</span><span class="p">.</span><span class="na">getAvailableCommunicationDevices</span><span class="p">())</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">device</span><span class="p">.</span><span class="na">getType</span><span class="p">()</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">AudioDeviceInfo</span><span class="p">.</span><span class="na">TYPE_BUILTIN_SPEAKER</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">speaker</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">device</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="k">break</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">speaker</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="kc">null</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="kt">boolean</span><span class="w"> </span><span class="n">accepted</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">audioManager</span><span class="p">.</span><span class="na">setCommunicationDevice</span><span class="p">(</span><span class="n">speaker</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">accepted</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="c1">// 设备不可用，或者系统拒绝本次路由请求。</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">// 通话结束时恢复。</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">audioManager</span><span class="p">.</span><span class="na">clearCommunicationDevice</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">audioManager</span><span class="p">.</span><span class="na">setMode</span><span class="p">(</span><span class="n">AudioManager</span><span class="p">.</span><span class="na">MODE_NORMAL</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></div><p>这里有两个重点：</p>
+<ul>
+<li><code>setCommunicationDevice()</code> 只能选择适合通信场景的设备，输入设备通常由系统自动匹配。</li>
+<li>通话结束必须调用 <code>clearCommunicationDevice()</code>，并把 mode 恢复到 <code>MODE_NORMAL</code>。</li>
+</ul>
+<h3 id="2-android-12-之前">2. Android 12 之前<a hidden class="anchor" aria-hidden="true" href="#2-android-12-之前">#</a></h3>
+<p>旧版本中常见做法是配合 <code>MODE_IN_COMMUNICATION</code>、<code>setSpeakerphoneOn()</code>、蓝牙 SCO 相关 API 做路由控制。但这些 API 在新版本中逐步被替代，兼容代码要按系统版本分支处理。</p>
+<p>如果只是普通媒体播放，不应该主动控制通信设备。普通播放更应该通过 <code>AudioAttributes</code> 表达用途，让系统自己选择合适路由。</p>
+<h2 id="音频焦点">音频焦点<a hidden class="anchor" aria-hidden="true" href="#音频焦点">#</a></h2>
+<p>音频焦点解决的是“多个应用同时想发声时，谁该继续播放、谁该暂停或降低音量”的问题。它不是音量大小，也不是输出设备，而是一套应用之间协作的播放仲裁机制。</p>
+<h3 id="1-什么时候请求焦点">1. 什么时候请求焦点<a hidden class="anchor" aria-hidden="true" href="#1-什么时候请求焦点">#</a></h3>
+<p>一般规则是：准备真正开始播放前请求焦点，停止播放后释放焦点。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">AudioAttributes</span><span class="w"> </span><span class="n">attributes</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">AudioAttributes</span><span class="p">.</span><span class="na">Builder</span><span class="p">()</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">.</span><span class="na">setUsage</span><span class="p">(</span><span class="n">AudioAttributes</span><span class="p">.</span><span class="na">USAGE_MEDIA</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">.</span><span class="na">setContentType</span><span class="p">(</span><span class="n">AudioAttributes</span><span class="p">.</span><span class="na">CONTENT_TYPE_MUSIC</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">.</span><span class="na">build</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">AudioFocusRequest</span><span class="w"> </span><span class="n">focusRequest</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">AudioFocusRequest</span><span class="p">.</span><span class="na">Builder</span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">AudioManager</span><span class="p">.</span><span class="na">AUDIOFOCUS_GAIN</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">.</span><span class="na">setAudioAttributes</span><span class="p">(</span><span class="n">attributes</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">.</span><span class="na">setOnAudioFocusChangeListener</span><span class="p">(</span><span class="n">focusChange</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="k">switch</span><span class="w"> </span><span class="p">(</span><span class="n">focusChange</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="k">case</span><span class="w"> </span><span class="n">AudioManager</span><span class="p">.</span><span class="na">AUDIOFOCUS_LOSS</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                    </span><span class="c1">// 长时间失去焦点，应该暂停并等待用户重新触发播放。</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                    </span><span class="k">break</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="k">case</span><span class="w"> </span><span class="n">AudioManager</span><span class="p">.</span><span class="na">AUDIOFOCUS_LOSS_TRANSIENT</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                    </span><span class="c1">// 短暂失去焦点，例如来电或语音播报，通常暂停。</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                    </span><span class="k">break</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="k">case</span><span class="w"> </span><span class="n">AudioManager</span><span class="p">.</span><span class="na">AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                    </span><span class="c1">// 可以继续播放，但应该降低音量。</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                    </span><span class="k">break</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="k">case</span><span class="w"> </span><span class="n">AudioManager</span><span class="p">.</span><span class="na">AUDIOFOCUS_GAIN</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                    </span><span class="c1">// 重新获得焦点，可以恢复音量或继续播放。</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                    </span><span class="k">break</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">})</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">.</span><span class="na">build</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kt">int</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">audioManager</span><span class="p">.</span><span class="na">requestAudioFocus</span><span class="p">(</span><span class="n">focusRequest</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">AudioManager</span><span class="p">.</span><span class="na">AUDIOFOCUS_REQUEST_GRANTED</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">// 开始播放。</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="c1">// 播放彻底结束后释放焦点。</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">audioManager</span><span class="p">.</span><span class="na">abandonAudioFocusRequest</span><span class="p">(</span><span class="n">focusRequest</span><span class="p">);</span><span class="w">
+</span></span></span></code></pre></div><p>上面是 Android 8.0（API 26）及以上推荐的写法。更低版本需要使用旧的 <code>requestAudioFocus(listener, streamType, durationHint)</code> 接口。</p>
+<h3 id="2-常见焦点类型">2. 常见焦点类型<a hidden class="anchor" aria-hidden="true" href="#2-常见焦点类型">#</a></h3>
+<table>
+  <thead>
+      <tr>
+          <th>类型</th>
+          <th>含义</th>
+          <th>典型场景</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>AUDIOFOCUS_GAIN</code></td>
+          <td>长时间获取焦点</td>
+          <td>音乐、播客、长视频</td>
+      </tr>
+      <tr>
+          <td><code>AUDIOFOCUS_GAIN_TRANSIENT</code></td>
+          <td>短时间获取焦点，希望对方暂停</td>
+          <td>语音播报、短音频</td>
+      </tr>
+      <tr>
+          <td><code>AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK</code></td>
+          <td>短时间获取焦点，允许对方降低音量继续播</td>
+          <td>导航提示音、消息提示音</td>
+      </tr>
+      <tr>
+          <td><code>AUDIOFOCUS_GAIN_TRANSIENT_EXCLUSIVE</code></td>
+          <td>短时间独占焦点，不希望其他声音继续</td>
+          <td>录音、语音识别前的敏感场景</td>
+      </tr>
+  </tbody>
+</table>
+<p>如果应用播放的是语音内容，例如有声书、课程、会议音频，不建议在失去焦点时简单 duck。语音内容被压低后可懂度会明显下降，更合理的策略通常是暂停，等焦点回来后再恢复。</p>
+<h3 id="3-android-12-之后的变化">3. Android 12 之后的变化<a hidden class="anchor" aria-hidden="true" href="#3-android-12-之后的变化">#</a></h3>
+<p>Android 12（API 31）之后，系统会更强地介入音频焦点处理。比如媒体或游戏应用失去焦点时，系统可能强制淡出并静音。Android 15（API 35）开始，目标版本较高的应用还需要满足前台应用或前台服务等条件，才能成功请求音频焦点。</p>
+<p>所以音频焦点不能只当成“礼貌回调”。在新系统上，它已经会直接影响应用是否能继续发声。</p>
+<h2 id="音量类型">音量类型<a hidden class="anchor" aria-hidden="true" href="#音量类型">#</a></h2>
+<p>音量类型解决的是“用户按音量键时调的是哪一路音量”的问题。它和音频焦点、音频设备、音频模式都有关，但不是同一个概念。</p>
+<h3 id="1-传统-stream-类型">1. 传统 stream 类型<a hidden class="anchor" aria-hidden="true" href="#1-传统-stream-类型">#</a></h3>
+<p>Android 早期主要通过 stream type 表示音量类型：</p>
+<table>
+  <thead>
+      <tr>
+          <th>类型</th>
+          <th>说明</th>
+          <th>常见场景</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>STREAM_MUSIC</code></td>
+          <td>媒体音量</td>
+          <td>音乐、视频、游戏</td>
+      </tr>
+      <tr>
+          <td><code>STREAM_VOICE_CALL</code></td>
+          <td>通话音量</td>
+          <td>电话、VoIP 通话</td>
+      </tr>
+      <tr>
+          <td><code>STREAM_RING</code></td>
+          <td>铃声音量</td>
+          <td>来电铃声</td>
+      </tr>
+      <tr>
+          <td><code>STREAM_NOTIFICATION</code></td>
+          <td>通知音量</td>
+          <td>通知提示</td>
+      </tr>
+      <tr>
+          <td><code>STREAM_ALARM</code></td>
+          <td>闹钟音量</td>
+          <td>闹钟、倒计时提醒</td>
+      </tr>
+      <tr>
+          <td><code>STREAM_SYSTEM</code></td>
+          <td>系统音量</td>
+          <td>按键音、系统反馈</td>
+      </tr>
+      <tr>
+          <td><code>STREAM_DTMF</code></td>
+          <td>拨号音音量</td>
+          <td>电话拨号音</td>
+      </tr>
+      <tr>
+          <td><code>STREAM_ACCESSIBILITY</code></td>
+          <td>无障碍音量</td>
+          <td>屏幕阅读等无障碍反馈</td>
+      </tr>
+      <tr>
+          <td><code>STREAM_ASSISTANT</code></td>
+          <td>助手音量</td>
+          <td>语音助手反馈</td>
+      </tr>
+  </tbody>
+</table>
+<p>可以通过 <code>AudioManager</code> 查询或调整指定 stream 的音量：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kt">int</span><span class="w"> </span><span class="n">current</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">audioManager</span><span class="p">.</span><span class="na">getStreamVolume</span><span class="p">(</span><span class="n">AudioManager</span><span class="p">.</span><span class="na">STREAM_MUSIC</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kt">int</span><span class="w"> </span><span class="n">max</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">audioManager</span><span class="p">.</span><span class="na">getStreamMaxVolume</span><span class="p">(</span><span class="n">AudioManager</span><span class="p">.</span><span class="na">STREAM_MUSIC</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">audioManager</span><span class="p">.</span><span class="na">adjustStreamVolume</span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">AudioManager</span><span class="p">.</span><span class="na">STREAM_MUSIC</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">AudioManager</span><span class="p">.</span><span class="na">ADJUST_RAISE</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">AudioManager</span><span class="p">.</span><span class="na">FLAG_SHOW_UI</span><span class="p">);</span><span class="w">
+</span></span></span></code></pre></div><p>不过在播放器、提示音、通话这类具体播放对象上，更推荐使用 <code>AudioAttributes</code> 描述用途，而不是只依赖 stream type。</p>
+<h3 id="2-audioattributes-更适合描述用途">2. AudioAttributes 更适合描述用途<a hidden class="anchor" aria-hidden="true" href="#2-audioattributes-更适合描述用途">#</a></h3>
+<p><code>AudioAttributes</code> 用 usage 描述“为什么播放”，用 content type 描述“播放的是什么”。系统可以据此做更准确的路由、音量和焦点策略。</p>
+<p>常见 usage 对应关系如下：</p>
+<table>
+  <thead>
+      <tr>
+          <th>usage</th>
+          <th>含义</th>
+          <th>常见场景</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>USAGE_MEDIA</code></td>
+          <td>媒体内容</td>
+          <td>音乐、视频、播客</td>
+      </tr>
+      <tr>
+          <td><code>USAGE_GAME</code></td>
+          <td>游戏声音</td>
+          <td>游戏背景音、音效</td>
+      </tr>
+      <tr>
+          <td><code>USAGE_VOICE_COMMUNICATION</code></td>
+          <td>语音通信</td>
+          <td>VoIP、视频会议</td>
+      </tr>
+      <tr>
+          <td><code>USAGE_VOICE_COMMUNICATION_SIGNALLING</code></td>
+          <td>通话信令音</td>
+          <td>忙音、DTMF</td>
+      </tr>
+      <tr>
+          <td><code>USAGE_ALARM</code></td>
+          <td>闹钟</td>
+          <td>闹钟、强提醒</td>
+      </tr>
+      <tr>
+          <td><code>USAGE_NOTIFICATION</code></td>
+          <td>通知</td>
+          <td>普通通知提示</td>
+      </tr>
+      <tr>
+          <td><code>USAGE_NOTIFICATION_RINGTONE</code></td>
+          <td>铃声</td>
+          <td>来电铃声</td>
+      </tr>
+      <tr>
+          <td><code>USAGE_ASSISTANCE_NAVIGATION_GUIDANCE</code></td>
+          <td>导航引导</td>
+          <td>地图导航播报</td>
+      </tr>
+      <tr>
+          <td><code>USAGE_ASSISTANCE_SONIFICATION</code></td>
+          <td>UI 声音反馈</td>
+          <td>按键音、操作反馈</td>
+      </tr>
+      <tr>
+          <td><code>USAGE_ASSISTANT</code></td>
+          <td>语音助手</td>
+          <td>助手回答和提示</td>
+      </tr>
+  </tbody>
+</table>
+<p>例如普通音乐播放：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">AudioAttributes</span><span class="w"> </span><span class="n">mediaAttributes</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">AudioAttributes</span><span class="p">.</span><span class="na">Builder</span><span class="p">()</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">.</span><span class="na">setUsage</span><span class="p">(</span><span class="n">AudioAttributes</span><span class="p">.</span><span class="na">USAGE_MEDIA</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">.</span><span class="na">setContentType</span><span class="p">(</span><span class="n">AudioAttributes</span><span class="p">.</span><span class="na">CONTENT_TYPE_MUSIC</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">.</span><span class="na">build</span><span class="p">();</span><span class="w">
+</span></span></span></code></pre></div><p>例如 VoIP 通话：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">AudioAttributes</span><span class="w"> </span><span class="n">callAttributes</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">AudioAttributes</span><span class="p">.</span><span class="na">Builder</span><span class="p">()</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">.</span><span class="na">setUsage</span><span class="p">(</span><span class="n">AudioAttributes</span><span class="p">.</span><span class="na">USAGE_VOICE_COMMUNICATION</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">.</span><span class="na">setContentType</span><span class="p">(</span><span class="n">AudioAttributes</span><span class="p">.</span><span class="na">CONTENT_TYPE_SPEECH</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">.</span><span class="na">build</span><span class="p">();</span><span class="w">
+</span></span></span></code></pre></div><p>选择正确的 usage，比手动猜测 stream type 更稳。比如通话类音频使用 <code>USAGE_VOICE_COMMUNICATION</code>，系统才更容易匹配通信路由、通话音量和焦点策略。</p>
+<h3 id="3-音量键到底调哪一路">3. 音量键到底调哪一路<a hidden class="anchor" aria-hidden="true" href="#3-音量键到底调哪一路">#</a></h3>
+<p>用户按音量键时，系统会根据当前前台播放、当前 mode、Activity 的音量控制设置和系统策略决定调哪一路音量。</p>
+<p>普通媒体播放页面可以显式指定音量键控制媒体音量：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">setVolumeControlStream</span><span class="p">(</span><span class="n">AudioManager</span><span class="p">.</span><span class="na">STREAM_MUSIC</span><span class="p">);</span><span class="w">
+</span></span></span></code></pre></div><p>但这只是 Activity 层面对音量键行为的提示，不等于修改播放器的音频用途，也不等于切换输出设备。真正的播放语义仍然应该放在 <code>AudioAttributes</code> 里。</p>
+<h2 id="常见坑点">常见坑点<a hidden class="anchor" aria-hidden="true" href="#常见坑点">#</a></h2>
+<h3 id="1-设备类型不等于当前路由">1. 设备类型不等于当前路由<a hidden class="anchor" aria-hidden="true" href="#1-设备类型不等于当前路由">#</a></h3>
+<p><code>getDevices()</code> 查到的是当前连接设备，不代表当前音频一定走这个设备。比如手机同时连接蓝牙耳机和有线耳机时，系统会根据策略选择一路输出。</p>
+<p>如果要判断通信场景当前设备，Android 12 及以上优先看 <code>getCommunicationDevice()</code>。</p>
+<h3 id="2-蓝牙-a2dp-和-sco-不是一回事">2. 蓝牙 A2DP 和 SCO 不是一回事<a hidden class="anchor" aria-hidden="true" href="#2-蓝牙-a2dp-和-sco-不是一回事">#</a></h3>
+<p><code>TYPE_BLUETOOTH_A2DP</code> 更偏媒体播放，音质较好但延迟和麦克风链路不适合传统通话。</p>
+<p><code>TYPE_BLUETOOTH_SCO</code> 更偏通话，支持麦克风和低延迟通信链路，但音质通常不如 A2DP。</p>
+<p>所以音乐播放器和语音通话应用对蓝牙设备的选择策略通常不同。</p>
+<h3 id="3-mode-是全局状态不是播放器私有属性">3. mode 是全局状态，不是播放器私有属性<a hidden class="anchor" aria-hidden="true" href="#3-mode-是全局状态不是播放器私有属性">#</a></h3>
+<p><code>setMode()</code> 影响的是系统音频策略，不是某个播放器实例的局部配置。设置后不恢复，可能影响后续播放、录音、通话路由。</p>
+<p>比较稳妥的习惯是：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="k">try</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">audioManager</span><span class="p">.</span><span class="na">setMode</span><span class="p">(</span><span class="n">AudioManager</span><span class="p">.</span><span class="na">MODE_IN_COMMUNICATION</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">// 开始通话或实时语音。</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w"> </span><span class="k">finally</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">audioManager</span><span class="p">.</span><span class="na">clearCommunicationDevice</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">audioManager</span><span class="p">.</span><span class="na">setMode</span><span class="p">(</span><span class="n">AudioManager</span><span class="p">.</span><span class="na">MODE_NORMAL</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></div><p>实际项目里还要结合 Activity、Service、通话状态和异常退出路径，确保资源一定释放。</p>
+<h3 id="4-焦点音量和路由不要混用">4. 焦点、音量和路由不要混用<a hidden class="anchor" aria-hidden="true" href="#4-焦点音量和路由不要混用">#</a></h3>
+<p>音频焦点决定谁该播放，音量类型决定调哪一路音量，音频路由决定声音从哪个设备出入。三者相关，但不能互相替代。</p>
+<p>例如“切到扬声器”不应该通过调大 <code>STREAM_MUSIC</code> 实现；“让导航提示音压低音乐”不应该手动修改系统媒体音量，而应该用合适的音频焦点类型和 <code>AudioAttributes</code>。</p>
+<h3 id="5-录音需要权限">5. 录音需要权限<a hidden class="anchor" aria-hidden="true" href="#5-录音需要权限">#</a></h3>
+<p>使用麦克风录音时需要 <code>RECORD_AUDIO</code> 权限。即使能查询到输入设备，没有权限也不能直接采集音频数据。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-xml" data-lang="xml"><span class="line"><span class="cl"><span class="nt">&lt;uses-permission</span> <span class="na">android:name=</span><span class="s">&#34;android.permission.RECORD_AUDIO&#34;</span> <span class="nt">/&gt;</span>
+</span></span></code></pre></div><h2 id="小结">小结<a hidden class="anchor" aria-hidden="true" href="#小结">#</a></h2>
+<p>Android 音频输入输出可以按五层理解：</p>
+<ul>
+<li>设备层：<code>AudioDeviceInfo</code> 描述输入、输出和设备类型。</li>
+<li>场景层：<code>AudioManager</code> 的 mode 描述普通播放、响铃、通话、VoIP 等场景。</li>
+<li>路由层：系统根据设备连接、音频模式、应用请求和平台策略决定声音从哪里进、从哪里出。</li>
+<li>焦点层：音频焦点决定多个应用竞争播放时谁该继续、暂停或降低音量。</li>
+<li>音量层：stream type 和 <code>AudioAttributes</code> 共同影响音量控制、播放用途和系统策略。</li>
+</ul>
+<p>普通媒体播放尽量少干预系统路由，重点是设置正确的 <code>AudioAttributes</code> 和音频焦点；实时语音或视频通话才需要关注 <code>MODE_IN_COMMUNICATION</code> 和通信设备选择。遇到音频问题时，先确认当前 mode，再确认设备类型和实际路由，最后检查焦点与音量类型，排查会更清晰。</p>
+<h2 id="参考">参考<a hidden class="anchor" aria-hidden="true" href="#参考">#</a></h2>
+<ul>
+<li><a href="https://developer.android.com/reference/android/media/AudioDeviceInfo">AudioDeviceInfo | Android Developers</a></li>
+<li><a href="https://developer.android.com/reference/android/media/AudioManager">AudioManager | Android Developers</a></li>
+<li><a href="https://developer.android.com/reference/android/media/AudioAttributes">AudioAttributes | Android Developers</a></li>
+<li><a href="https://developer.android.com/media/optimize/audio-focus">Manage audio focus | Android Developers</a></li>
+</ul>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="/tags/audiomanager/">AudioManager</a></li>
+      <li><a href="/tags/audiodeviceinfo/">AudioDeviceInfo</a></li>
+      <li><a href="/tags/audiofocus/">AudioFocus</a></li>
+      <li><a href="/tags/%E9%9F%B3%E9%A2%91%E8%B7%AF%E7%94%B1/">音频路由</a></li>
+      <li><a href="/tags/%E9%9F%B3%E9%87%8F%E6%8E%A7%E5%88%B6/">音量控制</a></li>
+    </ul>
+<nav class="paginav">
+  <a class="next" href="/posts/tools/docker_intro_to_practice/">
+    <span class="title">Next »</span>
+    <br>
+    <span>Docker 从入门到实践</span>
+  </a>
+</nav>
+
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2026 <a href="/">缥缈夏鸢</a></span> · 
+
+    <span>
+        Powered by
+        <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+        <path d="M12 6H0l6-6z" />
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu')
+    if (menu) {
+        menu.scrollLeft = localStorage.getItem("menu-scroll-position");
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        if (document.body.className.includes("dark")) {
+            document.body.classList.remove('dark');
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            document.body.classList.add('dark');
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerHTML = 'copy';
+
+        function copyingDone() {
+            copybutton.innerHTML = 'copied!';
+            setTimeout(() => {
+                copybutton.innerHTML = 'copy';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+</body>
+
+</html>

@@ -200,6 +200,26 @@ window.onload = () => {
 
 <article class="post-entry"> 
   <header class="entry-header">
+    <h2 class="entry-hint-parent">Android音频路由入门：设备、模式、焦点与音量
+    </h2>
+  </header>
+  <div class="entry-content">
+    <p>Android 音频输入输出的核心不是“播放一个声音”或“录一段声音”这么简单，而是系统需要根据场景选择合适的输入设备、输出设备、音频模式、音频焦点和音量类型。
+例如音乐播放通常走扬声器、耳机或蓝牙 A2DP；语音通话通常走听筒、免提、蓝牙通话链路或 USB 耳机；录音则需要选择内置麦克风、耳机麦克风或 USB 麦克风。理解这些概念后，再看 AudioTrack、AudioRecord、MediaPlayer、MediaRecorder 才不会混乱。
+基本概念 1. 输入和输出 在 Android 音频系统中，设备通常可以分成两类：
+输入设备：给系统提供音频数据，例如内置麦克风、蓝牙耳机麦克风、USB 麦克风。 输出设备：接收系统播放的音频数据，例如扬声器、听筒、有线耳机、蓝牙耳机、HDMI。 AudioDeviceInfo 用 isSource() 和 isSink() 表示设备方向：
+isSource() == true：音频输入设备。 isSink() == true：音频输出设备。 一个物理设备可能同时包含输入和输出能力。例如带麦克风的有线耳机，耳机部分是输出，麦克风部分是输入。
+2. 常用 API 常见入口是 AudioManager：
+AudioManager audioManager = getSystemService(AudioManager.class); // 查询当前连接的输出设备 AudioDeviceInfo[] outputs = audioManager.getDevices(AudioManager.GET_DEVICES_OUTPUTS); // 查询当前连接的输入设备 AudioDeviceInfo[] inputs = audioManager.getDevices(AudioManager.GET_DEVICES_INPUTS); getDevices() 返回的是当前系统已连接、符合条件的设备列表，不代表设备一定适合当前业务场景。比如蓝牙耳机可能支持媒体播放，但通话场景还要看是否可作为通信设备使用。
+音频设备类型 1. 常见输出设备 类型 说明 典型场景 TYPE_BUILTIN_SPEAKER 内置扬声器 外放音乐、免提 TYPE_BUILTIN_EARPIECE 听筒 电话、语音通话 TYPE_WIRED_HEADPHONES 不带麦克风的有线耳机 媒体播放 TYPE_WIRED_HEADSET 带麦克风的有线耳机 通话、录音、播放 TYPE_BLUETOOTH_A2DP 蓝牙媒体音频 音乐、视频 TYPE_BLUETOOTH_SCO 蓝牙通话音频 电话、VoIP TYPE_BLE_HEADSET BLE 音频耳机 新版蓝牙音频播放或通话 TYPE_BLE_SPEAKER BLE 音频音箱 外放播放 TYPE_USB_DEVICE USB 音频设备 外接声卡、USB DAC TYPE_USB_HEADSET USB 耳机 通话、播放、录音 TYPE_HDMI / TYPE_HDMI_ARC / TYPE_HDMI_EARC HDMI 音频输出 电视、功放、家庭影院 2. 常见输入设备 类型 说明 典型场景 TYPE_BUILTIN_MIC 内置麦克风 录音、语音识别、通话 TYPE_WIRED_HEADSET 有线耳机麦克风 通话、录音 TYPE_BLUETOOTH_SCO 蓝牙通话麦克风 电话、VoIP TYPE_USB_DEVICE / TYPE_USB_HEADSET USB 输入设备 外接麦克风、USB 耳机 TYPE_TELEPHONY 电话链路相关设备 系统电话场景 TYPE_REMOTE_SUBMIX 远端或虚拟混音设备 投屏、录屏、系统级混音 设备类型只是描述“这是什么设备”。实际能不能被当前应用使用，还取决于 Android 版本、权限、当前音频模式、设备连接状态和厂商实现。
+...</p>
+  </div>
+  <footer class="entry-footer"><span title='2026-06-11 12:02:24 +0800 CST'>June 11, 2026</span>&nbsp;·&nbsp;3 min&nbsp;·&nbsp;614 words&nbsp;·&nbsp;夏天的小西瓜</footer>
+  <a class="entry-link" aria-label="post link to Android音频路由入门：设备、模式、焦点与音量" href="/posts/android/android_audio_io_basic/"></a>
+</article>
+
+<article class="post-entry"> 
+  <header class="entry-header">
     <h2 class="entry-hint-parent">Docker 从入门到实践
     </h2>
   </header>
@@ -401,34 +421,6 @@ CREATE TABLE users ( id INT PRIMARY KEY AUTO_INCREMENT, name VARCHAR(50) NOT NUL
   </div>
   <footer class="entry-footer"><span title='2026-04-10 12:01:51 +0800 CST'>April 10, 2026</span>&nbsp;·&nbsp;3 min&nbsp;·&nbsp;622 words&nbsp;·&nbsp;夏天的小西瓜</footer>
   <a class="entry-link" aria-label="post link to MySQL 基础用法" href="/posts/database/mysql_basic/"></a>
-</article>
-
-<article class="post-entry"> 
-  <header class="entry-header">
-    <h2 class="entry-hint-parent">TypeScript基础用法
-    </h2>
-  </header>
-  <div class="entry-content">
-    <p>TypeScript 是在 JavaScript 基础上增加了类型能力的语言。对初学者来说，先不用纠结太多概念，先把最常见的基础写法掌握住就够了。
-基础类型 TypeScript 可以直接给变量标注类型：
-const name: string = &#34;Tom&#34;; const age: number = 18; const passed: boolean = true; 常见基础类型有：
-string：字符串 number：数字 boolean：布尔值 undefined null 如果类型和赋值不一致，TypeScript 会直接报错。
-const age: number = &#34;18&#34;; // 报错 1. 数组类型 数组有两种常见写法：
-const ids: number[] = [1, 2, 3]; const names: Array&lt;string&gt; = [&#34;Tom&#34;, &#34;Jerry&#34;]; 这两种写法都表示“数组中元素的类型是固定的”。
-例如：
-const scores: number[] = [95, 88, 76]; const cities: string[] = [&#34;Shanghai&#34;, &#34;Beijing&#34;, &#34;Shenzhen&#34;]; 如果往 scores 里放字符串，TypeScript 会报错：
-const scores: number[] = [95, 88, &#34;76&#34;]; // 报错 2. string 类型 string 表示字符串类型，也就是文本内容。
-const username: string = &#34;Tom&#34;; const message: string = &#34;Hello TypeScript&#34;; 一般只要变量里存的是一段文本，就可以考虑使用 string。
-例如下面这些值都属于字符串：
-const city: string = &#34;Shanghai&#34;; const phone: string = &#34;13800138000&#34;; const id: string = &#34;user_1001&#34;; 注意：即使内容看起来像数字，只要你希望它按文本处理，也应该使用 string，例如手机号、订单号、身份证号。
-3. 理解 undefined 与 null undefined 和 null 都表示“没有值”，但它们的使用场景不完全一样。
-undefined：通常表示“还没有值”或“这个字段不存在” null：通常表示“这里明确是空值” 例如：
-let nickname: string | undefined = undefined; let avatar: string | null = null; 可以先这样理解：
-undefined 更像“没提供” null 更像“有这个位置，但现在为空” 在 TypeScript 里，它们通常会和联合类型一起使用：
-...</p>
-  </div>
-  <footer class="entry-footer"><span title='2026-04-09 19:10:00 +0800 CST'>April 9, 2026</span>&nbsp;·&nbsp;4 min&nbsp;·&nbsp;787 words&nbsp;·&nbsp;夏天的小西瓜</footer>
-  <a class="entry-link" aria-label="post link to TypeScript基础用法" href="/posts/typescript/typescript_intro/"></a>
 </article>
 <footer class="page-footer">
   <nav class="pagination">

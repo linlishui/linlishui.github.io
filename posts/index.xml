@@ -6,8 +6,152 @@
     <description>Recent content in Posts on 缥缈夏鸢</description>
     <generator>Hugo -- 0.138.0</generator>
     <language>en-us</language>
-    <lastBuildDate>Mon, 13 Apr 2026 20:34:03 +0800</lastBuildDate>
+    <lastBuildDate>Thu, 11 Jun 2026 12:02:24 +0800</lastBuildDate>
     <atom:link href="/posts/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Android音频路由入门：设备、模式、焦点与音量</title>
+      <link>/posts/android/android_audio_io_basic/</link>
+      <pubDate>Thu, 11 Jun 2026 12:02:24 +0800</pubDate>
+      <guid>/posts/android/android_audio_io_basic/</guid>
+      <description>&lt;p&gt;Android 音频输入输出的核心不是“播放一个声音”或“录一段声音”这么简单，而是系统需要根据场景选择合适的输入设备、输出设备、音频模式、音频焦点和音量类型。&lt;/p&gt;
+&lt;p&gt;例如音乐播放通常走扬声器、耳机或蓝牙 A2DP；语音通话通常走听筒、免提、蓝牙通话链路或 USB 耳机；录音则需要选择内置麦克风、耳机麦克风或 USB 麦克风。理解这些概念后，再看 &lt;code&gt;AudioTrack&lt;/code&gt;、&lt;code&gt;AudioRecord&lt;/code&gt;、&lt;code&gt;MediaPlayer&lt;/code&gt;、&lt;code&gt;MediaRecorder&lt;/code&gt; 才不会混乱。&lt;/p&gt;
+&lt;h2 id=&#34;基本概念&#34;&gt;基本概念&lt;/h2&gt;
+&lt;h3 id=&#34;1-输入和输出&#34;&gt;1. 输入和输出&lt;/h3&gt;
+&lt;p&gt;在 Android 音频系统中，设备通常可以分成两类：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;输入设备：给系统提供音频数据，例如内置麦克风、蓝牙耳机麦克风、USB 麦克风。&lt;/li&gt;
+&lt;li&gt;输出设备：接收系统播放的音频数据，例如扬声器、听筒、有线耳机、蓝牙耳机、HDMI。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;code&gt;AudioDeviceInfo&lt;/code&gt; 用 &lt;code&gt;isSource()&lt;/code&gt; 和 &lt;code&gt;isSink()&lt;/code&gt; 表示设备方向：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;isSource() == true&lt;/code&gt;：音频输入设备。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;isSink() == true&lt;/code&gt;：音频输出设备。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;一个物理设备可能同时包含输入和输出能力。例如带麦克风的有线耳机，耳机部分是输出，麦克风部分是输入。&lt;/p&gt;
+&lt;h3 id=&#34;2-常用-api&#34;&gt;2. 常用 API&lt;/h3&gt;
+&lt;p&gt;常见入口是 &lt;code&gt;AudioManager&lt;/code&gt;：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;n&#34;&gt;AudioManager&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;audioManager&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;getSystemService&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;AudioManager&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;na&#34;&gt;class&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;);&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;&lt;/span&gt;&lt;span class=&#34;c1&#34;&gt;// 查询当前连接的输出设备&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;AudioDeviceInfo&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;[]&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;outputs&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;        &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;audioManager&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;na&#34;&gt;getDevices&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;AudioManager&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;na&#34;&gt;GET_DEVICES_OUTPUTS&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;);&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;&lt;/span&gt;&lt;span class=&#34;c1&#34;&gt;// 查询当前连接的输入设备&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;AudioDeviceInfo&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;[]&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;inputs&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;        &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;audioManager&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;na&#34;&gt;getDevices&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;AudioManager&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;na&#34;&gt;GET_DEVICES_INPUTS&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;);&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;code&gt;getDevices()&lt;/code&gt; 返回的是当前系统已连接、符合条件的设备列表，不代表设备一定适合当前业务场景。比如蓝牙耳机可能支持媒体播放，但通话场景还要看是否可作为通信设备使用。&lt;/p&gt;
+&lt;h2 id=&#34;音频设备类型&#34;&gt;音频设备类型&lt;/h2&gt;
+&lt;h3 id=&#34;1-常见输出设备&#34;&gt;1. 常见输出设备&lt;/h3&gt;
+&lt;table&gt;
+  &lt;thead&gt;
+      &lt;tr&gt;
+          &lt;th&gt;类型&lt;/th&gt;
+          &lt;th&gt;说明&lt;/th&gt;
+          &lt;th&gt;典型场景&lt;/th&gt;
+      &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;TYPE_BUILTIN_SPEAKER&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;内置扬声器&lt;/td&gt;
+          &lt;td&gt;外放音乐、免提&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;TYPE_BUILTIN_EARPIECE&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;听筒&lt;/td&gt;
+          &lt;td&gt;电话、语音通话&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;TYPE_WIRED_HEADPHONES&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;不带麦克风的有线耳机&lt;/td&gt;
+          &lt;td&gt;媒体播放&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;TYPE_WIRED_HEADSET&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;带麦克风的有线耳机&lt;/td&gt;
+          &lt;td&gt;通话、录音、播放&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;TYPE_BLUETOOTH_A2DP&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;蓝牙媒体音频&lt;/td&gt;
+          &lt;td&gt;音乐、视频&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;TYPE_BLUETOOTH_SCO&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;蓝牙通话音频&lt;/td&gt;
+          &lt;td&gt;电话、VoIP&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;TYPE_BLE_HEADSET&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;BLE 音频耳机&lt;/td&gt;
+          &lt;td&gt;新版蓝牙音频播放或通话&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;TYPE_BLE_SPEAKER&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;BLE 音频音箱&lt;/td&gt;
+          &lt;td&gt;外放播放&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;TYPE_USB_DEVICE&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;USB 音频设备&lt;/td&gt;
+          &lt;td&gt;外接声卡、USB DAC&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;TYPE_USB_HEADSET&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;USB 耳机&lt;/td&gt;
+          &lt;td&gt;通话、播放、录音&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;TYPE_HDMI&lt;/code&gt; / &lt;code&gt;TYPE_HDMI_ARC&lt;/code&gt; / &lt;code&gt;TYPE_HDMI_EARC&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;HDMI 音频输出&lt;/td&gt;
+          &lt;td&gt;电视、功放、家庭影院&lt;/td&gt;
+      &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;h3 id=&#34;2-常见输入设备&#34;&gt;2. 常见输入设备&lt;/h3&gt;
+&lt;table&gt;
+  &lt;thead&gt;
+      &lt;tr&gt;
+          &lt;th&gt;类型&lt;/th&gt;
+          &lt;th&gt;说明&lt;/th&gt;
+          &lt;th&gt;典型场景&lt;/th&gt;
+      &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;TYPE_BUILTIN_MIC&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;内置麦克风&lt;/td&gt;
+          &lt;td&gt;录音、语音识别、通话&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;TYPE_WIRED_HEADSET&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;有线耳机麦克风&lt;/td&gt;
+          &lt;td&gt;通话、录音&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;TYPE_BLUETOOTH_SCO&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;蓝牙通话麦克风&lt;/td&gt;
+          &lt;td&gt;电话、VoIP&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;TYPE_USB_DEVICE&lt;/code&gt; / &lt;code&gt;TYPE_USB_HEADSET&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;USB 输入设备&lt;/td&gt;
+          &lt;td&gt;外接麦克风、USB 耳机&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;TYPE_TELEPHONY&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;电话链路相关设备&lt;/td&gt;
+          &lt;td&gt;系统电话场景&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;TYPE_REMOTE_SUBMIX&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;远端或虚拟混音设备&lt;/td&gt;
+          &lt;td&gt;投屏、录屏、系统级混音&lt;/td&gt;
+      &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;设备类型只是描述“这是什么设备”。实际能不能被当前应用使用，还取决于 Android 版本、权限、当前音频模式、设备连接状态和厂商实现。&lt;/p&gt;</description>
+    </item>
     <item>
       <title>Docker 从入门到实践</title>
       <link>/posts/tools/docker_intro_to_practice/</link>
