@@ -174,14 +174,29 @@ Linux系统是一种典型的多用户系统，不同的用户处于不同的地
 <script>
 
 const config = {
-    startOnLoad:true,
-    
+    startOnLoad: true,
+    theme: "base",
     themeVariables: {
-        lineColor: "#ffffff"    
+        primaryColor: "#f8fafc",
+        primaryTextColor: "#111827",
+        primaryBorderColor: "#6b7280",
+        lineColor: "#6b7280",
+        secondaryColor: "#eef2ff",
+        secondaryTextColor: "#111827",
+        secondaryBorderColor: "#6b7280",
+        tertiaryColor: "#f1f5f9",
+        tertiaryTextColor: "#111827",
+        tertiaryBorderColor: "#6b7280",
+        edgeLabelBackground: "#f8fafc",
+        clusterBkg: "#f8fafc",
+        clusterBorder: "#6b7280",
+        noteBkgColor: "#fef3c7",
+        noteTextColor: "#111827",
+        noteBorderColor: "#6b7280"
     },
     flowchart: {
-        useMaxWidth:false,
-        htmlLabels:true
+        useMaxWidth: false,
+        htmlLabels: true
     }
 };
 mermaid.initialize(config);
@@ -190,7 +205,8 @@ mermaid.initialize(config);
 window.onload = () => {
     window.mermaid.init(undefined, document.querySelectorAll('.language-mermaid'));
 }
-</script><meta property="og:url" content="/posts/os/linux/">
+</script>
+<meta property="og:url" content="/posts/os/linux/">
   <meta property="og:site_name" content="缥缈夏鸢">
   <meta property="og:title" content="Linux使用介绍">
   <meta property="og:description" content="简要概述 1. 启动过程 Linux系统的启动过程可以分为5个阶段：

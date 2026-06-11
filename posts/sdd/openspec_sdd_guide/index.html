@@ -1,0 +1,1063 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>OpenSpec SDD 开发套件使用指南 | 缥缈夏鸢</title>
+<meta name="keywords" content="OpenSpec, SDD, AI Coding">
+<meta name="description" content="概述
+OpenSpec 是一个面向 AI 编程助手的 SDD（Spec-Driven Development，规格驱动开发）工具。它解决的问题不是“让 AI 更快写代码”，而是让一次需求变更先沉淀为可检查、可追踪、可归档的规格资产，再进入实现。
+本文基于本机验证的 OpenSpec CLI 1.3.1，包名为 @fission-ai/openspec。当前默认 schema 是 spec-driven，核心产物链路是：
+proposal -&gt; specs -&gt; design -&gt; tasks -&gt; apply -&gt; archive
+可以把它理解成一条轻量级需求流水线：
+
+proposal.md：为什么做、做什么、影响什么
+specs/：系统应该表现出什么行为
+design.md：准备怎么实现，关键技术取舍是什么
+tasks.md：可执行、可勾选、可验证的任务清单
+archive：实现完成后，把变更合并回主规格
+
+解决什么问题
+只靠聊天记录驱动 AI 写代码，常见问题是需求散落、上下文漂移、实现和预期不一致。OpenSpec 用仓库内的 openspec/ 目录把需求、规格、设计和任务固定下来，让人和 AI 都围绕同一组文件工作。
+初始化后的核心目录如下：
+openspec/
+  changes/
+    archive/
+    add-dark-mode/
+      .openspec.yaml
+      README.md
+      proposal.md
+      specs/
+        ui-theme/
+          spec.md
+      design.md
+      tasks.md
+  specs/
+    ui-theme/
+      spec.md
+其中 openspec/changes/ 存放进行中的变更，openspec/specs/ 存放已经生效的主规格，openspec/changes/archive/ 存放完成后的历史变更。">
+<meta name="author" content="夏天的小西瓜">
+<link rel="canonical" href="/posts/sdd/openspec_sdd_guide/">
+<meta name="google-site-verification" content="XYZabc">
+<meta name="msvalidate.01" content="XYZabc">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.44278f16c6e7e77192a15a0565fb5b0f220c56128442fcfa6937b4d84456ecf0.css" integrity="sha256-RCePFsbn53GSoVoFZftbDyIMVhKEQvz6aTe02ERW7PA=" rel="preload stylesheet" as="style">
+<link rel="icon" href="/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="mask-icon" href="/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="en" href="/posts/sdd/openspec_sdd_guide/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-track {
+                background: 0 0;
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-thumb {
+                border-color: var(--theme);
+            }
+        }
+
+    </style>
+</noscript><script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+<script>
+
+const config = {
+    startOnLoad: true,
+    theme: "base",
+    themeVariables: {
+        primaryColor: "#f8fafc",
+        primaryTextColor: "#111827",
+        primaryBorderColor: "#6b7280",
+        lineColor: "#6b7280",
+        secondaryColor: "#eef2ff",
+        secondaryTextColor: "#111827",
+        secondaryBorderColor: "#6b7280",
+        tertiaryColor: "#f1f5f9",
+        tertiaryTextColor: "#111827",
+        tertiaryBorderColor: "#6b7280",
+        edgeLabelBackground: "#f8fafc",
+        clusterBkg: "#f8fafc",
+        clusterBorder: "#6b7280",
+        noteBkgColor: "#fef3c7",
+        noteTextColor: "#111827",
+        noteBorderColor: "#6b7280"
+    },
+    flowchart: {
+        useMaxWidth: false,
+        htmlLabels: true
+    }
+};
+mermaid.initialize(config);
+
+
+window.onload = () => {
+    window.mermaid.init(undefined, document.querySelectorAll('.language-mermaid'));
+}
+</script>
+<meta property="og:url" content="/posts/sdd/openspec_sdd_guide/">
+  <meta property="og:site_name" content="缥缈夏鸢">
+  <meta property="og:title" content="OpenSpec SDD 开发套件使用指南">
+  <meta property="og:description" content="概述 OpenSpec 是一个面向 AI 编程助手的 SDD（Spec-Driven Development，规格驱动开发）工具。它解决的问题不是“让 AI 更快写代码”，而是让一次需求变更先沉淀为可检查、可追踪、可归档的规格资产，再进入实现。
+本文基于本机验证的 OpenSpec CLI 1.3.1，包名为 @fission-ai/openspec。当前默认 schema 是 spec-driven，核心产物链路是：
+proposal -&gt; specs -&gt; design -&gt; tasks -&gt; apply -&gt; archive 可以把它理解成一条轻量级需求流水线：
+proposal.md：为什么做、做什么、影响什么 specs/：系统应该表现出什么行为 design.md：准备怎么实现，关键技术取舍是什么 tasks.md：可执行、可勾选、可验证的任务清单 archive：实现完成后，把变更合并回主规格 解决什么问题 只靠聊天记录驱动 AI 写代码，常见问题是需求散落、上下文漂移、实现和预期不一致。OpenSpec 用仓库内的 openspec/ 目录把需求、规格、设计和任务固定下来，让人和 AI 都围绕同一组文件工作。
+初始化后的核心目录如下：
+openspec/ changes/ archive/ add-dark-mode/ .openspec.yaml README.md proposal.md specs/ ui-theme/ spec.md design.md tasks.md specs/ ui-theme/ spec.md 其中 openspec/changes/ 存放进行中的变更，openspec/specs/ 存放已经生效的主规格，openspec/changes/archive/ 存放完成后的历史变更。">
+  <meta property="og:locale" content="en-us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2026-06-11T15:15:50+08:00">
+    <meta property="article:modified_time" content="2026-06-11T15:15:50+08:00">
+    <meta property="article:tag" content="OpenSpec">
+    <meta property="article:tag" content="SDD">
+    <meta property="article:tag" content="AI Coding">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="OpenSpec SDD 开发套件使用指南">
+<meta name="twitter:description" content="概述
+OpenSpec 是一个面向 AI 编程助手的 SDD（Spec-Driven Development，规格驱动开发）工具。它解决的问题不是“让 AI 更快写代码”，而是让一次需求变更先沉淀为可检查、可追踪、可归档的规格资产，再进入实现。
+本文基于本机验证的 OpenSpec CLI 1.3.1，包名为 @fission-ai/openspec。当前默认 schema 是 spec-driven，核心产物链路是：
+proposal -&gt; specs -&gt; design -&gt; tasks -&gt; apply -&gt; archive
+可以把它理解成一条轻量级需求流水线：
+
+proposal.md：为什么做、做什么、影响什么
+specs/：系统应该表现出什么行为
+design.md：准备怎么实现，关键技术取舍是什么
+tasks.md：可执行、可勾选、可验证的任务清单
+archive：实现完成后，把变更合并回主规格
+
+解决什么问题
+只靠聊天记录驱动 AI 写代码，常见问题是需求散落、上下文漂移、实现和预期不一致。OpenSpec 用仓库内的 openspec/ 目录把需求、规格、设计和任务固定下来，让人和 AI 都围绕同一组文件工作。
+初始化后的核心目录如下：
+openspec/
+  changes/
+    archive/
+    add-dark-mode/
+      .openspec.yaml
+      README.md
+      proposal.md
+      specs/
+        ui-theme/
+          spec.md
+      design.md
+      tasks.md
+  specs/
+    ui-theme/
+      spec.md
+其中 openspec/changes/ 存放进行中的变更，openspec/specs/ 存放已经生效的主规格，openspec/changes/archive/ 存放完成后的历史变更。">
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Posts",
+      "item": "/posts/"
+    }
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "OpenSpec SDD 开发套件使用指南",
+      "item": "/posts/sdd/openspec_sdd_guide/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "OpenSpec SDD 开发套件使用指南",
+  "name": "OpenSpec SDD 开发套件使用指南",
+  "description": "概述 OpenSpec 是一个面向 AI 编程助手的 SDD（Spec-Driven Development，规格驱动开发）工具。它解决的问题不是“让 AI 更快写代码”，而是让一次需求变更先沉淀为可检查、可追踪、可归档的规格资产，再进入实现。\n本文基于本机验证的 OpenSpec CLI 1.3.1，包名为 @fission-ai/openspec。当前默认 schema 是 spec-driven，核心产物链路是：\nproposal -\u0026gt; specs -\u0026gt; design -\u0026gt; tasks -\u0026gt; apply -\u0026gt; archive 可以把它理解成一条轻量级需求流水线：\nproposal.md：为什么做、做什么、影响什么 specs/：系统应该表现出什么行为 design.md：准备怎么实现，关键技术取舍是什么 tasks.md：可执行、可勾选、可验证的任务清单 archive：实现完成后，把变更合并回主规格 解决什么问题 只靠聊天记录驱动 AI 写代码，常见问题是需求散落、上下文漂移、实现和预期不一致。OpenSpec 用仓库内的 openspec/ 目录把需求、规格、设计和任务固定下来，让人和 AI 都围绕同一组文件工作。\n初始化后的核心目录如下：\nopenspec/ changes/ archive/ add-dark-mode/ .openspec.yaml README.md proposal.md specs/ ui-theme/ spec.md design.md tasks.md specs/ ui-theme/ spec.md 其中 openspec/changes/ 存放进行中的变更，openspec/specs/ 存放已经生效的主规格，openspec/changes/archive/ 存放完成后的历史变更。\n",
+  "keywords": [
+    "OpenSpec", "SDD", "AI Coding"
+  ],
+  "articleBody": "概述 OpenSpec 是一个面向 AI 编程助手的 SDD（Spec-Driven Development，规格驱动开发）工具。它解决的问题不是“让 AI 更快写代码”，而是让一次需求变更先沉淀为可检查、可追踪、可归档的规格资产，再进入实现。\n本文基于本机验证的 OpenSpec CLI 1.3.1，包名为 @fission-ai/openspec。当前默认 schema 是 spec-driven，核心产物链路是：\nproposal -\u003e specs -\u003e design -\u003e tasks -\u003e apply -\u003e archive 可以把它理解成一条轻量级需求流水线：\nproposal.md：为什么做、做什么、影响什么 specs/：系统应该表现出什么行为 design.md：准备怎么实现，关键技术取舍是什么 tasks.md：可执行、可勾选、可验证的任务清单 archive：实现完成后，把变更合并回主规格 解决什么问题 只靠聊天记录驱动 AI 写代码，常见问题是需求散落、上下文漂移、实现和预期不一致。OpenSpec 用仓库内的 openspec/ 目录把需求、规格、设计和任务固定下来，让人和 AI 都围绕同一组文件工作。\n初始化后的核心目录如下：\nopenspec/ changes/ archive/ add-dark-mode/ .openspec.yaml README.md proposal.md specs/ ui-theme/ spec.md design.md tasks.md specs/ ui-theme/ spec.md 其中 openspec/changes/ 存放进行中的变更，openspec/specs/ 存放已经生效的主规格，openspec/changes/archive/ 存放完成后的历史变更。\n安装与初始化 OpenSpec 需要 Node.js 20.19.0 或更高版本。\nnpm install -g @fission-ai/openspec@latest openspec --version 在项目根目录初始化：\ncd your-project openspec init 如果要非交互式指定 AI 工具，可以使用 --tools：\nopenspec init --tools codex openspec init --tools claude,cursor openspec init --tools none --tools all 会尝试为所有支持的工具生成指令文件。团队项目里建议只启用正在使用的工具，避免生成过多无关配置。\n初始化后，如果升级了 OpenSpec 包，需要在项目内刷新指令文件：\nnpm install -g @fission-ai/openspec@latest openspec update 日常工作流程 完整工作流可以概括为“先探索，再生成规格，再实现归档”。日常使用时优先记住 /opsx 命令主线：\nflowchart TD A[\"/opsx:explore澄清需求\"] --\u003e B{规格生成方式} B -- 快速生成 --\u003e C[\"/opsx:propose生成 proposal/specs/design/tasks\"] B -- 分步生成 --\u003e D[\"/opsx:new创建 change\"] D --\u003e E[\"/opsx:continue 或 /opsx:ff补齐 artifact\"] C --\u003e F[\"openspec validate校验规格\"] E --\u003e F F --\u003e G{校验通过} G -- 否 --\u003e H[\"修改 artifact\"] H --\u003e F G -- 是 --\u003e I[\"/opsx:apply按 tasks.md 实现\"] I --\u003e J[\"/opsx:verify验证实现\"] J --\u003e K{实现符合规格} K -- 否 --\u003e L[\"修正代码或规格\"] L --\u003e F K -- 是 --\u003e M[\"/opsx:archive归档并更新主规格\"] 如果团队要求显式同步 delta specs，可以在 /opsx:archive 前增加 /opsx:sync；多数情况下归档命令已经覆盖主规格更新。\n1. 探索问题 需求还不清楚时，不要直接让 AI 生成代码，可以先进入探索：\n/opsx:explore 增加深色模式，要求兼容现有主题配置 这个阶段适合让 AI 读代码、澄清边界、确认影响范围，但不应该改代码。\n2. 创建变更 常用快速路径是：\n/opsx:propose add-dark-mode 它会创建一个 change，并尝试一次性生成 proposal.md、specs/、design.md、tasks.md。\n如果改动比较复杂，更推荐分阶段推进：\n/opsx:new add-dark-mode /opsx:continue add-dark-mode /opsx:continue add-dark-mode new 只创建变更骨架，continue 会按 schema 继续补齐下一个 artifact。这样更适合需要人工审阅 proposal、spec，再继续设计和拆任务的场景。\n3. 查看状态 openspec status --change add-dark-mode 典型输出会显示 artifact 完成度：\nChange: add-dark-mode Schema: spec-driven Progress: 2/4 artifacts complete [x] proposal [x] specs [ ] design [-] tasks (blocked by: design) blocked 表示前置 artifact 还没完成。默认 schema 中，tasks 依赖 specs 和 design。\n4. 校验规格 实现前至少跑一次校验：\nopenspec validate add-dark-mode --type change 提交前建议跑全量校验：\nopenspec validate --all --strict 脚本或 CI 中可以使用 JSON 输出：\nopenspec validate --all --json --no-interactive 如果仓库规格很多，可以调整并发：\nOPENSPEC_CONCURRENCY=12 openspec validate --all --strict 5. 执行实现 /opsx:apply add-dark-mode apply 会读取 tasks.md，按待办任务实现，并在完成后更新复选框。这里有一个关键约束：任务必须使用标准复选框格式，否则进度追踪可能失效。\n## 1. Theme Infrastructure - [ ] 1.1 Create theme context provider - [ ] 1.2 Add theme persistence in localStorage ## 2. UI Integration - [ ] 2.1 Add theme toggle button - [ ] 2.2 Verify initial render follows saved theme 6. 验证与归档 实现后先验证：\n/opsx:verify add-dark-mode 确认实现、规格、设计和任务状态一致后归档：\n/opsx:archive add-dark-mode 也可以使用 CLI 归档：\nopenspec archive add-dark-mode openspec archive add-dark-mode --yes 归档会校验变更、合并 delta specs 到 openspec/specs/，并把 change 移动到 openspec/changes/archive/。\n如果是纯工具、文档或基础设施改动，不需要更新主规格，可以明确跳过：\nopenspec archive update-ci-config --skip-specs 端到端示例 假设要给系统增加深色模式，最小闭环可以这样走：\n/opsx:propose add-dark-mode 生成的 proposal.md 应该聚焦动机和影响：\n## Why Users need a dark theme to reduce eye strain in low-light environments. ## What Changes - Add a user-facing theme toggle. - Persist the selected theme locally. - Apply theme variables during initial render. ## Capabilities ### New Capabilities - `ui-theme`: Theme selection and persistence behavior ### Modified Capabilities ## Impact - Frontend theme provider - Header toolbar - CSS variables 对应的 delta spec 应该描述行为，而不是实现细节：\n## ADDED Requirements ### Requirement: Theme selection persists The system SHALL persist the user's selected theme across browser sessions. #### Scenario: User selects dark theme - **WHEN** the user switches from light theme to dark theme - **THEN** the system applies dark theme styling - **AND** the selection is restored after page reload 实现前先检查状态和校验：\nopenspec status --change add-dark-mode openspec validate add-dark-mode --type change --strict 然后执行：\n/opsx:apply add-dark-mode /opsx:verify add-dark-mode /opsx:archive add-dark-mode 这个流程的重点是：spec 写系统行为，design 写技术方案，tasks 写可执行步骤。不要把三者混在一个文件里。\n常用 CLI 命令 命令 用途 openspec init [path] 初始化 OpenSpec 目录和工具指令 openspec update [path] 更新项目中的 AI 指令文件 openspec list 查看进行中的 changes openspec list --specs 查看主规格 openspec show 查看 change 或 spec openspec validate 校验 change 或 spec openspec status --change 查看 artifact 完成状态 openspec instructions [artifact] --change 输出生成 artifact 或执行 apply 所需的增强指令 openspec new change 创建新变更目录 openspec archive 归档完成的变更 openspec view 打开交互式 dashboard openspec templates 查看当前 schema 使用的模板路径 openspec schemas 查看可用 workflow schema openspec schema validate 校验 schema openspec completion install zsh 安装 shell 补全 openspec config list 查看全局配置 几个适合脚本化的命令：\nopenspec list --json openspec show add-dark-mode --json openspec validate --all --json --no-interactive openspec status --change add-dark-mode --json openspec templates --json Slash Commands 命令 场景 /opsx:explore 只讨论和澄清问题，不改代码 /opsx:propose 一次性创建变更并生成主要 artifact /opsx:new 创建变更骨架 /opsx:continue 继续补齐下一个 artifact /opsx:ff 快速生成实现所需的全部 artifact /opsx:apply 按 tasks.md 实现 /opsx:verify 验证实现是否匹配规格 /opsx:sync 将 delta specs 同步到主 specs /opsx:archive 归档完成变更 /opsx:bulk-archive 批量归档多个完成变更 /opsx:onboard 引导式学习完整流程 日常最小闭环通常是：\n/opsx:propose -\u003e /opsx:apply -\u003e /opsx:verify -\u003e /opsx:archive 复杂需求更适合：\n/opsx:explore -\u003e /opsx:new -\u003e /opsx:continue -\u003e /opsx:apply -\u003e /opsx:verify -\u003e /opsx:archive 配置说明 全局配置文件可以这样查看：\nopenspec config path openspec config list macOS 和 Linux 默认路径通常是：\n~/.config/openspec/config.json 常见配置项：\n配置 说明 profile 工作流配置，常见值为 core 或 custom delivery 指令交付方式，支持 both、skills、commands workflows custom profile 下启用的 workflow 列表 featureFlags 实验特性开关 切换 profile：\nopenspec config profile openspec config profile core 直接设置配置：\nopenspec config set delivery commands openspec config get delivery openspec config unset delivery openspec config reset OpenSpec 会读取环境变量控制部分行为：\nexport OPENSPEC_TELEMETRY=0 export DO_NOT_TRACK=1 export OPENSPEC_CONCURRENCY=12 export NO_COLOR=1 其中 OPENSPEC_TELEMETRY=0 和 DO_NOT_TRACK=1 可用于关闭匿名使用统计。\nSchema 与模板 当前内置 schema 可以这样查看：\nopenspec schemas openspec schema which spec-driven openspec templates --schema spec-driven spec-driven 的 artifact 定义是：\nArtifact 生成文件 依赖 proposal proposal.md 无 specs specs/**/*.md proposal design design.md proposal tasks tasks.md specs、design 如果团队需要自定义流程，可以 fork 内置 schema：\nopenspec schema fork spec-driven team-workflow openspec schema validate team-workflow schema 命令当前属于实验能力，适合在团队内部统一后再使用。个人项目通常不用改 schema，只需要遵守默认模板即可。\n规格写法约束 specs//spec.md 是 OpenSpec 最重要的契约文件。默认 schema 要求使用 delta 标题：\n## ADDED Requirements ## MODIFIED Requirements ## REMOVED Requirements ## RENAMED Requirements 每个 requirement 使用三级标题：\n### Requirement: User can export data The system SHALL allow users to export their data in CSV format. 每个 scenario 使用四级标题：\n#### Scenario: Successful export - **WHEN** user clicks \"Export\" - **THEN** system downloads a CSV file 需要特别注意：\n需求描述优先使用 SHALL 或 MUST，避免模糊的 should、may 每个 requirement 至少要有一个 scenario scenario 必须使用 #### Scenario，不要写成三级标题或普通列表 MODIFIED Requirements 必须包含修改后的完整 requirement block REMOVED Requirements 应写清楚删除原因和迁移方式 团队落地建议 1. 把 OpenSpec 变更作为 PR 的入口 一个较稳的 PR 结构是：\n代码变更 openspec/changes// 测试结果 评审时先看 proposal.md 和 specs/，确认行为契约没有偏，再看实现是否符合 design.md 和 tasks.md。\n2. 给 CI 增加规格校验 如果项目使用 GitHub Actions，可以增加一个轻量校验：\nname: openspec on: pull_request: jobs: validate: runs-on: ubuntu-latest steps: - uses: actions/checkout@v4 - uses: actions/setup-node@v4 with: node-version: \"20.19.0\" - run: npm install -g @fission-ai/openspec@1.3.1 - run: openspec validate --all --strict --no-interactive 如果希望总是使用最新版，可以把安装命令改成 @latest；如果团队更看重可复现，建议固定版本。\n3. 归档前做三项检查 归档前至少确认：\nopenspec validate --all --strict 通过 tasks.md 中实现任务已经完成 specs/ 描述的是用户可观察行为，而不是代码实现细节 归档不是清理文件，而是把变更纳入长期规格。不要把未确认的临时方案归档进主规格。\n常见坑 1. 把实现细节写进 proposal proposal.md 主要回答为什么要做、做什么、影响哪些能力。具体技术方案应该放到 design.md。\n2. tasks.md 不是标准复选框 apply 阶段会解析 tasks.md。如果任务不是 - [ ] 格式，就可能无法追踪进度。\n3. MODIFIED Requirements 写得太短 修改已有规格时，如果只写新增的一两句话，归档时可能丢失原有细节。稳妥做法是复制完整 requirement，再写更新后的完整版本。\n4. 跳过 validate 直接 archive 归档会影响主规格。除非非常明确，否则不要使用 --no-validate。纯文档或工具变更可以用 --skip-specs，但仍建议保留校验。\n5. 忽略版本差异 OpenSpec 仍在快速演进，官方文档、main 分支和本地 CLI 版本可能存在差异。写团队文档时建议标明版本，并以本地命令输出为准：\nopenspec --version openspec --help openspec config list openspec schemas 小结 OpenSpec 的价值不在于多生成几份 Markdown，而是让 AI 开发过程有稳定的中间产物：变更动机、行为规格、技术设计和任务清单。小改动可以走 /opsx:propose -\u003e /opsx:apply -\u003e /opsx:archive，复杂改动则用 /opsx:explore、/opsx:new 和 /opsx:continue 分阶段补齐规格。\n对团队项目来说，建议把 openspec/changes/ 当成需求评审和实现评审的共同入口，把 openspec/specs/ 当成长期维护的行为契约。这样 AI 不再只跟着聊天上下文走，而是围绕仓库里可审阅、可校验、可归档的规格工作。\n",
+  "wordCount" : "1045",
+  "inLanguage": "en",
+  "datePublished": "2026-06-11T15:15:50+08:00",
+  "dateModified": "2026-06-11T15:15:50+08:00",
+  "author":[{
+    "@type": "Person",
+    "name": "夏天的小西瓜"
+  }],
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "/posts/sdd/openspec_sdd_guide/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "缥缈夏鸢",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "/favicon.ico"
+    }
+  }
+}
+</script>
+</head>
+
+<body class="" id="top">
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.body.classList.add('dark');
+    } else if (localStorage.getItem("pref-theme") === "light") {
+        document.body.classList.remove('dark')
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.body.classList.add('dark');
+    }
+
+</script>
+
+<header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="/" accesskey="h" title="缥缈夏鸢 (Alt + H)">缥缈夏鸢</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" accesskey="t" title="(Alt + T)">
+                    <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu">
+            <li>
+                <a href="/" title="首页">
+                    <span>首页</span>
+                </a>
+            </li>
+            <li>
+                <a href="/posts/" title="文章">
+                    <span>文章</span>
+                </a>
+            </li>
+            <li>
+                <a href="/categories/" title="分类">
+                    <span>分类</span>
+                </a>
+            </li>
+            <li>
+                <a href="/tags/" title="标签">
+                    <span>标签</span>
+                </a>
+            </li>
+            <li>
+                <a href="/archives/" title="归档">
+                    <span>归档</span>
+                </a>
+            </li>
+            <li>
+                <a href="/search/" title="搜索">
+                    <span>搜索</span>
+                </a>
+            </li>
+            <li>
+                <a href="/about/" title="关于">
+                    <span>关于</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <div class="breadcrumbs"><a href="/">Home</a>&nbsp;»&nbsp;<a href="/posts/">Posts</a></div>
+    <h1 class="post-title entry-hint-parent">
+      OpenSpec SDD 开发套件使用指南
+    </h1>
+    <div class="post-meta"><span title='2026-06-11 15:15:50 +0800 CST'>June 11, 2026</span>&nbsp;·&nbsp;5 min&nbsp;·&nbsp;1045 words&nbsp;·&nbsp;夏天的小西瓜
+
+</div>
+  </header> <aside id="toc-container" class="toc-container wide">
+    <div class="toc">
+        <details  open>
+            <summary accesskey="c" title="(Alt + C)">
+                <span class="details">Table of Contents</span>
+            </summary>
+
+            <div class="inner"><ul>
+                    <li>
+                        <a href="#%e6%a6%82%e8%bf%b0" aria-label="概述">概述</a></li>
+                    <li>
+                        <a href="#%e8%a7%a3%e5%86%b3%e4%bb%80%e4%b9%88%e9%97%ae%e9%a2%98" aria-label="解决什么问题">解决什么问题</a></li>
+                    <li>
+                        <a href="#%e5%ae%89%e8%a3%85%e4%b8%8e%e5%88%9d%e5%a7%8b%e5%8c%96" aria-label="安装与初始化">安装与初始化</a></li>
+                    <li>
+                        <a href="#%e6%97%a5%e5%b8%b8%e5%b7%a5%e4%bd%9c%e6%b5%81%e7%a8%8b" aria-label="日常工作流程">日常工作流程</a><ul>
+                            
+                    <li>
+                        <a href="#1-%e6%8e%a2%e7%b4%a2%e9%97%ae%e9%a2%98" aria-label="1. 探索问题">1. 探索问题</a></li>
+                    <li>
+                        <a href="#2-%e5%88%9b%e5%bb%ba%e5%8f%98%e6%9b%b4" aria-label="2. 创建变更">2. 创建变更</a></li>
+                    <li>
+                        <a href="#3-%e6%9f%a5%e7%9c%8b%e7%8a%b6%e6%80%81" aria-label="3. 查看状态">3. 查看状态</a></li>
+                    <li>
+                        <a href="#4-%e6%a0%a1%e9%aa%8c%e8%a7%84%e6%a0%bc" aria-label="4. 校验规格">4. 校验规格</a></li>
+                    <li>
+                        <a href="#5-%e6%89%a7%e8%a1%8c%e5%ae%9e%e7%8e%b0" aria-label="5. 执行实现">5. 执行实现</a></li>
+                    <li>
+                        <a href="#6-%e9%aa%8c%e8%af%81%e4%b8%8e%e5%bd%92%e6%a1%a3" aria-label="6. 验证与归档">6. 验证与归档</a></li></ul>
+                    </li>
+                    <li>
+                        <a href="#%e7%ab%af%e5%88%b0%e7%ab%af%e7%a4%ba%e4%be%8b" aria-label="端到端示例">端到端示例</a></li>
+                    <li>
+                        <a href="#%e5%b8%b8%e7%94%a8-cli-%e5%91%bd%e4%bb%a4" aria-label="常用 CLI 命令">常用 CLI 命令</a></li>
+                    <li>
+                        <a href="#slash-commands" aria-label="Slash Commands">Slash Commands</a></li>
+                    <li>
+                        <a href="#%e9%85%8d%e7%bd%ae%e8%af%b4%e6%98%8e" aria-label="配置说明">配置说明</a></li>
+                    <li>
+                        <a href="#schema-%e4%b8%8e%e6%a8%a1%e6%9d%bf" aria-label="Schema 与模板">Schema 与模板</a></li>
+                    <li>
+                        <a href="#%e8%a7%84%e6%a0%bc%e5%86%99%e6%b3%95%e7%ba%a6%e6%9d%9f" aria-label="规格写法约束">规格写法约束</a></li>
+                    <li>
+                        <a href="#%e5%9b%a2%e9%98%9f%e8%90%bd%e5%9c%b0%e5%bb%ba%e8%ae%ae" aria-label="团队落地建议">团队落地建议</a><ul>
+                            
+                    <li>
+                        <a href="#1-%e6%8a%8a-openspec-%e5%8f%98%e6%9b%b4%e4%bd%9c%e4%b8%ba-pr-%e7%9a%84%e5%85%a5%e5%8f%a3" aria-label="1. 把 OpenSpec 变更作为 PR 的入口">1. 把 OpenSpec 变更作为 PR 的入口</a></li>
+                    <li>
+                        <a href="#2-%e7%bb%99-ci-%e5%a2%9e%e5%8a%a0%e8%a7%84%e6%a0%bc%e6%a0%a1%e9%aa%8c" aria-label="2. 给 CI 增加规格校验">2. 给 CI 增加规格校验</a></li>
+                    <li>
+                        <a href="#3-%e5%bd%92%e6%a1%a3%e5%89%8d%e5%81%9a%e4%b8%89%e9%a1%b9%e6%a3%80%e6%9f%a5" aria-label="3. 归档前做三项检查">3. 归档前做三项检查</a></li></ul>
+                    </li>
+                    <li>
+                        <a href="#%e5%b8%b8%e8%a7%81%e5%9d%91" aria-label="常见坑">常见坑</a><ul>
+                            
+                    <li>
+                        <a href="#1-%e6%8a%8a%e5%ae%9e%e7%8e%b0%e7%bb%86%e8%8a%82%e5%86%99%e8%bf%9b-proposal" aria-label="1. 把实现细节写进 proposal">1. 把实现细节写进 proposal</a></li>
+                    <li>
+                        <a href="#2-tasksmd-%e4%b8%8d%e6%98%af%e6%a0%87%e5%87%86%e5%a4%8d%e9%80%89%e6%a1%86" aria-label="2. tasks.md 不是标准复选框">2. tasks.md 不是标准复选框</a></li>
+                    <li>
+                        <a href="#3-modified-requirements-%e5%86%99%e5%be%97%e5%a4%aa%e7%9f%ad" aria-label="3. MODIFIED Requirements 写得太短">3. MODIFIED Requirements 写得太短</a></li>
+                    <li>
+                        <a href="#4-%e8%b7%b3%e8%bf%87-validate-%e7%9b%b4%e6%8e%a5-archive" aria-label="4. 跳过 validate 直接 archive">4. 跳过 validate 直接 archive</a></li>
+                    <li>
+                        <a href="#5-%e5%bf%bd%e7%95%a5%e7%89%88%e6%9c%ac%e5%b7%ae%e5%bc%82" aria-label="5. 忽略版本差异">5. 忽略版本差异</a></li></ul>
+                    </li>
+                    <li>
+                        <a href="#%e5%b0%8f%e7%bb%93" aria-label="小结">小结</a>
+                    </li>
+                </ul>
+            </div>
+        </details>
+    </div>
+</aside>
+<script>
+    let activeElement;
+    let elements;
+    window.addEventListener('DOMContentLoaded', function (event) {
+        checkTocPosition();
+
+        elements = document.querySelectorAll('h1[id],h2[id],h3[id],h4[id],h5[id],h6[id]');
+         
+         activeElement = elements[0];
+         const id = encodeURI(activeElement.getAttribute('id')).toLowerCase();
+         document.querySelector(`.inner ul li a[href="#${id}"]`).classList.add('active');
+     }, false);
+
+    window.addEventListener('resize', function(event) {
+        checkTocPosition();
+    }, false);
+
+    window.addEventListener('scroll', () => {
+        
+        activeElement = Array.from(elements).find((element) => {
+            if ((getOffsetTop(element) - window.pageYOffset) > 0 && 
+                (getOffsetTop(element) - window.pageYOffset) < window.innerHeight/2) {
+                return element;
+            }
+        }) || activeElement
+
+        elements.forEach(element => {
+             const id = encodeURI(element.getAttribute('id')).toLowerCase();
+             if (element === activeElement){
+                 document.querySelector(`.inner ul li a[href="#${id}"]`).classList.add('active');
+             } else {
+                 document.querySelector(`.inner ul li a[href="#${id}"]`).classList.remove('active');
+             }
+         })
+     }, false);
+
+    const main = parseInt(getComputedStyle(document.body).getPropertyValue('--article-width'), 10);
+    const toc = parseInt(getComputedStyle(document.body).getPropertyValue('--toc-width'), 10);
+    const gap = parseInt(getComputedStyle(document.body).getPropertyValue('--gap'), 10);
+
+    function checkTocPosition() {
+        const width = document.body.scrollWidth;
+
+        if (width - main - (toc * 2) - (gap * 4) > 0) {
+            document.getElementById("toc-container").classList.add("wide");
+        } else {
+            document.getElementById("toc-container").classList.remove("wide");
+        }
+    }
+
+    function getOffsetTop(element) {
+        if (!element.getClientRects().length) {
+            return 0;
+        }
+        let rect = element.getBoundingClientRect();
+        let win = element.ownerDocument.defaultView;
+        return rect.top + win.pageYOffset;   
+    }
+</script>
+
+  <div class="post-content"><h2 id="概述">概述<a hidden class="anchor" aria-hidden="true" href="#概述">#</a></h2>
+<p>OpenSpec 是一个面向 AI 编程助手的 SDD（Spec-Driven Development，规格驱动开发）工具。它解决的问题不是“让 AI 更快写代码”，而是让一次需求变更先沉淀为可检查、可追踪、可归档的规格资产，再进入实现。</p>
+<p>本文基于本机验证的 OpenSpec CLI <code>1.3.1</code>，包名为 <code>@fission-ai/openspec</code>。当前默认 schema 是 <code>spec-driven</code>，核心产物链路是：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="cl">proposal -&gt; specs -&gt; design -&gt; tasks -&gt; apply -&gt; archive
+</span></span></code></pre></div><p>可以把它理解成一条轻量级需求流水线：</p>
+<ul>
+<li><code>proposal.md</code>：为什么做、做什么、影响什么</li>
+<li><code>specs/</code>：系统应该表现出什么行为</li>
+<li><code>design.md</code>：准备怎么实现，关键技术取舍是什么</li>
+<li><code>tasks.md</code>：可执行、可勾选、可验证的任务清单</li>
+<li><code>archive</code>：实现完成后，把变更合并回主规格</li>
+</ul>
+<h2 id="解决什么问题">解决什么问题<a hidden class="anchor" aria-hidden="true" href="#解决什么问题">#</a></h2>
+<p>只靠聊天记录驱动 AI 写代码，常见问题是需求散落、上下文漂移、实现和预期不一致。OpenSpec 用仓库内的 <code>openspec/</code> 目录把需求、规格、设计和任务固定下来，让人和 AI 都围绕同一组文件工作。</p>
+<p>初始化后的核心目录如下：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="cl">openspec/
+</span></span><span class="line"><span class="cl">  changes/
+</span></span><span class="line"><span class="cl">    archive/
+</span></span><span class="line"><span class="cl">    add-dark-mode/
+</span></span><span class="line"><span class="cl">      .openspec.yaml
+</span></span><span class="line"><span class="cl">      README.md
+</span></span><span class="line"><span class="cl">      proposal.md
+</span></span><span class="line"><span class="cl">      specs/
+</span></span><span class="line"><span class="cl">        ui-theme/
+</span></span><span class="line"><span class="cl">          spec.md
+</span></span><span class="line"><span class="cl">      design.md
+</span></span><span class="line"><span class="cl">      tasks.md
+</span></span><span class="line"><span class="cl">  specs/
+</span></span><span class="line"><span class="cl">    ui-theme/
+</span></span><span class="line"><span class="cl">      spec.md
+</span></span></code></pre></div><p>其中 <code>openspec/changes/</code> 存放进行中的变更，<code>openspec/specs/</code> 存放已经生效的主规格，<code>openspec/changes/archive/</code> 存放完成后的历史变更。</p>
+<h2 id="安装与初始化">安装与初始化<a hidden class="anchor" aria-hidden="true" href="#安装与初始化">#</a></h2>
+<p>OpenSpec 需要 Node.js <code>20.19.0</code> 或更高版本。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">npm install -g @fission-ai/openspec@latest
+</span></span><span class="line"><span class="cl">openspec --version
+</span></span></code></pre></div><p>在项目根目录初始化：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="nb">cd</span> your-project
+</span></span><span class="line"><span class="cl">openspec init
+</span></span></code></pre></div><p>如果要非交互式指定 AI 工具，可以使用 <code>--tools</code>：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">openspec init --tools codex
+</span></span><span class="line"><span class="cl">openspec init --tools claude,cursor
+</span></span><span class="line"><span class="cl">openspec init --tools none
+</span></span></code></pre></div><p><code>--tools all</code> 会尝试为所有支持的工具生成指令文件。团队项目里建议只启用正在使用的工具，避免生成过多无关配置。</p>
+<p>初始化后，如果升级了 OpenSpec 包，需要在项目内刷新指令文件：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">npm install -g @fission-ai/openspec@latest
+</span></span><span class="line"><span class="cl">openspec update
+</span></span></code></pre></div><h2 id="日常工作流程">日常工作流程<a hidden class="anchor" aria-hidden="true" href="#日常工作流程">#</a></h2>
+<p>完整工作流可以概括为“先探索，再生成规格，再实现归档”。日常使用时优先记住 <code>/opsx</code> 命令主线：</p>
+<pre class="mermaid">flowchart TD
+    A["/opsx:explore<br/>澄清需求"] --> B{规格生成方式}
+    B -- 快速生成 --> C["/opsx:propose<br/>生成 proposal/specs/design/tasks"]
+    B -- 分步生成 --> D["/opsx:new<br/>创建 change"]
+    D --> E["/opsx:continue 或 /opsx:ff<br/>补齐 artifact"]
+    C --> F["openspec validate<br/>校验规格"]
+    E --> F
+    F --> G{校验通过}
+    G -- 否 --> H["修改 artifact"]
+    H --> F
+    G -- 是 --> I["/opsx:apply<br/>按 tasks.md 实现"]
+    I --> J["/opsx:verify<br/>验证实现"]
+    J --> K{实现符合规格}
+    K -- 否 --> L["修正代码或规格"]
+    L --> F
+    K -- 是 --> M["/opsx:archive<br/>归档并更新主规格"]
+</pre>
+<p>如果团队要求显式同步 delta specs，可以在 <code>/opsx:archive</code> 前增加 <code>/opsx:sync</code>；多数情况下归档命令已经覆盖主规格更新。</p>
+<h3 id="1-探索问题">1. 探索问题<a hidden class="anchor" aria-hidden="true" href="#1-探索问题">#</a></h3>
+<p>需求还不清楚时，不要直接让 AI 生成代码，可以先进入探索：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="cl">/opsx:explore 增加深色模式，要求兼容现有主题配置
+</span></span></code></pre></div><p>这个阶段适合让 AI 读代码、澄清边界、确认影响范围，但不应该改代码。</p>
+<h3 id="2-创建变更">2. 创建变更<a hidden class="anchor" aria-hidden="true" href="#2-创建变更">#</a></h3>
+<p>常用快速路径是：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="cl">/opsx:propose add-dark-mode
+</span></span></code></pre></div><p>它会创建一个 change，并尝试一次性生成 <code>proposal.md</code>、<code>specs/</code>、<code>design.md</code>、<code>tasks.md</code>。</p>
+<p>如果改动比较复杂，更推荐分阶段推进：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="cl">/opsx:new add-dark-mode
+</span></span><span class="line"><span class="cl">/opsx:continue add-dark-mode
+</span></span><span class="line"><span class="cl">/opsx:continue add-dark-mode
+</span></span></code></pre></div><p><code>new</code> 只创建变更骨架，<code>continue</code> 会按 schema 继续补齐下一个 artifact。这样更适合需要人工审阅 proposal、spec，再继续设计和拆任务的场景。</p>
+<h3 id="3-查看状态">3. 查看状态<a hidden class="anchor" aria-hidden="true" href="#3-查看状态">#</a></h3>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">openspec status --change add-dark-mode
+</span></span></code></pre></div><p>典型输出会显示 artifact 完成度：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="cl">Change: add-dark-mode
+</span></span><span class="line"><span class="cl">Schema: spec-driven
+</span></span><span class="line"><span class="cl">Progress: 2/4 artifacts complete
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">[x] proposal
+</span></span><span class="line"><span class="cl">[x] specs
+</span></span><span class="line"><span class="cl">[ ] design
+</span></span><span class="line"><span class="cl">[-] tasks (blocked by: design)
+</span></span></code></pre></div><p><code>blocked</code> 表示前置 artifact 还没完成。默认 schema 中，<code>tasks</code> 依赖 <code>specs</code> 和 <code>design</code>。</p>
+<h3 id="4-校验规格">4. 校验规格<a hidden class="anchor" aria-hidden="true" href="#4-校验规格">#</a></h3>
+<p>实现前至少跑一次校验：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">openspec validate add-dark-mode --type change
+</span></span></code></pre></div><p>提交前建议跑全量校验：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">openspec validate --all --strict
+</span></span></code></pre></div><p>脚本或 CI 中可以使用 JSON 输出：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">openspec validate --all --json --no-interactive
+</span></span></code></pre></div><p>如果仓库规格很多，可以调整并发：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="nv">OPENSPEC_CONCURRENCY</span><span class="o">=</span><span class="m">12</span> openspec validate --all --strict
+</span></span></code></pre></div><h3 id="5-执行实现">5. 执行实现<a hidden class="anchor" aria-hidden="true" href="#5-执行实现">#</a></h3>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="cl">/opsx:apply add-dark-mode
+</span></span></code></pre></div><p><code>apply</code> 会读取 <code>tasks.md</code>，按待办任务实现，并在完成后更新复选框。这里有一个关键约束：任务必须使用标准复选框格式，否则进度追踪可能失效。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-markdown" data-lang="markdown"><span class="line"><span class="cl"><span class="gu">## 1. Theme Infrastructure
+</span></span></span><span class="line"><span class="cl"><span class="gu"></span>
+</span></span><span class="line"><span class="cl"><span class="k">- [ ]</span> 1.1 Create theme context provider
+</span></span><span class="line"><span class="cl"><span class="k">- [ ]</span> 1.2 Add theme persistence in localStorage
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="gu">## 2. UI Integration
+</span></span></span><span class="line"><span class="cl"><span class="gu"></span>
+</span></span><span class="line"><span class="cl"><span class="k">- [ ]</span> 2.1 Add theme toggle button
+</span></span><span class="line"><span class="cl"><span class="k">- [ ]</span> 2.2 Verify initial render follows saved theme
+</span></span></code></pre></div><h3 id="6-验证与归档">6. 验证与归档<a hidden class="anchor" aria-hidden="true" href="#6-验证与归档">#</a></h3>
+<p>实现后先验证：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="cl">/opsx:verify add-dark-mode
+</span></span></code></pre></div><p>确认实现、规格、设计和任务状态一致后归档：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="cl">/opsx:archive add-dark-mode
+</span></span></code></pre></div><p>也可以使用 CLI 归档：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">openspec archive add-dark-mode
+</span></span><span class="line"><span class="cl">openspec archive add-dark-mode --yes
+</span></span></code></pre></div><p>归档会校验变更、合并 delta specs 到 <code>openspec/specs/</code>，并把 change 移动到 <code>openspec/changes/archive/</code>。</p>
+<p>如果是纯工具、文档或基础设施改动，不需要更新主规格，可以明确跳过：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">openspec archive update-ci-config --skip-specs
+</span></span></code></pre></div><h2 id="端到端示例">端到端示例<a hidden class="anchor" aria-hidden="true" href="#端到端示例">#</a></h2>
+<p>假设要给系统增加深色模式，最小闭环可以这样走：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="cl">/opsx:propose add-dark-mode
+</span></span></code></pre></div><p>生成的 <code>proposal.md</code> 应该聚焦动机和影响：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-markdown" data-lang="markdown"><span class="line"><span class="cl"><span class="gu">## Why
+</span></span></span><span class="line"><span class="cl"><span class="gu"></span>
+</span></span><span class="line"><span class="cl">Users need a dark theme to reduce eye strain in low-light environments.
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="gu">## What Changes
+</span></span></span><span class="line"><span class="cl"><span class="gu"></span>
+</span></span><span class="line"><span class="cl"><span class="k">-</span> Add a user-facing theme toggle.
+</span></span><span class="line"><span class="cl"><span class="k">-</span> Persist the selected theme locally.
+</span></span><span class="line"><span class="cl"><span class="k">-</span> Apply theme variables during initial render.
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="gu">## Capabilities
+</span></span></span><span class="line"><span class="cl"><span class="gu"></span>
+</span></span><span class="line"><span class="cl"><span class="gu">### New Capabilities
+</span></span></span><span class="line"><span class="cl"><span class="gu"></span><span class="k">-</span> <span class="sb">`ui-theme`</span>: Theme selection and persistence behavior
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="gu">### Modified Capabilities
+</span></span></span><span class="line"><span class="cl"><span class="gu"></span>
+</span></span><span class="line"><span class="cl"><span class="gu">## Impact
+</span></span></span><span class="line"><span class="cl"><span class="gu"></span>
+</span></span><span class="line"><span class="cl"><span class="k">-</span> Frontend theme provider
+</span></span><span class="line"><span class="cl"><span class="k">-</span> Header toolbar
+</span></span><span class="line"><span class="cl"><span class="k">-</span> CSS variables
+</span></span></code></pre></div><p>对应的 delta spec 应该描述行为，而不是实现细节：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-markdown" data-lang="markdown"><span class="line"><span class="cl"><span class="gu">## ADDED Requirements
+</span></span></span><span class="line"><span class="cl"><span class="gu"></span>
+</span></span><span class="line"><span class="cl"><span class="gu">### Requirement: Theme selection persists
+</span></span></span><span class="line"><span class="cl"><span class="gu"></span>The system SHALL persist the user&#39;s selected theme across browser sessions.
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="gu">#### Scenario: User selects dark theme
+</span></span></span><span class="line"><span class="cl"><span class="gu"></span><span class="k">-</span> **WHEN** the user switches from light theme to dark theme
+</span></span><span class="line"><span class="cl"><span class="k">-</span> **THEN** the system applies dark theme styling
+</span></span><span class="line"><span class="cl"><span class="k">-</span> **AND** the selection is restored after page reload
+</span></span></code></pre></div><p>实现前先检查状态和校验：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">openspec status --change add-dark-mode
+</span></span><span class="line"><span class="cl">openspec validate add-dark-mode --type change --strict
+</span></span></code></pre></div><p>然后执行：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="cl">/opsx:apply add-dark-mode
+</span></span><span class="line"><span class="cl">/opsx:verify add-dark-mode
+</span></span><span class="line"><span class="cl">/opsx:archive add-dark-mode
+</span></span></code></pre></div><p>这个流程的重点是：spec 写系统行为，design 写技术方案，tasks 写可执行步骤。不要把三者混在一个文件里。</p>
+<h2 id="常用-cli-命令">常用 CLI 命令<a hidden class="anchor" aria-hidden="true" href="#常用-cli-命令">#</a></h2>
+<table>
+  <thead>
+      <tr>
+          <th style="text-align: left">命令</th>
+          <th style="text-align: left">用途</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td style="text-align: left"><code>openspec init [path]</code></td>
+          <td style="text-align: left">初始化 OpenSpec 目录和工具指令</td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><code>openspec update [path]</code></td>
+          <td style="text-align: left">更新项目中的 AI 指令文件</td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><code>openspec list</code></td>
+          <td style="text-align: left">查看进行中的 changes</td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><code>openspec list --specs</code></td>
+          <td style="text-align: left">查看主规格</td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><code>openspec show &lt;name&gt;</code></td>
+          <td style="text-align: left">查看 change 或 spec</td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><code>openspec validate &lt;name&gt;</code></td>
+          <td style="text-align: left">校验 change 或 spec</td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><code>openspec status --change &lt;id&gt;</code></td>
+          <td style="text-align: left">查看 artifact 完成状态</td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><code>openspec instructions [artifact] --change &lt;id&gt;</code></td>
+          <td style="text-align: left">输出生成 artifact 或执行 apply 所需的增强指令</td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><code>openspec new change &lt;name&gt;</code></td>
+          <td style="text-align: left">创建新变更目录</td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><code>openspec archive &lt;name&gt;</code></td>
+          <td style="text-align: left">归档完成的变更</td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><code>openspec view</code></td>
+          <td style="text-align: left">打开交互式 dashboard</td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><code>openspec templates</code></td>
+          <td style="text-align: left">查看当前 schema 使用的模板路径</td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><code>openspec schemas</code></td>
+          <td style="text-align: left">查看可用 workflow schema</td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><code>openspec schema validate &lt;name&gt;</code></td>
+          <td style="text-align: left">校验 schema</td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><code>openspec completion install zsh</code></td>
+          <td style="text-align: left">安装 shell 补全</td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><code>openspec config list</code></td>
+          <td style="text-align: left">查看全局配置</td>
+      </tr>
+  </tbody>
+</table>
+<p>几个适合脚本化的命令：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">openspec list --json
+</span></span><span class="line"><span class="cl">openspec show add-dark-mode --json
+</span></span><span class="line"><span class="cl">openspec validate --all --json --no-interactive
+</span></span><span class="line"><span class="cl">openspec status --change add-dark-mode --json
+</span></span><span class="line"><span class="cl">openspec templates --json
+</span></span></code></pre></div><h2 id="slash-commands">Slash Commands<a hidden class="anchor" aria-hidden="true" href="#slash-commands">#</a></h2>
+<table>
+  <thead>
+      <tr>
+          <th style="text-align: left">命令</th>
+          <th style="text-align: left">场景</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td style="text-align: left"><code>/opsx:explore</code></td>
+          <td style="text-align: left">只讨论和澄清问题，不改代码</td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><code>/opsx:propose &lt;name&gt;</code></td>
+          <td style="text-align: left">一次性创建变更并生成主要 artifact</td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><code>/opsx:new &lt;name&gt;</code></td>
+          <td style="text-align: left">创建变更骨架</td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><code>/opsx:continue &lt;name&gt;</code></td>
+          <td style="text-align: left">继续补齐下一个 artifact</td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><code>/opsx:ff &lt;name&gt;</code></td>
+          <td style="text-align: left">快速生成实现所需的全部 artifact</td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><code>/opsx:apply &lt;name&gt;</code></td>
+          <td style="text-align: left">按 <code>tasks.md</code> 实现</td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><code>/opsx:verify &lt;name&gt;</code></td>
+          <td style="text-align: left">验证实现是否匹配规格</td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><code>/opsx:sync &lt;name&gt;</code></td>
+          <td style="text-align: left">将 delta specs 同步到主 specs</td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><code>/opsx:archive &lt;name&gt;</code></td>
+          <td style="text-align: left">归档完成变更</td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><code>/opsx:bulk-archive</code></td>
+          <td style="text-align: left">批量归档多个完成变更</td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><code>/opsx:onboard</code></td>
+          <td style="text-align: left">引导式学习完整流程</td>
+      </tr>
+  </tbody>
+</table>
+<p>日常最小闭环通常是：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="cl">/opsx:propose -&gt; /opsx:apply -&gt; /opsx:verify -&gt; /opsx:archive
+</span></span></code></pre></div><p>复杂需求更适合：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="cl">/opsx:explore -&gt; /opsx:new -&gt; /opsx:continue -&gt; /opsx:apply -&gt; /opsx:verify -&gt; /opsx:archive
+</span></span></code></pre></div><h2 id="配置说明">配置说明<a hidden class="anchor" aria-hidden="true" href="#配置说明">#</a></h2>
+<p>全局配置文件可以这样查看：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">openspec config path
+</span></span><span class="line"><span class="cl">openspec config list
+</span></span></code></pre></div><p>macOS 和 Linux 默认路径通常是：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="cl">~/.config/openspec/config.json
+</span></span></code></pre></div><p>常见配置项：</p>
+<table>
+  <thead>
+      <tr>
+          <th style="text-align: left">配置</th>
+          <th style="text-align: left">说明</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td style="text-align: left"><code>profile</code></td>
+          <td style="text-align: left">工作流配置，常见值为 <code>core</code> 或 <code>custom</code></td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><code>delivery</code></td>
+          <td style="text-align: left">指令交付方式，支持 <code>both</code>、<code>skills</code>、<code>commands</code></td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><code>workflows</code></td>
+          <td style="text-align: left"><code>custom</code> profile 下启用的 workflow 列表</td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><code>featureFlags</code></td>
+          <td style="text-align: left">实验特性开关</td>
+      </tr>
+  </tbody>
+</table>
+<p>切换 profile：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">openspec config profile
+</span></span><span class="line"><span class="cl">openspec config profile core
+</span></span></code></pre></div><p>直接设置配置：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">openspec config <span class="nb">set</span> delivery commands
+</span></span><span class="line"><span class="cl">openspec config get delivery
+</span></span><span class="line"><span class="cl">openspec config <span class="nb">unset</span> delivery
+</span></span><span class="line"><span class="cl">openspec config reset
+</span></span></code></pre></div><p>OpenSpec 会读取环境变量控制部分行为：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="nb">export</span> <span class="nv">OPENSPEC_TELEMETRY</span><span class="o">=</span><span class="m">0</span>
+</span></span><span class="line"><span class="cl"><span class="nb">export</span> <span class="nv">DO_NOT_TRACK</span><span class="o">=</span><span class="m">1</span>
+</span></span><span class="line"><span class="cl"><span class="nb">export</span> <span class="nv">OPENSPEC_CONCURRENCY</span><span class="o">=</span><span class="m">12</span>
+</span></span><span class="line"><span class="cl"><span class="nb">export</span> <span class="nv">NO_COLOR</span><span class="o">=</span><span class="m">1</span>
+</span></span></code></pre></div><p>其中 <code>OPENSPEC_TELEMETRY=0</code> 和 <code>DO_NOT_TRACK=1</code> 可用于关闭匿名使用统计。</p>
+<h2 id="schema-与模板">Schema 与模板<a hidden class="anchor" aria-hidden="true" href="#schema-与模板">#</a></h2>
+<p>当前内置 schema 可以这样查看：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">openspec schemas
+</span></span><span class="line"><span class="cl">openspec schema which spec-driven
+</span></span><span class="line"><span class="cl">openspec templates --schema spec-driven
+</span></span></code></pre></div><p><code>spec-driven</code> 的 artifact 定义是：</p>
+<table>
+  <thead>
+      <tr>
+          <th style="text-align: left">Artifact</th>
+          <th style="text-align: left">生成文件</th>
+          <th style="text-align: left">依赖</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td style="text-align: left"><code>proposal</code></td>
+          <td style="text-align: left"><code>proposal.md</code></td>
+          <td style="text-align: left">无</td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><code>specs</code></td>
+          <td style="text-align: left"><code>specs/**/*.md</code></td>
+          <td style="text-align: left"><code>proposal</code></td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><code>design</code></td>
+          <td style="text-align: left"><code>design.md</code></td>
+          <td style="text-align: left"><code>proposal</code></td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><code>tasks</code></td>
+          <td style="text-align: left"><code>tasks.md</code></td>
+          <td style="text-align: left"><code>specs</code>、<code>design</code></td>
+      </tr>
+  </tbody>
+</table>
+<p>如果团队需要自定义流程，可以 fork 内置 schema：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">openspec schema fork spec-driven team-workflow
+</span></span><span class="line"><span class="cl">openspec schema validate team-workflow
+</span></span></code></pre></div><p>schema 命令当前属于实验能力，适合在团队内部统一后再使用。个人项目通常不用改 schema，只需要遵守默认模板即可。</p>
+<h2 id="规格写法约束">规格写法约束<a hidden class="anchor" aria-hidden="true" href="#规格写法约束">#</a></h2>
+<p><code>specs/&lt;capability&gt;/spec.md</code> 是 OpenSpec 最重要的契约文件。默认 schema 要求使用 delta 标题：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-markdown" data-lang="markdown"><span class="line"><span class="cl"><span class="gu">## ADDED Requirements
+</span></span></span><span class="line"><span class="cl"><span class="gu">## MODIFIED Requirements
+</span></span></span><span class="line"><span class="cl"><span class="gu">## REMOVED Requirements
+</span></span></span><span class="line"><span class="cl"><span class="gu">## RENAMED Requirements
+</span></span></span></code></pre></div><p>每个 requirement 使用三级标题：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-markdown" data-lang="markdown"><span class="line"><span class="cl"><span class="gu">### Requirement: User can export data
+</span></span></span><span class="line"><span class="cl"><span class="gu"></span>The system SHALL allow users to export their data in CSV format.
+</span></span></code></pre></div><p>每个 scenario 使用四级标题：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-markdown" data-lang="markdown"><span class="line"><span class="cl"><span class="gu">#### Scenario: Successful export
+</span></span></span><span class="line"><span class="cl"><span class="gu"></span><span class="k">-</span> **WHEN** user clicks &#34;Export&#34;
+</span></span><span class="line"><span class="cl"><span class="k">-</span> **THEN** system downloads a CSV file
+</span></span></code></pre></div><p>需要特别注意：</p>
+<ul>
+<li>需求描述优先使用 <code>SHALL</code> 或 <code>MUST</code>，避免模糊的 <code>should</code>、<code>may</code></li>
+<li>每个 requirement 至少要有一个 scenario</li>
+<li>scenario 必须使用 <code>#### Scenario</code>，不要写成三级标题或普通列表</li>
+<li><code>MODIFIED Requirements</code> 必须包含修改后的完整 requirement block</li>
+<li><code>REMOVED Requirements</code> 应写清楚删除原因和迁移方式</li>
+</ul>
+<h2 id="团队落地建议">团队落地建议<a hidden class="anchor" aria-hidden="true" href="#团队落地建议">#</a></h2>
+<h3 id="1-把-openspec-变更作为-pr-的入口">1. 把 OpenSpec 变更作为 PR 的入口<a hidden class="anchor" aria-hidden="true" href="#1-把-openspec-变更作为-pr-的入口">#</a></h3>
+<p>一个较稳的 PR 结构是：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="cl">代码变更
+</span></span><span class="line"><span class="cl">openspec/changes/&lt;change-name&gt;/
+</span></span><span class="line"><span class="cl">测试结果
+</span></span></code></pre></div><p>评审时先看 <code>proposal.md</code> 和 <code>specs/</code>，确认行为契约没有偏，再看实现是否符合 <code>design.md</code> 和 <code>tasks.md</code>。</p>
+<h3 id="2-给-ci-增加规格校验">2. 给 CI 增加规格校验<a hidden class="anchor" aria-hidden="true" href="#2-给-ci-增加规格校验">#</a></h3>
+<p>如果项目使用 GitHub Actions，可以增加一个轻量校验：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl"><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l">openspec</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="nt">on</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">pull_request</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="nt">jobs</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">validate</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">runs-on</span><span class="p">:</span><span class="w"> </span><span class="l">ubuntu-latest</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">steps</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l">actions/checkout@v4</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l">actions/setup-node@v4</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="nt">with</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="nt">node-version</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;20.19.0&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="nt">run</span><span class="p">:</span><span class="w"> </span><span class="l">npm install -g @fission-ai/openspec@1.3.1</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="nt">run</span><span class="p">:</span><span class="w"> </span><span class="l">openspec validate --all --strict --no-interactive</span><span class="w">
+</span></span></span></code></pre></div><p>如果希望总是使用最新版，可以把安装命令改成 <code>@latest</code>；如果团队更看重可复现，建议固定版本。</p>
+<h3 id="3-归档前做三项检查">3. 归档前做三项检查<a hidden class="anchor" aria-hidden="true" href="#3-归档前做三项检查">#</a></h3>
+<p>归档前至少确认：</p>
+<ul>
+<li><code>openspec validate --all --strict</code> 通过</li>
+<li><code>tasks.md</code> 中实现任务已经完成</li>
+<li><code>specs/</code> 描述的是用户可观察行为，而不是代码实现细节</li>
+</ul>
+<p>归档不是清理文件，而是把变更纳入长期规格。不要把未确认的临时方案归档进主规格。</p>
+<h2 id="常见坑">常见坑<a hidden class="anchor" aria-hidden="true" href="#常见坑">#</a></h2>
+<h3 id="1-把实现细节写进-proposal">1. 把实现细节写进 proposal<a hidden class="anchor" aria-hidden="true" href="#1-把实现细节写进-proposal">#</a></h3>
+<p><code>proposal.md</code> 主要回答为什么要做、做什么、影响哪些能力。具体技术方案应该放到 <code>design.md</code>。</p>
+<h3 id="2-tasksmd-不是标准复选框">2. tasks.md 不是标准复选框<a hidden class="anchor" aria-hidden="true" href="#2-tasksmd-不是标准复选框">#</a></h3>
+<p><code>apply</code> 阶段会解析 <code>tasks.md</code>。如果任务不是 <code>- [ ]</code> 格式，就可能无法追踪进度。</p>
+<h3 id="3-modified-requirements-写得太短">3. MODIFIED Requirements 写得太短<a hidden class="anchor" aria-hidden="true" href="#3-modified-requirements-写得太短">#</a></h3>
+<p>修改已有规格时，如果只写新增的一两句话，归档时可能丢失原有细节。稳妥做法是复制完整 requirement，再写更新后的完整版本。</p>
+<h3 id="4-跳过-validate-直接-archive">4. 跳过 validate 直接 archive<a hidden class="anchor" aria-hidden="true" href="#4-跳过-validate-直接-archive">#</a></h3>
+<p>归档会影响主规格。除非非常明确，否则不要使用 <code>--no-validate</code>。纯文档或工具变更可以用 <code>--skip-specs</code>，但仍建议保留校验。</p>
+<h3 id="5-忽略版本差异">5. 忽略版本差异<a hidden class="anchor" aria-hidden="true" href="#5-忽略版本差异">#</a></h3>
+<p>OpenSpec 仍在快速演进，官方文档、<code>main</code> 分支和本地 CLI 版本可能存在差异。写团队文档时建议标明版本，并以本地命令输出为准：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">openspec --version
+</span></span><span class="line"><span class="cl">openspec --help
+</span></span><span class="line"><span class="cl">openspec config list
+</span></span><span class="line"><span class="cl">openspec schemas
+</span></span></code></pre></div><h2 id="小结">小结<a hidden class="anchor" aria-hidden="true" href="#小结">#</a></h2>
+<p>OpenSpec 的价值不在于多生成几份 Markdown，而是让 AI 开发过程有稳定的中间产物：变更动机、行为规格、技术设计和任务清单。小改动可以走 <code>/opsx:propose -&gt; /opsx:apply -&gt; /opsx:archive</code>，复杂改动则用 <code>/opsx:explore</code>、<code>/opsx:new</code> 和 <code>/opsx:continue</code> 分阶段补齐规格。</p>
+<p>对团队项目来说，建议把 <code>openspec/changes/</code> 当成需求评审和实现评审的共同入口，把 <code>openspec/specs/</code> 当成长期维护的行为契约。这样 AI 不再只跟着聊天上下文走，而是围绕仓库里可审阅、可校验、可归档的规格工作。</p>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="/tags/openspec/">OpenSpec</a></li>
+      <li><a href="/tags/sdd/">SDD</a></li>
+      <li><a href="/tags/ai-coding/">AI Coding</a></li>
+    </ul>
+<nav class="paginav">
+  <a class="next" href="/posts/android/android_audio_io_basic/">
+    <span class="title">Next »</span>
+    <br>
+    <span>Android音频路由入门：设备、模式、焦点与音量</span>
+  </a>
+</nav>
+
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2026 <a href="/">缥缈夏鸢</a></span> · 
+
+    <span>
+        Powered by
+        <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+        <path d="M12 6H0l6-6z" />
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu')
+    if (menu) {
+        menu.scrollLeft = localStorage.getItem("menu-scroll-position");
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        if (document.body.className.includes("dark")) {
+            document.body.classList.remove('dark');
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            document.body.classList.add('dark');
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerHTML = 'copy';
+
+        function copyingDone() {
+            copybutton.innerHTML = 'copied!';
+            setTimeout(() => {
+                copybutton.innerHTML = 'copy';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+</body>
+
+</html>

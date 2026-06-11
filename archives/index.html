@@ -61,14 +61,29 @@
 <script>
 
 const config = {
-    startOnLoad:true,
-    
+    startOnLoad: true,
+    theme: "base",
     themeVariables: {
-        lineColor: "#ffffff"    
+        primaryColor: "#f8fafc",
+        primaryTextColor: "#111827",
+        primaryBorderColor: "#6b7280",
+        lineColor: "#6b7280",
+        secondaryColor: "#eef2ff",
+        secondaryTextColor: "#111827",
+        secondaryBorderColor: "#6b7280",
+        tertiaryColor: "#f1f5f9",
+        tertiaryTextColor: "#111827",
+        tertiaryBorderColor: "#6b7280",
+        edgeLabelBackground: "#f8fafc",
+        clusterBkg: "#f8fafc",
+        clusterBorder: "#6b7280",
+        noteBkgColor: "#fef3c7",
+        noteTextColor: "#111827",
+        noteBorderColor: "#6b7280"
     },
     flowchart: {
-        useMaxWidth:false,
-        htmlLabels:true
+        useMaxWidth: false,
+        htmlLabels: true
     }
 };
 mermaid.initialize(config);
@@ -77,7 +92,8 @@ mermaid.initialize(config);
 window.onload = () => {
     window.mermaid.init(undefined, document.querySelectorAll('.language-mermaid'));
 }
-</script><meta property="og:url" content="/archives/">
+</script>
+<meta property="og:url" content="/archives/">
   <meta property="og:site_name" content="缥缈夏鸢">
   <meta property="og:title" content="Archive">
   <meta property="og:description" content="archives">
@@ -233,14 +249,20 @@ window.onload = () => {
 <div class="archive-year">
   <h2 class="archive-year-header" id="2026">
     <a class="archive-header-link" href="#2026">2026</a>
-    <sup class="archive-count">&nbsp;13</sup>
+    <sup class="archive-count">&nbsp;14</sup>
   </h2>
   <div class="archive-month">
     <h3 class="archive-month-header" id="2026-June">
       <a class="archive-header-link" href="#2026-June">June</a>
-      <sup class="archive-count">&nbsp;1</sup>
+      <sup class="archive-count">&nbsp;2</sup>
     </h3>
     <div class="archive-posts">
+      <div class="archive-entry">
+        <h3 class="archive-entry-title entry-hint-parent">OpenSpec SDD 开发套件使用指南
+        </h3>
+        <div class="archive-meta"><span title='2026-06-11 15:15:50 +0800 CST'>June 11, 2026</span>&nbsp;·&nbsp;5 min&nbsp;·&nbsp;1045 words&nbsp;·&nbsp;夏天的小西瓜</div>
+        <a class="entry-link" aria-label="post link to OpenSpec SDD 开发套件使用指南" href="/posts/sdd/openspec_sdd_guide/"></a>
+      </div>
       <div class="archive-entry">
         <h3 class="archive-entry-title entry-hint-parent">Android音频路由入门：设备、模式、焦点与音量
         </h3>

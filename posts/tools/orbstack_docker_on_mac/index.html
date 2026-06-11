@@ -83,14 +83,29 @@ brew install --cask orbstack
 <script>
 
 const config = {
-    startOnLoad:true,
-    
+    startOnLoad: true,
+    theme: "base",
     themeVariables: {
-        lineColor: "#ffffff"    
+        primaryColor: "#f8fafc",
+        primaryTextColor: "#111827",
+        primaryBorderColor: "#6b7280",
+        lineColor: "#6b7280",
+        secondaryColor: "#eef2ff",
+        secondaryTextColor: "#111827",
+        secondaryBorderColor: "#6b7280",
+        tertiaryColor: "#f1f5f9",
+        tertiaryTextColor: "#111827",
+        tertiaryBorderColor: "#6b7280",
+        edgeLabelBackground: "#f8fafc",
+        clusterBkg: "#f8fafc",
+        clusterBorder: "#6b7280",
+        noteBkgColor: "#fef3c7",
+        noteTextColor: "#111827",
+        noteBorderColor: "#6b7280"
     },
     flowchart: {
-        useMaxWidth:false,
-        htmlLabels:true
+        useMaxWidth: false,
+        htmlLabels: true
     }
 };
 mermaid.initialize(config);
@@ -99,7 +114,8 @@ mermaid.initialize(config);
 window.onload = () => {
     window.mermaid.init(undefined, document.querySelectorAll('.language-mermaid'));
 }
-</script><meta property="og:url" content="/posts/tools/orbstack_docker_on_mac/">
+</script>
+<meta property="og:url" content="/posts/tools/orbstack_docker_on_mac/">
   <meta property="og:site_name" content="缥缈夏鸢">
   <meta property="og:title" content="Mac 环境下使用 OrbStack 运行 Docker">
   <meta property="og:description" content="概述 在 Mac 上跑 Docker，很多人第一反应还是 Docker Desktop。但如果你的诉求主要是本地容器开发，而不是完整的桌面管理功能，OrbStack 通常是更轻量的一种选择。

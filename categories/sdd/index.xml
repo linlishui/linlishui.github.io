@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>SDD on 缥缈夏鸢</title>
+    <link>/categories/sdd/</link>
+    <description>Recent content in SDD on 缥缈夏鸢</description>
+    <generator>Hugo -- 0.138.0</generator>
+    <language>en-us</language>
+    <lastBuildDate>Thu, 11 Jun 2026 15:15:50 +0800</lastBuildDate>
+    <atom:link href="/categories/sdd/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>OpenSpec SDD 开发套件使用指南</title>
+      <link>/posts/sdd/openspec_sdd_guide/</link>
+      <pubDate>Thu, 11 Jun 2026 15:15:50 +0800</pubDate>
+      <guid>/posts/sdd/openspec_sdd_guide/</guid>
+      <description>&lt;h2 id=&#34;概述&#34;&gt;概述&lt;/h2&gt;
+&lt;p&gt;OpenSpec 是一个面向 AI 编程助手的 SDD（Spec-Driven Development，规格驱动开发）工具。它解决的问题不是“让 AI 更快写代码”，而是让一次需求变更先沉淀为可检查、可追踪、可归档的规格资产，再进入实现。&lt;/p&gt;
+&lt;p&gt;本文基于本机验证的 OpenSpec CLI &lt;code&gt;1.3.1&lt;/code&gt;，包名为 &lt;code&gt;@fission-ai/openspec&lt;/code&gt;。当前默认 schema 是 &lt;code&gt;spec-driven&lt;/code&gt;，核心产物链路是：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-text&#34; data-lang=&#34;text&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;proposal -&amp;gt; specs -&amp;gt; design -&amp;gt; tasks -&amp;gt; apply -&amp;gt; archive
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;可以把它理解成一条轻量级需求流水线：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;proposal.md&lt;/code&gt;：为什么做、做什么、影响什么&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;specs/&lt;/code&gt;：系统应该表现出什么行为&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;design.md&lt;/code&gt;：准备怎么实现，关键技术取舍是什么&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;tasks.md&lt;/code&gt;：可执行、可勾选、可验证的任务清单&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;archive&lt;/code&gt;：实现完成后，把变更合并回主规格&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;解决什么问题&#34;&gt;解决什么问题&lt;/h2&gt;
+&lt;p&gt;只靠聊天记录驱动 AI 写代码，常见问题是需求散落、上下文漂移、实现和预期不一致。OpenSpec 用仓库内的 &lt;code&gt;openspec/&lt;/code&gt; 目录把需求、规格、设计和任务固定下来，让人和 AI 都围绕同一组文件工作。&lt;/p&gt;
+&lt;p&gt;初始化后的核心目录如下：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-text&#34; data-lang=&#34;text&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;openspec/
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  changes/
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    archive/
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    add-dark-mode/
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;      .openspec.yaml
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;      README.md
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;      proposal.md
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;      specs/
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        ui-theme/
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;          spec.md
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;      design.md
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;      tasks.md
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  specs/
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    ui-theme/
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;      spec.md
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;其中 &lt;code&gt;openspec/changes/&lt;/code&gt; 存放进行中的变更，&lt;code&gt;openspec/specs/&lt;/code&gt; 存放已经生效的主规格，&lt;code&gt;openspec/changes/archive/&lt;/code&gt; 存放完成后的历史变更。&lt;/p&gt;</description>
+    </item>
+  </channel>
+</rss>

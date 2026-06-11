@@ -112,14 +112,29 @@ echo &#34;详细模式: $verbose&#34;
 <script>
 
 const config = {
-    startOnLoad:true,
-    
+    startOnLoad: true,
+    theme: "base",
     themeVariables: {
-        lineColor: "#ffffff"    
+        primaryColor: "#f8fafc",
+        primaryTextColor: "#111827",
+        primaryBorderColor: "#6b7280",
+        lineColor: "#6b7280",
+        secondaryColor: "#eef2ff",
+        secondaryTextColor: "#111827",
+        secondaryBorderColor: "#6b7280",
+        tertiaryColor: "#f1f5f9",
+        tertiaryTextColor: "#111827",
+        tertiaryBorderColor: "#6b7280",
+        edgeLabelBackground: "#f8fafc",
+        clusterBkg: "#f8fafc",
+        clusterBorder: "#6b7280",
+        noteBkgColor: "#fef3c7",
+        noteTextColor: "#111827",
+        noteBorderColor: "#6b7280"
     },
     flowchart: {
-        useMaxWidth:false,
-        htmlLabels:true
+        useMaxWidth: false,
+        htmlLabels: true
     }
 };
 mermaid.initialize(config);
@@ -128,7 +143,8 @@ mermaid.initialize(config);
 window.onload = () => {
     window.mermaid.init(undefined, document.querySelectorAll('.language-mermaid'));
 }
-</script><meta property="og:url" content="/posts/tools/shell/">
+</script>
+<meta property="og:url" content="/posts/tools/shell/">
   <meta property="og:site_name" content="缥缈夏鸢">
   <meta property="og:title" content="Shell入门">
   <meta property="og:description" content="概述 Shell 是操作系统的命令行解释器，是用户与操作系统内核交互的接口。常见的 Shell 类型包括：

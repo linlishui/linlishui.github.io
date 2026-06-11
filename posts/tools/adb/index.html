@@ -85,14 +85,29 @@ adb logcat -b events | egrep -i resume_activity：查看执行到resume状态的
 <script>
 
 const config = {
-    startOnLoad:true,
-    
+    startOnLoad: true,
+    theme: "base",
     themeVariables: {
-        lineColor: "#ffffff"    
+        primaryColor: "#f8fafc",
+        primaryTextColor: "#111827",
+        primaryBorderColor: "#6b7280",
+        lineColor: "#6b7280",
+        secondaryColor: "#eef2ff",
+        secondaryTextColor: "#111827",
+        secondaryBorderColor: "#6b7280",
+        tertiaryColor: "#f1f5f9",
+        tertiaryTextColor: "#111827",
+        tertiaryBorderColor: "#6b7280",
+        edgeLabelBackground: "#f8fafc",
+        clusterBkg: "#f8fafc",
+        clusterBorder: "#6b7280",
+        noteBkgColor: "#fef3c7",
+        noteTextColor: "#111827",
+        noteBorderColor: "#6b7280"
     },
     flowchart: {
-        useMaxWidth:false,
-        htmlLabels:true
+        useMaxWidth: false,
+        htmlLabels: true
     }
 };
 mermaid.initialize(config);
@@ -101,7 +116,8 @@ mermaid.initialize(config);
 window.onload = () => {
     window.mermaid.init(undefined, document.querySelectorAll('.language-mermaid'));
 }
-</script><meta property="og:url" content="/posts/tools/adb/">
+</script>
+<meta property="og:url" content="/posts/tools/adb/">
   <meta property="og:site_name" content="缥缈夏鸢">
   <meta property="og:title" content="adb日常使用">
   <meta property="og:description" content="简述 adb日志操作 adb logcat日志可分为：main、system、events、radio、crash、kernel类型的log，常用日志过滤命令如下：

@@ -62,14 +62,29 @@
 <script>
 
 const config = {
-    startOnLoad:true,
-    
+    startOnLoad: true,
+    theme: "base",
     themeVariables: {
-        lineColor: "#ffffff"    
+        primaryColor: "#f8fafc",
+        primaryTextColor: "#111827",
+        primaryBorderColor: "#6b7280",
+        lineColor: "#6b7280",
+        secondaryColor: "#eef2ff",
+        secondaryTextColor: "#111827",
+        secondaryBorderColor: "#6b7280",
+        tertiaryColor: "#f1f5f9",
+        tertiaryTextColor: "#111827",
+        tertiaryBorderColor: "#6b7280",
+        edgeLabelBackground: "#f8fafc",
+        clusterBkg: "#f8fafc",
+        clusterBorder: "#6b7280",
+        noteBkgColor: "#fef3c7",
+        noteTextColor: "#111827",
+        noteBorderColor: "#6b7280"
     },
     flowchart: {
-        useMaxWidth:false,
-        htmlLabels:true
+        useMaxWidth: false,
+        htmlLabels: true
     }
 };
 mermaid.initialize(config);
@@ -78,7 +93,8 @@ mermaid.initialize(config);
 window.onload = () => {
     window.mermaid.init(undefined, document.querySelectorAll('.language-mermaid'));
 }
-</script><meta property="og:url" content="/posts/">
+</script>
+<meta property="og:url" content="/posts/">
   <meta property="og:site_name" content="缥缈夏鸢">
   <meta property="og:title" content="Posts">
   <meta property="og:description" content="Android 开发工程师，持续探索 Agent 应用开发，长期关注全栈能力建设。">
@@ -197,6 +213,30 @@ window.onload = () => {
     </a>
   </h1>
 </header>
+
+<article class="post-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">MySQL 基础用法
+    </h2>
+  </header>
+  <div class="entry-content">
+    <p>概述 MySQL 是常见的关系型数据库，主要用来存储和查询结构化数据。
+这篇文章聚焦最基础也最常用的内容，包括连接数据库、建库建表、表结构修改、基本 CRUD，以及主键、索引、事务和常见坑点。
+连接数据库 最常见的进入方式是命令行连接：
+mysql -u root -p 如果是连接指定主机和端口：
+mysql -h 127.0.0.1 -P 3306 -u root -p 连接成功后，可以先看有哪些数据库：
+SHOW DATABASES; 退出客户端：
+exit 建库建表 创建一个测试库：
+CREATE DATABASE demo_db; 切换到这个库：
+USE demo_db; 查看当前库里的表：
+SHOW TABLES; 下面建一张最简单的用户表：
+CREATE TABLE users ( id INT PRIMARY KEY AUTO_INCREMENT, name VARCHAR(50) NOT NULL, age INT, city VARCHAR(50), created_at DATETIME DEFAULT CURRENT_TIMESTAMP ); 这里有几个关键点：
+1. 字段类型 INT：整数 VARCHAR(50)：最长 50 个字符的字符串 DATETIME：日期时间 2. 约束 PRIMARY KEY：主键，唯一标识一条记录 AUTO_INCREMENT：自增，适合主键 NOT NULL：不能为空 DEFAULT：默认值 可以用下面的命令查看表结构：
+...</p>
+  </div>
+  <footer class="entry-footer"><span title='2026-04-10 12:01:51 +0800 CST'>April 10, 2026</span>&nbsp;·&nbsp;3 min&nbsp;·&nbsp;622 words&nbsp;·&nbsp;夏天的小西瓜</footer>
+  <a class="entry-link" aria-label="post link to MySQL 基础用法" href="/posts/database/mysql_basic/"></a>
+</article>
 
 <article class="post-entry"> 
   <header class="entry-header">
@@ -371,28 +411,6 @@ HTTPS代理设置 HTTP的代理设置是抓取不了HTTPS，故需要进行HTTPS
   </div>
   <footer class="entry-footer"><span title='2025-01-22 17:27:21 +0800 CST'>January 22, 2025</span>&nbsp;·&nbsp;1 min&nbsp;·&nbsp;114 words&nbsp;·&nbsp;夏天的小西瓜</footer>
   <a class="entry-link" aria-label="post link to Charles网络抓包" href="/posts/tools/charles/"></a>
-</article>
-
-<article class="post-entry"> 
-  <header class="entry-header">
-    <h2 class="entry-hint-parent">openVPN
-    </h2>
-  </header>
-  <div class="entry-content">
-    <p>本文将基于Ubuntu系统环境快速搭建OpenVPN用于端对端的安全传输通道访问。
-安装软件 安装相关的软件(openvpn与easy-rsa)，执行命令：
-sudo apt update sudo apt install openvpn easy-rsa 查看安装后的 openvpn与 easy-rsa 版本，如下：
-openvpn/focal-updates,focal-security,now 2.4.12-0ubuntu0.20.04.2 amd64 [installed] virtual private network daemon easy-rsa/focal,focal,now 3.0.6-1 all [installed] Simple shell based CA utility 制作证书 OpenVPN 的证书分为三部分：CA证书、Server端证书、Client端证书。下面我们通过easy-rsa分别对其进行制作。
-制作证书：
-进入 /usr/share/easy-rsa 目录
-拷贝 vars.example 文件，并将新的文件命名为 vars
-编辑 vars 文件，取消注释并按需修改以下内容信息：
-set_var EASYRSA_REQ_COUNTRY &#34;US&#34; set_var EASYRSA_REQ_PROVINCE &#34;California&#34; set_var EASYRSA_REQ_CITY &#34;San Francisco&#34; set_var EASYRSA_REQ_ORG &#34;Copyleft Certificate Co&#34; set_var EASYRSA_REQ_EMAIL &#34;me@example.net&#34; set_var EASYRSA_REQ_OU &#34;My Organizational Unit&#34; 在该目录里执行以下命令用于初始化与生成CA证书：
-sudo ./easyrsa init-pki sudo ./easyrsa build-ca nopass 生成服务端证书：
-...</p>
-  </div>
-  <footer class="entry-footer"><span title='2024-12-23 17:09:22 +0800 CST'>December 23, 2024</span>&nbsp;·&nbsp;2 min&nbsp;·&nbsp;393 words&nbsp;·&nbsp;夏天的小西瓜</footer>
-  <a class="entry-link" aria-label="post link to openVPN" href="/posts/tools/openvpn/"></a>
 </article>
 <footer class="page-footer">
   <nav class="pagination">

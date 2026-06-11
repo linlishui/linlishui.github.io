@@ -215,14 +215,29 @@
 <script>
 
 const config = {
-    startOnLoad:true,
-    
+    startOnLoad: true,
+    theme: "base",
     themeVariables: {
-        lineColor: "#ffffff"    
+        primaryColor: "#f8fafc",
+        primaryTextColor: "#111827",
+        primaryBorderColor: "#6b7280",
+        lineColor: "#6b7280",
+        secondaryColor: "#eef2ff",
+        secondaryTextColor: "#111827",
+        secondaryBorderColor: "#6b7280",
+        tertiaryColor: "#f1f5f9",
+        tertiaryTextColor: "#111827",
+        tertiaryBorderColor: "#6b7280",
+        edgeLabelBackground: "#f8fafc",
+        clusterBkg: "#f8fafc",
+        clusterBorder: "#6b7280",
+        noteBkgColor: "#fef3c7",
+        noteTextColor: "#111827",
+        noteBorderColor: "#6b7280"
     },
     flowchart: {
-        useMaxWidth:false,
-        htmlLabels:true
+        useMaxWidth: false,
+        htmlLabels: true
     }
 };
 mermaid.initialize(config);
@@ -231,7 +246,8 @@ mermaid.initialize(config);
 window.onload = () => {
     window.mermaid.init(undefined, document.querySelectorAll('.language-mermaid'));
 }
-</script><meta property="og:url" content="/posts/tools/vim/">
+</script>
+<meta property="og:url" content="/posts/tools/vim/">
   <meta property="og:site_name" content="缥缈夏鸢">
   <meta property="og:title" content="Vim基础使用">
   <meta property="og:description" content="Vim基本操作 1. 移动光标 键位 含义 hjkl，方向键 移动一位，hjkl代表左、下、上、右 数字0 移至本行开头 ^ 移至本行第一个非空字符，匹配开头 $ 移至本行结尾，可以包含空格 w 移至下一单词或标点的开头 b 移至上一单词或标点开头 ctrl-f/PgDn 下翻一页 ctrl-b/PgUp 上翻一页 nG 移至第n行（n为数字） gg 光标移至第一行 G 光标移至最后一行 :n enter键 移至第n行 n&#43; 向下跳n行 n- 向上跳n行 H 移至当前屏幕的第一行 L 移至当前屏幕的最后一行 注意：许多vi的命令前面都可以缀上数字，前缀数字可以控制该命令执行的次数，比如5j可以使得光标向下移动5行
