@@ -6,8 +6,43 @@
     <description>Recent content in Tags on 缥缈夏鸢</description>
     <generator>Hugo -- 0.138.0</generator>
     <language>en-us</language>
-    <lastBuildDate>Thu, 11 Jun 2026 15:15:50 +0800</lastBuildDate>
+    <lastBuildDate>Tue, 30 Jun 2026 10:58:09 +0800</lastBuildDate>
     <atom:link href="/tags/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Agent</title>
+      <link>/tags/agent/</link>
+      <pubDate>Tue, 30 Jun 2026 10:58:09 +0800</pubDate>
+      <guid>/tags/agent/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>AI工程</title>
+      <link>/tags/ai%E5%B7%A5%E7%A8%8B/</link>
+      <pubDate>Tue, 30 Jun 2026 10:58:09 +0800</pubDate>
+      <guid>/tags/ai%E5%B7%A5%E7%A8%8B/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Android CLI</title>
+      <link>/tags/android-cli/</link>
+      <pubDate>Tue, 30 Jun 2026 10:58:09 +0800</pubDate>
+      <guid>/tags/android-cli/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Compose</title>
+      <link>/tags/compose/</link>
+      <pubDate>Tue, 30 Jun 2026 10:58:09 +0800</pubDate>
+      <guid>/tags/compose/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>自动化测试</title>
+      <link>/tags/%E8%87%AA%E5%8A%A8%E5%8C%96%E6%B5%8B%E8%AF%95/</link>
+      <pubDate>Tue, 30 Jun 2026 10:58:09 +0800</pubDate>
+      <guid>/tags/%E8%87%AA%E5%8A%A8%E5%8C%96%E6%B5%8B%E8%AF%95/</guid>
+      <description></description>
+    </item>
     <item>
       <title>AI Coding</title>
       <link>/tags/ai-coding/</link>

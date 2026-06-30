@@ -216,6 +216,22 @@ window.onload = () => {
 
 <article class="post-entry"> 
   <header class="entry-header">
+    <h2 class="entry-hint-parent">把 Android 交给 Agent：Google Android CLI 工程化实战指南
+    </h2>
+  </header>
+  <div class="entry-content">
+    <p>Android CLI 的重点不是“又多了一个 adb 替代品”，而是 Google 正在把 Android 工程能力整理成更适合 AI Agent 调用的命令入口。它把 SDK 管理、项目模板、模拟器、部署、UI 观察、截图定位、官方文档检索、Android skills、Android Studio 语义能力放到统一的 android 命令下。
+如果只做手工开发，Android Studio、Gradle 和 adb 已经能覆盖绝大多数工作。但 AI 工程的核心问题不是“人能不能做”，而是“Agent 能不能稳定观察、执行、验证，并留下可复盘证据”。Android CLI 的价值就在这里：它把原本分散在 IDE、终端、设备和文档里的动作，收敛成一组更清晰的命令协议。
+Android CLI 可以按下面这几层理解。表格比关系图更适合放在文章开头，读者可以先建立全局印象，再按后文逐段展开。
+层级 能力 常用命令 Agent 拿到什么 环境与 SDK 确认 CLI、SDK 和工具链状态 android info、android sdk list/install/update 当前 SDK 路径、可用平台包、工具链是否完整 工程创建与理解 创建模板工程，分析现有项目 android create、android describe、./gradlew tasks module、构建目标、APK 产物路径 设备与运行 管理模拟器并部署应用 android emulator list/start/stop/create、android run 可用设备、安装结果、运行入口 观察与验证 读取 UI 树、截图、定位坐标 android layout、android screen capture/resolve、adb input 页面结构、可点击元素、视觉证据、交互坐标 知识与实践 查询官方资料，安装任务技能 android docs search/fetch、android skills 最新 API 建议、迁移指引、任务级操作规范 IDE 语义能力 复用 Android Studio 索引和预览 android studio analyze-file/find-usages/render-compose-preview 声明位置、引用点、静态分析、Compose Preview 结果 工具边界 1. Android CLI 不是什么 Android CLI 不是要替代所有 Android 工具。更准确地说，它是 Agent 友好的编排入口。
+...</p>
+  </div>
+  <footer class="entry-footer"><span title='2026-06-30 10:58:09 +0800 CST'>June 30, 2026</span>&nbsp;·&nbsp;7 min&nbsp;·&nbsp;1361 words&nbsp;·&nbsp;夏天的小西瓜</footer>
+  <a class="entry-link" aria-label="post link to 把 Android 交给 Agent：Google Android CLI 工程化实战指南" href="/posts/android/android_cli_agent_deep_dive/"></a>
+</article>
+
+<article class="post-entry"> 
+  <header class="entry-header">
     <h2 class="entry-hint-parent">OpenSpec SDD 开发套件使用指南
     </h2>
   </header>
@@ -406,31 +422,6 @@ name = None print(name) nickname = None # 用 is None 判断空值 if nickname i
   </div>
   <footer class="entry-footer"><span title='2026-04-11 00:40:23 +0800 CST'>April 11, 2026</span>&nbsp;·&nbsp;4 min&nbsp;·&nbsp;724 words&nbsp;·&nbsp;夏天的小西瓜</footer>
   <a class="entry-link" aria-label="post link to Python常用基础回顾" href="/posts/python/python_intro/"></a>
-</article>
-
-<article class="post-entry"> 
-  <header class="entry-header">
-    <h2 class="entry-hint-parent">Redis 基础用法
-    </h2>
-  </header>
-  <div class="entry-content">
-    <p>概述 Redis 是常见的内存数据库，通常用来做缓存、计数、排行榜、分布式锁等高频读写场景。
-这篇文章聚焦最基础也最常用的内容，包括连接 Redis、常见数据类型、基本读写操作、过期时间，以及实战里常见的使用坑点。
-连接 Redis 最常见的方式是使用命令行客户端：
-redis-cli 如果要连接指定主机和端口：
-redis-cli -h 127.0.0.1 -p 6379 如果服务设置了密码：
-redis-cli -h 127.0.0.1 -p 6379 -a your_password 连接成功后，可以先做一个简单检查：
-PING 返回 PONG 说明 Redis 服务可用。
-基本概念 Redis 的数据以 key -&gt; value 的形式存储。和关系型数据库不同，它没有表结构，重点是根据业务场景选择合适的数据类型。
-开发里最常见的几类数据：
-String：最常用，适合缓存字符串、数字、JSON Hash：适合存对象结构 List：适合消息队列、按顺序保存数据 Set：适合去重 ZSet：适合排行榜 String 常用操作 String 是 Redis 使用最频繁的数据类型。
-1. 写入和读取 SET user:1001:name &#34;alice&#34; GET user:1001:name 2. 覆盖写入 SET user:1001:name &#34;bob&#34; SET 会直接覆盖旧值，这一点要特别注意。
-3. 数字自增 SET page:view 100 INCR page:view INCRBY page:view 10 这类操作适合做访问量、点赞数、库存计数等场景。
-4. 删除 key DEL user:1001:name Hash 常用操作 Hash 适合存一组相关字段，比如用户信息。
-...</p>
-  </div>
-  <footer class="entry-footer"><span title='2026-04-10 17:29:36 +0800 CST'>April 10, 2026</span>&nbsp;·&nbsp;2 min&nbsp;·&nbsp;368 words&nbsp;·&nbsp;夏天的小西瓜</footer>
-  <a class="entry-link" aria-label="post link to Redis 基础用法" href="/posts/database/redis_basic/"></a>
 </article>
 <footer class="page-footer">
   <nav class="pagination">

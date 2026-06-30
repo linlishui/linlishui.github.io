@@ -1,0 +1,1211 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>把 Android 交给 Agent：Google Android CLI 工程化实战指南 | 缥缈夏鸢</title>
+<meta name="keywords" content="Android CLI, AI工程, Agent, 自动化测试, Compose">
+<meta name="description" content="Android CLI 的重点不是“又多了一个 adb 替代品”，而是 Google 正在把 Android 工程能力整理成更适合 AI Agent 调用的命令入口。它把 SDK 管理、项目模板、模拟器、部署、UI 观察、截图定位、官方文档检索、Android skills、Android Studio 语义能力放到统一的 android 命令下。
+如果只做手工开发，Android Studio、Gradle 和 adb 已经能覆盖绝大多数工作。但 AI 工程的核心问题不是“人能不能做”，而是“Agent 能不能稳定观察、执行、验证，并留下可复盘证据”。Android CLI 的价值就在这里：它把原本分散在 IDE、终端、设备和文档里的动作，收敛成一组更清晰的命令协议。
+Android CLI 可以按下面这几层理解。表格比关系图更适合放在文章开头，读者可以先建立全局印象，再按后文逐段展开。
+
+  
+      
+          层级
+          能力
+          常用命令
+          Agent 拿到什么
+      
+  
+  
+      
+          环境与 SDK
+          确认 CLI、SDK 和工具链状态
+          android info、android sdk list/install/update
+          当前 SDK 路径、可用平台包、工具链是否完整
+      
+      
+          工程创建与理解
+          创建模板工程，分析现有项目
+          android create、android describe、./gradlew tasks
+          module、构建目标、APK 产物路径
+      
+      
+          设备与运行
+          管理模拟器并部署应用
+          android emulator list/start/stop/create、android run
+          可用设备、安装结果、运行入口
+      
+      
+          观察与验证
+          读取 UI 树、截图、定位坐标
+          android layout、android screen capture/resolve、adb input
+          页面结构、可点击元素、视觉证据、交互坐标
+      
+      
+          知识与实践
+          查询官方资料，安装任务技能
+          android docs search/fetch、android skills
+          最新 API 建议、迁移指引、任务级操作规范
+      
+      
+          IDE 语义能力
+          复用 Android Studio 索引和预览
+          android studio analyze-file/find-usages/render-compose-preview
+          声明位置、引用点、静态分析、Compose Preview 结果
+      
+  
+
+工具边界
+1. Android CLI 不是什么
+Android CLI 不是要替代所有 Android 工具。更准确地说，它是 Agent 友好的编排入口。">
+<meta name="author" content="夏天的小西瓜">
+<link rel="canonical" href="/posts/android/android_cli_agent_deep_dive/">
+<meta name="google-site-verification" content="XYZabc">
+<meta name="msvalidate.01" content="XYZabc">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.44278f16c6e7e77192a15a0565fb5b0f220c56128442fcfa6937b4d84456ecf0.css" integrity="sha256-RCePFsbn53GSoVoFZftbDyIMVhKEQvz6aTe02ERW7PA=" rel="preload stylesheet" as="style">
+<link rel="icon" href="/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="mask-icon" href="/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="en" href="/posts/android/android_cli_agent_deep_dive/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-track {
+                background: 0 0;
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-thumb {
+                border-color: var(--theme);
+            }
+        }
+
+    </style>
+</noscript><script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+<script>
+
+const config = {
+    startOnLoad: true,
+    theme: "base",
+    themeVariables: {
+        primaryColor: "#f8fafc",
+        primaryTextColor: "#111827",
+        primaryBorderColor: "#6b7280",
+        lineColor: "#6b7280",
+        secondaryColor: "#eef2ff",
+        secondaryTextColor: "#111827",
+        secondaryBorderColor: "#6b7280",
+        tertiaryColor: "#f1f5f9",
+        tertiaryTextColor: "#111827",
+        tertiaryBorderColor: "#6b7280",
+        edgeLabelBackground: "#f8fafc",
+        clusterBkg: "#f8fafc",
+        clusterBorder: "#6b7280",
+        noteBkgColor: "#fef3c7",
+        noteTextColor: "#111827",
+        noteBorderColor: "#6b7280"
+    },
+    flowchart: {
+        useMaxWidth: false,
+        htmlLabels: true
+    }
+};
+mermaid.initialize(config);
+
+
+window.onload = () => {
+    window.mermaid.init(undefined, document.querySelectorAll('.language-mermaid'));
+}
+</script>
+<meta property="og:url" content="/posts/android/android_cli_agent_deep_dive/">
+  <meta property="og:site_name" content="缥缈夏鸢">
+  <meta property="og:title" content="把 Android 交给 Agent：Google Android CLI 工程化实战指南">
+  <meta property="og:description" content="Android CLI 的重点不是“又多了一个 adb 替代品”，而是 Google 正在把 Android 工程能力整理成更适合 AI Agent 调用的命令入口。它把 SDK 管理、项目模板、模拟器、部署、UI 观察、截图定位、官方文档检索、Android skills、Android Studio 语义能力放到统一的 android 命令下。
+如果只做手工开发，Android Studio、Gradle 和 adb 已经能覆盖绝大多数工作。但 AI 工程的核心问题不是“人能不能做”，而是“Agent 能不能稳定观察、执行、验证，并留下可复盘证据”。Android CLI 的价值就在这里：它把原本分散在 IDE、终端、设备和文档里的动作，收敛成一组更清晰的命令协议。
+Android CLI 可以按下面这几层理解。表格比关系图更适合放在文章开头，读者可以先建立全局印象，再按后文逐段展开。
+层级 能力 常用命令 Agent 拿到什么 环境与 SDK 确认 CLI、SDK 和工具链状态 android info、android sdk list/install/update 当前 SDK 路径、可用平台包、工具链是否完整 工程创建与理解 创建模板工程，分析现有项目 android create、android describe、./gradlew tasks module、构建目标、APK 产物路径 设备与运行 管理模拟器并部署应用 android emulator list/start/stop/create、android run 可用设备、安装结果、运行入口 观察与验证 读取 UI 树、截图、定位坐标 android layout、android screen capture/resolve、adb input 页面结构、可点击元素、视觉证据、交互坐标 知识与实践 查询官方资料，安装任务技能 android docs search/fetch、android skills 最新 API 建议、迁移指引、任务级操作规范 IDE 语义能力 复用 Android Studio 索引和预览 android studio analyze-file/find-usages/render-compose-preview 声明位置、引用点、静态分析、Compose Preview 结果 工具边界 1. Android CLI 不是什么 Android CLI 不是要替代所有 Android 工具。更准确地说，它是 Agent 友好的编排入口。">
+  <meta property="og:locale" content="en-us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2026-06-30T10:58:09+08:00">
+    <meta property="article:modified_time" content="2026-06-30T10:58:09+08:00">
+    <meta property="article:tag" content="Android CLI">
+    <meta property="article:tag" content="AI工程">
+    <meta property="article:tag" content="Agent">
+    <meta property="article:tag" content="自动化测试">
+    <meta property="article:tag" content="Compose">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="把 Android 交给 Agent：Google Android CLI 工程化实战指南">
+<meta name="twitter:description" content="Android CLI 的重点不是“又多了一个 adb 替代品”，而是 Google 正在把 Android 工程能力整理成更适合 AI Agent 调用的命令入口。它把 SDK 管理、项目模板、模拟器、部署、UI 观察、截图定位、官方文档检索、Android skills、Android Studio 语义能力放到统一的 android 命令下。
+如果只做手工开发，Android Studio、Gradle 和 adb 已经能覆盖绝大多数工作。但 AI 工程的核心问题不是“人能不能做”，而是“Agent 能不能稳定观察、执行、验证，并留下可复盘证据”。Android CLI 的价值就在这里：它把原本分散在 IDE、终端、设备和文档里的动作，收敛成一组更清晰的命令协议。
+Android CLI 可以按下面这几层理解。表格比关系图更适合放在文章开头，读者可以先建立全局印象，再按后文逐段展开。
+
+  
+      
+          层级
+          能力
+          常用命令
+          Agent 拿到什么
+      
+  
+  
+      
+          环境与 SDK
+          确认 CLI、SDK 和工具链状态
+          android info、android sdk list/install/update
+          当前 SDK 路径、可用平台包、工具链是否完整
+      
+      
+          工程创建与理解
+          创建模板工程，分析现有项目
+          android create、android describe、./gradlew tasks
+          module、构建目标、APK 产物路径
+      
+      
+          设备与运行
+          管理模拟器并部署应用
+          android emulator list/start/stop/create、android run
+          可用设备、安装结果、运行入口
+      
+      
+          观察与验证
+          读取 UI 树、截图、定位坐标
+          android layout、android screen capture/resolve、adb input
+          页面结构、可点击元素、视觉证据、交互坐标
+      
+      
+          知识与实践
+          查询官方资料，安装任务技能
+          android docs search/fetch、android skills
+          最新 API 建议、迁移指引、任务级操作规范
+      
+      
+          IDE 语义能力
+          复用 Android Studio 索引和预览
+          android studio analyze-file/find-usages/render-compose-preview
+          声明位置、引用点、静态分析、Compose Preview 结果
+      
+  
+
+工具边界
+1. Android CLI 不是什么
+Android CLI 不是要替代所有 Android 工具。更准确地说，它是 Agent 友好的编排入口。">
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Posts",
+      "item": "/posts/"
+    }
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "把 Android 交给 Agent：Google Android CLI 工程化实战指南",
+      "item": "/posts/android/android_cli_agent_deep_dive/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "把 Android 交给 Agent：Google Android CLI 工程化实战指南",
+  "name": "把 Android 交给 Agent：Google Android CLI 工程化实战指南",
+  "description": "Android CLI 的重点不是“又多了一个 adb 替代品”，而是 Google 正在把 Android 工程能力整理成更适合 AI Agent 调用的命令入口。它把 SDK 管理、项目模板、模拟器、部署、UI 观察、截图定位、官方文档检索、Android skills、Android Studio 语义能力放到统一的 android 命令下。\n如果只做手工开发，Android Studio、Gradle 和 adb 已经能覆盖绝大多数工作。但 AI 工程的核心问题不是“人能不能做”，而是“Agent 能不能稳定观察、执行、验证，并留下可复盘证据”。Android CLI 的价值就在这里：它把原本分散在 IDE、终端、设备和文档里的动作，收敛成一组更清晰的命令协议。\nAndroid CLI 可以按下面这几层理解。表格比关系图更适合放在文章开头，读者可以先建立全局印象，再按后文逐段展开。\n层级 能力 常用命令 Agent 拿到什么 环境与 SDK 确认 CLI、SDK 和工具链状态 android info、android sdk list/install/update 当前 SDK 路径、可用平台包、工具链是否完整 工程创建与理解 创建模板工程，分析现有项目 android create、android describe、./gradlew tasks module、构建目标、APK 产物路径 设备与运行 管理模拟器并部署应用 android emulator list/start/stop/create、android run 可用设备、安装结果、运行入口 观察与验证 读取 UI 树、截图、定位坐标 android layout、android screen capture/resolve、adb input 页面结构、可点击元素、视觉证据、交互坐标 知识与实践 查询官方资料，安装任务技能 android docs search/fetch、android skills 最新 API 建议、迁移指引、任务级操作规范 IDE 语义能力 复用 Android Studio 索引和预览 android studio analyze-file/find-usages/render-compose-preview 声明位置、引用点、静态分析、Compose Preview 结果 工具边界 1. Android CLI 不是什么 Android CLI 不是要替代所有 Android 工具。更准确地说，它是 Agent 友好的编排入口。\n",
+  "keywords": [
+    "Android CLI", "AI工程", "Agent", "自动化测试", "Compose"
+  ],
+  "articleBody": "Android CLI 的重点不是“又多了一个 adb 替代品”，而是 Google 正在把 Android 工程能力整理成更适合 AI Agent 调用的命令入口。它把 SDK 管理、项目模板、模拟器、部署、UI 观察、截图定位、官方文档检索、Android skills、Android Studio 语义能力放到统一的 android 命令下。\n如果只做手工开发，Android Studio、Gradle 和 adb 已经能覆盖绝大多数工作。但 AI 工程的核心问题不是“人能不能做”，而是“Agent 能不能稳定观察、执行、验证，并留下可复盘证据”。Android CLI 的价值就在这里：它把原本分散在 IDE、终端、设备和文档里的动作，收敛成一组更清晰的命令协议。\nAndroid CLI 可以按下面这几层理解。表格比关系图更适合放在文章开头，读者可以先建立全局印象，再按后文逐段展开。\n层级 能力 常用命令 Agent 拿到什么 环境与 SDK 确认 CLI、SDK 和工具链状态 android info、android sdk list/install/update 当前 SDK 路径、可用平台包、工具链是否完整 工程创建与理解 创建模板工程，分析现有项目 android create、android describe、./gradlew tasks module、构建目标、APK 产物路径 设备与运行 管理模拟器并部署应用 android emulator list/start/stop/create、android run 可用设备、安装结果、运行入口 观察与验证 读取 UI 树、截图、定位坐标 android layout、android screen capture/resolve、adb input 页面结构、可点击元素、视觉证据、交互坐标 知识与实践 查询官方资料，安装任务技能 android docs search/fetch、android skills 最新 API 建议、迁移指引、任务级操作规范 IDE 语义能力 复用 Android Studio 索引和预览 android studio analyze-file/find-usages/render-compose-preview 声明位置、引用点、静态分析、Compose Preview 结果 工具边界 1. Android CLI 不是什么 Android CLI 不是要替代所有 Android 工具。更准确地说，它是 Agent 友好的编排入口。\n工具 主要职责 适合谁调用 android 环境、SDK、模拟器、部署、UI 观察、文档、skills、IDE 语义能力 Agent、脚本、开发者 ./gradlew 编译、单测、集成测试、lint、打包 CI、开发者、Agent adb 低层设备通信、日志、shell、输入事件、文件传输 开发者、Agent Android Studio 编辑、调试、预览、索引、代码语义分析 开发者，也可被 android studio 子命令调用 实际工程里不要强行把所有事都塞给 android。更稳的分工是：\n用 android info 和 android describe 让 Agent 先理解环境和项目。 用 Gradle Wrapper 做构建、测试、lint 和产物生成。 用 android run 做部署。 用 android layout、android screen 和 adb 输入命令做 UI 验证。 用 android docs 和 android skills 降低 Agent 使用旧知识的概率。 2. 它解决的核心问题 AI Agent 做 Android 任务时最常见的失败不是“不会写代码”，而是缺少稳定上下文：\n不知道当前 SDK 在哪里。 不知道项目有哪些 module。 不知道 APK 最终产物路径。 不知道设备上当前到底显示什么。 不知道某个 API 的最新推荐写法。 只能看截图，无法得到 UI 树和可点击坐标。 Android CLI 把这些上下文变成命令输出。对 Agent 来说，这比让模型凭经验猜更可靠。\n安装与初始化 1. 安装方式 以 macOS 和 Linux 为例，可以使用官方安装脚本。公司机器或 CI 环境建议先审阅脚本内容，再执行。\n# macOS Apple Silicon curl -fsSL https://dl.google.com/android/cli/latest/darwin_arm64/install.sh | bash # macOS Intel curl -fsSL https://dl.google.com/android/cli/latest/darwin_x86_64/install.sh | bash # Linux x86_64 curl -fsSL https://dl.google.com/android/cli/latest/linux_x86_64/install.sh | bash 安装后先做最小验证：\ncommand -v android android --version android info 如果希望 Agent 能识别 Android CLI 的工作方式，再执行：\nandroid init android init 会安装 android-cli skill，帮助支持 skills 的 Agent 理解 Android CLI 的命令边界。\n2. 配置 SDK 路径 一台机器上可能有多个 Android SDK。临时切换可以用 --sdk：\nandroid --sdk=/Users/me/Library/Android/sdk info android --sdk=/opt/android-sdk sdk list --all 长期固定可以写入 ~/.androidrc：\n--sdk=/Users/me/Library/Android/sdk 这比在多个脚本里到处改 ANDROID_HOME 更适合 Agent 执行，因为命令入口更明确。\n3. 安装检查清单 第一次接入 Android CLI，建议按下面的顺序检查：\n检查项 命令 期望结果 CLI 是否在 PATH 中 command -v android 能输出可执行文件路径 CLI 版本 android --version 能输出版本号 SDK 路径 android info 能看到 sdk 字段 SDK 包可见 android sdk list --all 能列出本地和可安装包 模拟器可见 android emulator list 能列出 AVD，或者明确为空 Agent skill 初始化 android init 能完成初始化 如果这些命令里任何一步失败，不建议马上让 Agent 改业务代码。先把环境问题解决，否则后续错误很容易被误判成代码问题。\n基础使用 1. SDK 管理 常用命令如下：\nandroid sdk list --all android sdk install platforms/android-36 build-tools/36.0.0 android sdk update android sdk remove build-tools/35.0.0 本地开发可以用 android sdk update 保持工具链新鲜；普通 CI 不建议这么做。CI 更应该固定 Android SDK、Build Tools、AGP、Gradle Wrapper、JDK 版本，否则构建结果会随工具链变化而漂移。\n更推荐在项目里显式记录依赖工具链：\ndocs/android-toolchain.md gradle/wrapper/gradle-wrapper.properties settings.gradle.kts build.gradle.kts .github/workflows/android.yml Agent 接手任务时，先读这些文件，再决定要不要安装额外 SDK。\n2. 创建项目 查看模板：\nandroid create --list --name=Probe 创建最小工程：\nandroid create empty-activity \\ --name=\"CliProbe\" \\ --output=./cli_probe Android CLI 仍在快速迭代，不同版本的模板可能有细节差异。实际使用前建议先执行：\nandroid create -h 本机验证时默认模板是 empty-activity，标签包含 compose、activity、agp-9。它适合让 Agent 快速创建一个最小 Compose 工程，用来复现 API、UI 或构建问题。\n3. 理解现有工程 在已有项目中，推荐先执行：\nandroid info android describe --project_dir=. ./gradlew tasks android describe 会分析工程结构，并输出构建目标和产物路径等元信息。对 Agent 来说，这比猜 app/build/outputs/... 靠谱。\n如果项目很大，可以让 Agent 先回答三个问题：\n哪些 module 会产出 APK 或 AAB？ 当前任务最可能影响哪个 module？ 修改后应该运行哪个 Gradle task 验证？ 这一步能显著减少“全仓库乱搜”和“构建了错误 module”的情况。\n4. 模拟器管理 查看已有 AVD：\nandroid emulator list 查看可创建的设备 profile：\nandroid emulator create --list-profiles 启动和停止模拟器：\nandroid emulator start Pixel_6_API_35 android emulator start --cold Pixel_6_API_35 android emulator stop Pixel_6_API_35 android emulator start 会等到模拟器完全启动并可用后再返回，这对自动化脚本很关键。传统脚本经常需要手写 adb wait-for-device 和额外 sleep，Android CLI 在这里提供了更清晰的同步点。\n5. 构建和部署 android run 只负责部署，不负责构建。完整链路通常是：\n./gradlew :app:assembleDebug android run \\ --apks=app/build/outputs/apk/debug/app-debug.apk \\ --device=emulator-5554 如果一个产物包含多个 APK，可以用逗号传入：\nandroid run \\ --apks=base.apk,config.arm64_v8a.apk,config.xxhdpi.apk \\ --device=emulator-5554 多设备连接时必须指定 --device。不要让 Agent 自己猜目标设备。\n高频场景 1. 从零创建一个复现工程 适合验证某个 API、Compose 组件、构建插件或平台行为：\nandroid create empty-activity --name=\"ApiProbe\" --output=./api_probe cd api_probe android info ./gradlew :app:assembleDebug android emulator start Pixel_6_API_35 android run --apks=app/build/outputs/apk/debug/app-debug.apk 这个流程的优势是干净。不要在大项目里直接验证所有猜想，先用最小工程排除工具链和 API 理解问题。\n2. 接手一个陌生 Android 项目 推荐让 Agent 先按这个顺序工作：\nandroid info android describe --project_dir=. ./gradlew projects ./gradlew tasks 然后再让它阅读：\nsettings.gradle 或 settings.gradle.kts 根目录 build.gradle 或 build.gradle.kts 目标 module 的 build.gradle AndroidManifest.xml 入口 Activity 或 Compose navigation 入口 这比直接让 Agent 全局搜索“MainActivity”更可靠。大型项目里入口可能不止一个，构建产物也可能不在默认路径。\n3. UI 改动后的验证 修改 UI 后，不要只看构建是否通过。推荐最小验证闭环：\n./gradlew :app:assembleDebug android run --apks=app/build/outputs/apk/debug/app-debug.apk --device=emulator-5554 android layout --pretty --output=build/ai/layout.json android screen capture --annotate --output=build/ai/screen.png layout 适合判断结构，截图适合判断视觉。比如：\n文案是否出现在 UI 树里：看 layout.json。 按钮是否可点击：看 interactions 是否包含 clickable。 输入框是否聚焦：看 state 是否包含 focused。 颜色、遮挡、图片资源是否正确：看截图。 如果第一次 layout 输出太大，后续操作后可以用 diff：\nandroid layout --diff --pretty 这样能让 Agent 只关注变化部分，减少上下文噪音。\n4. 截图标注和坐标定位 当 UI 树找不到目标元素，或者页面是 WebView、动画、图片内容时，使用标注截图：\nandroid screen capture --annotate --output=build/ai/screen.png 假设截图中目标按钮标号是 #5，可以转换成真实坐标：\nandroid screen resolve \\ --screenshot=build/ai/screen.png \\ --string=\"input tap #5\" 继续执行点击：\nadb shell $(android screen resolve \\ --screenshot=build/ai/screen.png \\ --string=\"input tap #5\") 这比让模型凭截图估算坐标更稳，也更容易复盘。\n5. 用官方文档给 Agent 做 grounding AI 写 Android 代码的主要风险之一，是用旧知识解决新问题。android docs 把 Android Knowledge Base 接进终端，适合在生成代码前先确认最新推荐写法。\nandroid docs search \"Compose screenshot testing\" android docs fetch kb://android/studio/preview/compose-screenshot-testing 推荐在这些场景中强制先查文档：\nAndroid 新版本行为变化。 AGP、Gradle、Kotlin 插件升级。 Compose、CameraX、Navigation、Media、Permissions 等 Jetpack API。 权限、后台限制、前台服务、通知、存储等平台策略。 官方明确有迁移指南的任务。 进阶使用 1. 建立 Agent 工作协议 可以把 Android Agent 工作流固定成七步：\n1. android info：确认 SDK 和 CLI 版本 2. android describe：理解工程结构和产物路径 3. android docs search/fetch：查询相关官方实践 4. 修改代码：只改必要文件 5. ./gradlew assembleDebug 或相关 test task 6. android run + android layout/screen：部署并观察结果 7. 输出变更文件、验证命令、关键截图或 JSON 证据 这套协议的价值是减少“模型猜测”。每一步都有命令证据，失败也能定位在环境、构建、部署、UI 状态或代码实现。\n更严格一点，可以要求 Agent 每次交付时给出四类结果：\n结果 说明 变更文件 改了哪些 Kotlin、Java、XML、Gradle 或资源文件 验证命令 实际运行了哪些命令 关键证据 layout.json、截图、Gradle 输出、日志片段 残余风险 没跑的测试、未覆盖设备、仍需人工确认的视觉细节 2. 观察优先，而不是改完再猜 Agent 调 UI 问题时，建议按“结构优先、视觉补充”的顺序：\nandroid layout -\u003e 如果能看到目标元素，用 text/resourceId/contentDesc/bounds 判断 android layout --diff -\u003e 如果刚做过操作，用 diff 关注变化 android screen capture --annotate -\u003e 如果 UI 树不够，转成截图标注 android screen resolve + adb shell input -\u003e 需要交互时再把标号转成坐标 不要一上来就让 Agent 用 adb shell input tap 500 1200。这种坐标在不同分辨率、字体大小、系统导航模式下都容易失效。\n3. 用 Journeys 描述核心用户路径 Journeys 是面向 Agent 的自然语言测试说明。它不是传统 Espresso 脚本，而是把用户路径写成 XML，让 Agent 按步骤操作并验证。\n",
+  "wordCount" : "1361",
+  "inLanguage": "en",
+  "datePublished": "2026-06-30T10:58:09+08:00",
+  "dateModified": "2026-06-30T10:58:09+08:00",
+  "author":[{
+    "@type": "Person",
+    "name": "夏天的小西瓜"
+  }],
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "/posts/android/android_cli_agent_deep_dive/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "缥缈夏鸢",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "/favicon.ico"
+    }
+  }
+}
+</script>
+</head>
+
+<body class="" id="top">
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.body.classList.add('dark');
+    } else if (localStorage.getItem("pref-theme") === "light") {
+        document.body.classList.remove('dark')
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.body.classList.add('dark');
+    }
+
+</script>
+
+<header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="/" accesskey="h" title="缥缈夏鸢 (Alt + H)">缥缈夏鸢</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" accesskey="t" title="(Alt + T)">
+                    <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu">
+            <li>
+                <a href="/" title="首页">
+                    <span>首页</span>
+                </a>
+            </li>
+            <li>
+                <a href="/posts/" title="文章">
+                    <span>文章</span>
+                </a>
+            </li>
+            <li>
+                <a href="/categories/" title="分类">
+                    <span>分类</span>
+                </a>
+            </li>
+            <li>
+                <a href="/tags/" title="标签">
+                    <span>标签</span>
+                </a>
+            </li>
+            <li>
+                <a href="/archives/" title="归档">
+                    <span>归档</span>
+                </a>
+            </li>
+            <li>
+                <a href="/search/" title="搜索">
+                    <span>搜索</span>
+                </a>
+            </li>
+            <li>
+                <a href="/about/" title="关于">
+                    <span>关于</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <div class="breadcrumbs"><a href="/">Home</a>&nbsp;»&nbsp;<a href="/posts/">Posts</a></div>
+    <h1 class="post-title entry-hint-parent">
+      把 Android 交给 Agent：Google Android CLI 工程化实战指南
+    </h1>
+    <div class="post-meta"><span title='2026-06-30 10:58:09 +0800 CST'>June 30, 2026</span>&nbsp;·&nbsp;7 min&nbsp;·&nbsp;1361 words&nbsp;·&nbsp;夏天的小西瓜
+
+</div>
+  </header> <aside id="toc-container" class="toc-container wide">
+    <div class="toc">
+        <details  open>
+            <summary accesskey="c" title="(Alt + C)">
+                <span class="details">Table of Contents</span>
+            </summary>
+
+            <div class="inner"><ul>
+                    <li>
+                        <a href="#%e5%b7%a5%e5%85%b7%e8%be%b9%e7%95%8c" aria-label="工具边界">工具边界</a><ul>
+                            
+                    <li>
+                        <a href="#1-android-cli-%e4%b8%8d%e6%98%af%e4%bb%80%e4%b9%88" aria-label="1. Android CLI 不是什么">1. Android CLI 不是什么</a></li>
+                    <li>
+                        <a href="#2-%e5%ae%83%e8%a7%a3%e5%86%b3%e7%9a%84%e6%a0%b8%e5%bf%83%e9%97%ae%e9%a2%98" aria-label="2. 它解决的核心问题">2. 它解决的核心问题</a></li></ul>
+                    </li>
+                    <li>
+                        <a href="#%e5%ae%89%e8%a3%85%e4%b8%8e%e5%88%9d%e5%a7%8b%e5%8c%96" aria-label="安装与初始化">安装与初始化</a><ul>
+                            
+                    <li>
+                        <a href="#1-%e5%ae%89%e8%a3%85%e6%96%b9%e5%bc%8f" aria-label="1. 安装方式">1. 安装方式</a></li>
+                    <li>
+                        <a href="#2-%e9%85%8d%e7%bd%ae-sdk-%e8%b7%af%e5%be%84" aria-label="2. 配置 SDK 路径">2. 配置 SDK 路径</a></li>
+                    <li>
+                        <a href="#3-%e5%ae%89%e8%a3%85%e6%a3%80%e6%9f%a5%e6%b8%85%e5%8d%95" aria-label="3. 安装检查清单">3. 安装检查清单</a></li></ul>
+                    </li>
+                    <li>
+                        <a href="#%e5%9f%ba%e7%a1%80%e4%bd%bf%e7%94%a8" aria-label="基础使用">基础使用</a><ul>
+                            
+                    <li>
+                        <a href="#1-sdk-%e7%ae%a1%e7%90%86" aria-label="1. SDK 管理">1. SDK 管理</a></li>
+                    <li>
+                        <a href="#2-%e5%88%9b%e5%bb%ba%e9%a1%b9%e7%9b%ae" aria-label="2. 创建项目">2. 创建项目</a></li>
+                    <li>
+                        <a href="#3-%e7%90%86%e8%a7%a3%e7%8e%b0%e6%9c%89%e5%b7%a5%e7%a8%8b" aria-label="3. 理解现有工程">3. 理解现有工程</a></li>
+                    <li>
+                        <a href="#4-%e6%a8%a1%e6%8b%9f%e5%99%a8%e7%ae%a1%e7%90%86" aria-label="4. 模拟器管理">4. 模拟器管理</a></li>
+                    <li>
+                        <a href="#5-%e6%9e%84%e5%bb%ba%e5%92%8c%e9%83%a8%e7%bd%b2" aria-label="5. 构建和部署">5. 构建和部署</a></li></ul>
+                    </li>
+                    <li>
+                        <a href="#%e9%ab%98%e9%a2%91%e5%9c%ba%e6%99%af" aria-label="高频场景">高频场景</a><ul>
+                            
+                    <li>
+                        <a href="#1-%e4%bb%8e%e9%9b%b6%e5%88%9b%e5%bb%ba%e4%b8%80%e4%b8%aa%e5%a4%8d%e7%8e%b0%e5%b7%a5%e7%a8%8b" aria-label="1. 从零创建一个复现工程">1. 从零创建一个复现工程</a></li>
+                    <li>
+                        <a href="#2-%e6%8e%a5%e6%89%8b%e4%b8%80%e4%b8%aa%e9%99%8c%e7%94%9f-android-%e9%a1%b9%e7%9b%ae" aria-label="2. 接手一个陌生 Android 项目">2. 接手一个陌生 Android 项目</a></li>
+                    <li>
+                        <a href="#3-ui-%e6%94%b9%e5%8a%a8%e5%90%8e%e7%9a%84%e9%aa%8c%e8%af%81" aria-label="3. UI 改动后的验证">3. UI 改动后的验证</a></li>
+                    <li>
+                        <a href="#4-%e6%88%aa%e5%9b%be%e6%a0%87%e6%b3%a8%e5%92%8c%e5%9d%90%e6%a0%87%e5%ae%9a%e4%bd%8d" aria-label="4. 截图标注和坐标定位">4. 截图标注和坐标定位</a></li>
+                    <li>
+                        <a href="#5-%e7%94%a8%e5%ae%98%e6%96%b9%e6%96%87%e6%a1%a3%e7%bb%99-agent-%e5%81%9a-grounding" aria-label="5. 用官方文档给 Agent 做 grounding">5. 用官方文档给 Agent 做 grounding</a></li></ul>
+                    </li>
+                    <li>
+                        <a href="#%e8%bf%9b%e9%98%b6%e4%bd%bf%e7%94%a8" aria-label="进阶使用">进阶使用</a><ul>
+                            
+                    <li>
+                        <a href="#1-%e5%bb%ba%e7%ab%8b-agent-%e5%b7%a5%e4%bd%9c%e5%8d%8f%e8%ae%ae" aria-label="1. 建立 Agent 工作协议">1. 建立 Agent 工作协议</a></li>
+                    <li>
+                        <a href="#2-%e8%a7%82%e5%af%9f%e4%bc%98%e5%85%88%e8%80%8c%e4%b8%8d%e6%98%af%e6%94%b9%e5%ae%8c%e5%86%8d%e7%8c%9c" aria-label="2. 观察优先，而不是改完再猜">2. 观察优先，而不是改完再猜</a></li>
+                    <li>
+                        <a href="#3-%e7%94%a8-journeys-%e6%8f%8f%e8%bf%b0%e6%a0%b8%e5%bf%83%e7%94%a8%e6%88%b7%e8%b7%af%e5%be%84" aria-label="3. 用 Journeys 描述核心用户路径">3. 用 Journeys 描述核心用户路径</a></li>
+                    <li>
+                        <a href="#4-%e5%80%9f-android-studio-%e5%81%9a%e8%af%ad%e4%b9%89%e6%9f%a5%e8%af%a2" aria-label="4. 借 Android Studio 做语义查询">4. 借 Android Studio 做语义查询</a></li>
+                    <li>
+                        <a href="#5-%e7%94%a8-android-skills-%e5%9b%ba%e5%8c%96%e5%9b%a2%e9%98%9f%e7%bb%8f%e9%aa%8c" aria-label="5. 用 Android skills 固化团队经验">5. 用 Android skills 固化团队经验</a></li></ul>
+                    </li>
+                    <li>
+                        <a href="#%e6%8f%90%e6%95%88%e8%84%9a%e6%9c%ac" aria-label="提效脚本">提效脚本</a><ul>
+                            
+                    <li>
+                        <a href="#1-%e7%94%9f%e6%88%90-ai-%e8%b0%83%e8%af%95%e8%af%81%e6%8d%ae" aria-label="1. 生成 AI 调试证据">1. 生成 AI 调试证据</a></li>
+                    <li>
+                        <a href="#2-ui-%e9%97%ae%e9%a2%98%e6%8e%92%e6%9f%a5%e6%a8%a1%e6%9d%bf" aria-label="2. UI 问题排查模板">2. UI 问题排查模板</a></li>
+                    <li>
+                        <a href="#3-%e9%80%82%e5%90%88%e6%94%be%e8%bf%9b-ci-%e7%9a%84%e6%9c%80%e5%b0%8f%e6%a3%80%e6%9f%a5" aria-label="3. 适合放进 CI 的最小检查">3. 适合放进 CI 的最小检查</a></li></ul>
+                    </li>
+                    <li>
+                        <a href="#%e5%b8%b8%e8%a7%81%e5%9d%91" aria-label="常见坑">常见坑</a><ul>
+                            
+                    <li>
+                        <a href="#1-home-%e4%b8%8d%e5%8f%af%e5%86%99%e4%bc%9a%e5%af%bc%e8%87%b4%e5%91%bd%e4%bb%a4%e5%a4%b1%e8%b4%a5" aria-label="1. HOME 不可写会导致命令失败">1. HOME 不可写会导致命令失败</a></li>
+                    <li>
+                        <a href="#2-android-run-%e4%b8%8d%e4%bc%9a%e8%87%aa%e5%8a%a8%e6%9e%84%e5%bb%ba" aria-label="2. android run 不会自动构建">2. <code>android run</code> 不会自动构建</a></li>
+                    <li>
+                        <a href="#3-layout-%e5%92%8c%e6%88%aa%e5%9b%be%e4%b8%8d%e8%83%bd%e4%ba%92%e7%9b%b8%e6%9b%bf%e4%bb%a3" aria-label="3. layout 和截图不能互相替代">3. <code>layout</code> 和截图不能互相替代</a></li>
+                    <li>
+                        <a href="#4-%e5%a4%9a%e8%ae%be%e5%a4%87%e7%8e%af%e5%a2%83%e5%bf%85%e9%a1%bb%e6%98%be%e5%bc%8f%e6%8c%87%e5%ae%9a%e7%9b%ae%e6%a0%87" aria-label="4. 多设备环境必须显式指定目标">4. 多设备环境必须显式指定目标</a></li>
+                    <li>
+                        <a href="#5-%e4%b8%8d%e8%a6%81%e6%8a%8a%e8%87%aa%e5%8a%a8%e6%9b%b4%e6%96%b0%e6%94%be%e8%bf%9b%e6%99%ae%e9%80%9a-ci" aria-label="5. 不要把自动更新放进普通 CI">5. 不要把自动更新放进普通 CI</a></li>
+                    <li>
+                        <a href="#6-studio-%e5%ad%90%e5%91%bd%e4%bb%a4%e4%b8%8d%e7%ad%89%e4%ba%8e%e6%97%a0%e5%a4%b4-ci-%e8%83%bd%e5%8a%9b" aria-label="6. Studio 子命令不等于无头 CI 能力">6. Studio 子命令不等于无头 CI 能力</a></li>
+                    <li>
+                        <a href="#7-windows-%e8%83%bd%e5%8a%9b%e8%a6%81%e5%8d%95%e7%8b%ac%e6%a0%a1%e9%aa%8c" aria-label="7. Windows 能力要单独校验">7. Windows 能力要单独校验</a></li></ul>
+                    </li>
+                    <li>
+                        <a href="#%e5%b0%8f%e7%bb%93" aria-label="小结">小结</a></li>
+                    <li>
+                        <a href="#%e5%8f%82%e8%80%83%e8%b5%84%e6%96%99" aria-label="参考资料">参考资料</a>
+                    </li>
+                </ul>
+            </div>
+        </details>
+    </div>
+</aside>
+<script>
+    let activeElement;
+    let elements;
+    window.addEventListener('DOMContentLoaded', function (event) {
+        checkTocPosition();
+
+        elements = document.querySelectorAll('h1[id],h2[id],h3[id],h4[id],h5[id],h6[id]');
+         
+         activeElement = elements[0];
+         const id = encodeURI(activeElement.getAttribute('id')).toLowerCase();
+         document.querySelector(`.inner ul li a[href="#${id}"]`).classList.add('active');
+     }, false);
+
+    window.addEventListener('resize', function(event) {
+        checkTocPosition();
+    }, false);
+
+    window.addEventListener('scroll', () => {
+        
+        activeElement = Array.from(elements).find((element) => {
+            if ((getOffsetTop(element) - window.pageYOffset) > 0 && 
+                (getOffsetTop(element) - window.pageYOffset) < window.innerHeight/2) {
+                return element;
+            }
+        }) || activeElement
+
+        elements.forEach(element => {
+             const id = encodeURI(element.getAttribute('id')).toLowerCase();
+             if (element === activeElement){
+                 document.querySelector(`.inner ul li a[href="#${id}"]`).classList.add('active');
+             } else {
+                 document.querySelector(`.inner ul li a[href="#${id}"]`).classList.remove('active');
+             }
+         })
+     }, false);
+
+    const main = parseInt(getComputedStyle(document.body).getPropertyValue('--article-width'), 10);
+    const toc = parseInt(getComputedStyle(document.body).getPropertyValue('--toc-width'), 10);
+    const gap = parseInt(getComputedStyle(document.body).getPropertyValue('--gap'), 10);
+
+    function checkTocPosition() {
+        const width = document.body.scrollWidth;
+
+        if (width - main - (toc * 2) - (gap * 4) > 0) {
+            document.getElementById("toc-container").classList.add("wide");
+        } else {
+            document.getElementById("toc-container").classList.remove("wide");
+        }
+    }
+
+    function getOffsetTop(element) {
+        if (!element.getClientRects().length) {
+            return 0;
+        }
+        let rect = element.getBoundingClientRect();
+        let win = element.ownerDocument.defaultView;
+        return rect.top + win.pageYOffset;   
+    }
+</script>
+
+  <div class="post-content"><p>Android CLI 的重点不是“又多了一个 adb 替代品”，而是 Google 正在把 Android 工程能力整理成更适合 AI Agent 调用的命令入口。它把 SDK 管理、项目模板、模拟器、部署、UI 观察、截图定位、官方文档检索、Android skills、Android Studio 语义能力放到统一的 <code>android</code> 命令下。</p>
+<p>如果只做手工开发，Android Studio、Gradle 和 adb 已经能覆盖绝大多数工作。但 AI 工程的核心问题不是“人能不能做”，而是“Agent 能不能稳定观察、执行、验证，并留下可复盘证据”。Android CLI 的价值就在这里：它把原本分散在 IDE、终端、设备和文档里的动作，收敛成一组更清晰的命令协议。</p>
+<p>Android CLI 可以按下面这几层理解。表格比关系图更适合放在文章开头，读者可以先建立全局印象，再按后文逐段展开。</p>
+<table>
+  <thead>
+      <tr>
+          <th>层级</th>
+          <th>能力</th>
+          <th>常用命令</th>
+          <th>Agent 拿到什么</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>环境与 SDK</td>
+          <td>确认 CLI、SDK 和工具链状态</td>
+          <td><code>android info</code>、<code>android sdk list/install/update</code></td>
+          <td>当前 SDK 路径、可用平台包、工具链是否完整</td>
+      </tr>
+      <tr>
+          <td>工程创建与理解</td>
+          <td>创建模板工程，分析现有项目</td>
+          <td><code>android create</code>、<code>android describe</code>、<code>./gradlew tasks</code></td>
+          <td>module、构建目标、APK 产物路径</td>
+      </tr>
+      <tr>
+          <td>设备与运行</td>
+          <td>管理模拟器并部署应用</td>
+          <td><code>android emulator list/start/stop/create</code>、<code>android run</code></td>
+          <td>可用设备、安装结果、运行入口</td>
+      </tr>
+      <tr>
+          <td>观察与验证</td>
+          <td>读取 UI 树、截图、定位坐标</td>
+          <td><code>android layout</code>、<code>android screen capture/resolve</code>、<code>adb input</code></td>
+          <td>页面结构、可点击元素、视觉证据、交互坐标</td>
+      </tr>
+      <tr>
+          <td>知识与实践</td>
+          <td>查询官方资料，安装任务技能</td>
+          <td><code>android docs search/fetch</code>、<code>android skills</code></td>
+          <td>最新 API 建议、迁移指引、任务级操作规范</td>
+      </tr>
+      <tr>
+          <td>IDE 语义能力</td>
+          <td>复用 Android Studio 索引和预览</td>
+          <td><code>android studio analyze-file/find-usages/render-compose-preview</code></td>
+          <td>声明位置、引用点、静态分析、Compose Preview 结果</td>
+      </tr>
+  </tbody>
+</table>
+<h2 id="工具边界">工具边界<a hidden class="anchor" aria-hidden="true" href="#工具边界">#</a></h2>
+<h3 id="1-android-cli-不是什么">1. Android CLI 不是什么<a hidden class="anchor" aria-hidden="true" href="#1-android-cli-不是什么">#</a></h3>
+<p>Android CLI 不是要替代所有 Android 工具。更准确地说，它是 Agent 友好的编排入口。</p>
+<table>
+  <thead>
+      <tr>
+          <th>工具</th>
+          <th>主要职责</th>
+          <th>适合谁调用</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>android</code></td>
+          <td>环境、SDK、模拟器、部署、UI 观察、文档、skills、IDE 语义能力</td>
+          <td>Agent、脚本、开发者</td>
+      </tr>
+      <tr>
+          <td><code>./gradlew</code></td>
+          <td>编译、单测、集成测试、lint、打包</td>
+          <td>CI、开发者、Agent</td>
+      </tr>
+      <tr>
+          <td><code>adb</code></td>
+          <td>低层设备通信、日志、shell、输入事件、文件传输</td>
+          <td>开发者、Agent</td>
+      </tr>
+      <tr>
+          <td>Android Studio</td>
+          <td>编辑、调试、预览、索引、代码语义分析</td>
+          <td>开发者，也可被 <code>android studio</code> 子命令调用</td>
+      </tr>
+  </tbody>
+</table>
+<p>实际工程里不要强行把所有事都塞给 <code>android</code>。更稳的分工是：</p>
+<ul>
+<li>用 <code>android info</code> 和 <code>android describe</code> 让 Agent 先理解环境和项目。</li>
+<li>用 Gradle Wrapper 做构建、测试、lint 和产物生成。</li>
+<li>用 <code>android run</code> 做部署。</li>
+<li>用 <code>android layout</code>、<code>android screen</code> 和 adb 输入命令做 UI 验证。</li>
+<li>用 <code>android docs</code> 和 <code>android skills</code> 降低 Agent 使用旧知识的概率。</li>
+</ul>
+<h3 id="2-它解决的核心问题">2. 它解决的核心问题<a hidden class="anchor" aria-hidden="true" href="#2-它解决的核心问题">#</a></h3>
+<p>AI Agent 做 Android 任务时最常见的失败不是“不会写代码”，而是缺少稳定上下文：</p>
+<ul>
+<li>不知道当前 SDK 在哪里。</li>
+<li>不知道项目有哪些 module。</li>
+<li>不知道 APK 最终产物路径。</li>
+<li>不知道设备上当前到底显示什么。</li>
+<li>不知道某个 API 的最新推荐写法。</li>
+<li>只能看截图，无法得到 UI 树和可点击坐标。</li>
+</ul>
+<p>Android CLI 把这些上下文变成命令输出。对 Agent 来说，这比让模型凭经验猜更可靠。</p>
+<h2 id="安装与初始化">安装与初始化<a hidden class="anchor" aria-hidden="true" href="#安装与初始化">#</a></h2>
+<h3 id="1-安装方式">1. 安装方式<a hidden class="anchor" aria-hidden="true" href="#1-安装方式">#</a></h3>
+<p>以 macOS 和 Linux 为例，可以使用官方安装脚本。公司机器或 CI 环境建议先审阅脚本内容，再执行。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># macOS Apple Silicon</span>
+</span></span><span class="line"><span class="cl">curl -fsSL https://dl.google.com/android/cli/latest/darwin_arm64/install.sh <span class="p">|</span> bash
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># macOS Intel</span>
+</span></span><span class="line"><span class="cl">curl -fsSL https://dl.google.com/android/cli/latest/darwin_x86_64/install.sh <span class="p">|</span> bash
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># Linux x86_64</span>
+</span></span><span class="line"><span class="cl">curl -fsSL https://dl.google.com/android/cli/latest/linux_x86_64/install.sh <span class="p">|</span> bash
+</span></span></code></pre></div><p>安装后先做最小验证：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="nb">command</span> -v android
+</span></span><span class="line"><span class="cl">android --version
+</span></span><span class="line"><span class="cl">android info
+</span></span></code></pre></div><p>如果希望 Agent 能识别 Android CLI 的工作方式，再执行：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">android init
+</span></span></code></pre></div><p><code>android init</code> 会安装 <code>android-cli</code> skill，帮助支持 skills 的 Agent 理解 Android CLI 的命令边界。</p>
+<h3 id="2-配置-sdk-路径">2. 配置 SDK 路径<a hidden class="anchor" aria-hidden="true" href="#2-配置-sdk-路径">#</a></h3>
+<p>一台机器上可能有多个 Android SDK。临时切换可以用 <code>--sdk</code>：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">android --sdk<span class="o">=</span>/Users/me/Library/Android/sdk info
+</span></span><span class="line"><span class="cl">android --sdk<span class="o">=</span>/opt/android-sdk sdk list --all
+</span></span></code></pre></div><p>长期固定可以写入 <code>~/.androidrc</code>：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">--sdk<span class="o">=</span>/Users/me/Library/Android/sdk
+</span></span></code></pre></div><p>这比在多个脚本里到处改 <code>ANDROID_HOME</code> 更适合 Agent 执行，因为命令入口更明确。</p>
+<h3 id="3-安装检查清单">3. 安装检查清单<a hidden class="anchor" aria-hidden="true" href="#3-安装检查清单">#</a></h3>
+<p>第一次接入 Android CLI，建议按下面的顺序检查：</p>
+<table>
+  <thead>
+      <tr>
+          <th>检查项</th>
+          <th>命令</th>
+          <th>期望结果</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>CLI 是否在 PATH 中</td>
+          <td><code>command -v android</code></td>
+          <td>能输出可执行文件路径</td>
+      </tr>
+      <tr>
+          <td>CLI 版本</td>
+          <td><code>android --version</code></td>
+          <td>能输出版本号</td>
+      </tr>
+      <tr>
+          <td>SDK 路径</td>
+          <td><code>android info</code></td>
+          <td>能看到 <code>sdk</code> 字段</td>
+      </tr>
+      <tr>
+          <td>SDK 包可见</td>
+          <td><code>android sdk list --all</code></td>
+          <td>能列出本地和可安装包</td>
+      </tr>
+      <tr>
+          <td>模拟器可见</td>
+          <td><code>android emulator list</code></td>
+          <td>能列出 AVD，或者明确为空</td>
+      </tr>
+      <tr>
+          <td>Agent skill 初始化</td>
+          <td><code>android init</code></td>
+          <td>能完成初始化</td>
+      </tr>
+  </tbody>
+</table>
+<p>如果这些命令里任何一步失败，不建议马上让 Agent 改业务代码。先把环境问题解决，否则后续错误很容易被误判成代码问题。</p>
+<h2 id="基础使用">基础使用<a hidden class="anchor" aria-hidden="true" href="#基础使用">#</a></h2>
+<h3 id="1-sdk-管理">1. SDK 管理<a hidden class="anchor" aria-hidden="true" href="#1-sdk-管理">#</a></h3>
+<p>常用命令如下：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">android sdk list --all
+</span></span><span class="line"><span class="cl">android sdk install platforms/android-36 build-tools/36.0.0
+</span></span><span class="line"><span class="cl">android sdk update
+</span></span><span class="line"><span class="cl">android sdk remove build-tools/35.0.0
+</span></span></code></pre></div><p>本地开发可以用 <code>android sdk update</code> 保持工具链新鲜；普通 CI 不建议这么做。CI 更应该固定 Android SDK、Build Tools、AGP、Gradle Wrapper、JDK 版本，否则构建结果会随工具链变化而漂移。</p>
+<p>更推荐在项目里显式记录依赖工具链：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="cl">docs/android-toolchain.md
+</span></span><span class="line"><span class="cl">gradle/wrapper/gradle-wrapper.properties
+</span></span><span class="line"><span class="cl">settings.gradle.kts
+</span></span><span class="line"><span class="cl">build.gradle.kts
+</span></span><span class="line"><span class="cl">.github/workflows/android.yml
+</span></span></code></pre></div><p>Agent 接手任务时，先读这些文件，再决定要不要安装额外 SDK。</p>
+<h3 id="2-创建项目">2. 创建项目<a hidden class="anchor" aria-hidden="true" href="#2-创建项目">#</a></h3>
+<p>查看模板：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">android create --list --name<span class="o">=</span>Probe
+</span></span></code></pre></div><p>创建最小工程：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">android create empty-activity <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>  --name<span class="o">=</span><span class="s2">&#34;CliProbe&#34;</span> <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>  --output<span class="o">=</span>./cli_probe
+</span></span></code></pre></div><p>Android CLI 仍在快速迭代，不同版本的模板可能有细节差异。实际使用前建议先执行：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">android create -h
+</span></span></code></pre></div><p>本机验证时默认模板是 <code>empty-activity</code>，标签包含 <code>compose</code>、<code>activity</code>、<code>agp-9</code>。它适合让 Agent 快速创建一个最小 Compose 工程，用来复现 API、UI 或构建问题。</p>
+<h3 id="3-理解现有工程">3. 理解现有工程<a hidden class="anchor" aria-hidden="true" href="#3-理解现有工程">#</a></h3>
+<p>在已有项目中，推荐先执行：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">android info
+</span></span><span class="line"><span class="cl">android describe --project_dir<span class="o">=</span>.
+</span></span><span class="line"><span class="cl">./gradlew tasks
+</span></span></code></pre></div><p><code>android describe</code> 会分析工程结构，并输出构建目标和产物路径等元信息。对 Agent 来说，这比猜 <code>app/build/outputs/...</code> 靠谱。</p>
+<p>如果项目很大，可以让 Agent 先回答三个问题：</p>
+<ul>
+<li>哪些 module 会产出 APK 或 AAB？</li>
+<li>当前任务最可能影响哪个 module？</li>
+<li>修改后应该运行哪个 Gradle task 验证？</li>
+</ul>
+<p>这一步能显著减少“全仓库乱搜”和“构建了错误 module”的情况。</p>
+<h3 id="4-模拟器管理">4. 模拟器管理<a hidden class="anchor" aria-hidden="true" href="#4-模拟器管理">#</a></h3>
+<p>查看已有 AVD：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">android emulator list
+</span></span></code></pre></div><p>查看可创建的设备 profile：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">android emulator create --list-profiles
+</span></span></code></pre></div><p>启动和停止模拟器：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">android emulator start Pixel_6_API_35
+</span></span><span class="line"><span class="cl">android emulator start --cold Pixel_6_API_35
+</span></span><span class="line"><span class="cl">android emulator stop Pixel_6_API_35
+</span></span></code></pre></div><p><code>android emulator start</code> 会等到模拟器完全启动并可用后再返回，这对自动化脚本很关键。传统脚本经常需要手写 <code>adb wait-for-device</code> 和额外 sleep，Android CLI 在这里提供了更清晰的同步点。</p>
+<h3 id="5-构建和部署">5. 构建和部署<a hidden class="anchor" aria-hidden="true" href="#5-构建和部署">#</a></h3>
+<p><code>android run</code> 只负责部署，不负责构建。完整链路通常是：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">./gradlew :app:assembleDebug
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">android run <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>  --apks<span class="o">=</span>app/build/outputs/apk/debug/app-debug.apk <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>  --device<span class="o">=</span>emulator-5554
+</span></span></code></pre></div><p>如果一个产物包含多个 APK，可以用逗号传入：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">android run <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>  --apks<span class="o">=</span>base.apk,config.arm64_v8a.apk,config.xxhdpi.apk <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>  --device<span class="o">=</span>emulator-5554
+</span></span></code></pre></div><p>多设备连接时必须指定 <code>--device</code>。不要让 Agent 自己猜目标设备。</p>
+<h2 id="高频场景">高频场景<a hidden class="anchor" aria-hidden="true" href="#高频场景">#</a></h2>
+<h3 id="1-从零创建一个复现工程">1. 从零创建一个复现工程<a hidden class="anchor" aria-hidden="true" href="#1-从零创建一个复现工程">#</a></h3>
+<p>适合验证某个 API、Compose 组件、构建插件或平台行为：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">android create empty-activity --name<span class="o">=</span><span class="s2">&#34;ApiProbe&#34;</span> --output<span class="o">=</span>./api_probe
+</span></span><span class="line"><span class="cl"><span class="nb">cd</span> api_probe
+</span></span><span class="line"><span class="cl">android info
+</span></span><span class="line"><span class="cl">./gradlew :app:assembleDebug
+</span></span><span class="line"><span class="cl">android emulator start Pixel_6_API_35
+</span></span><span class="line"><span class="cl">android run --apks<span class="o">=</span>app/build/outputs/apk/debug/app-debug.apk
+</span></span></code></pre></div><p>这个流程的优势是干净。不要在大项目里直接验证所有猜想，先用最小工程排除工具链和 API 理解问题。</p>
+<h3 id="2-接手一个陌生-android-项目">2. 接手一个陌生 Android 项目<a hidden class="anchor" aria-hidden="true" href="#2-接手一个陌生-android-项目">#</a></h3>
+<p>推荐让 Agent 先按这个顺序工作：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">android info
+</span></span><span class="line"><span class="cl">android describe --project_dir<span class="o">=</span>.
+</span></span><span class="line"><span class="cl">./gradlew projects
+</span></span><span class="line"><span class="cl">./gradlew tasks
+</span></span></code></pre></div><p>然后再让它阅读：</p>
+<ul>
+<li><code>settings.gradle</code> 或 <code>settings.gradle.kts</code></li>
+<li>根目录 <code>build.gradle</code> 或 <code>build.gradle.kts</code></li>
+<li>目标 module 的 <code>build.gradle</code></li>
+<li><code>AndroidManifest.xml</code></li>
+<li>入口 Activity 或 Compose navigation 入口</li>
+</ul>
+<p>这比直接让 Agent 全局搜索“MainActivity”更可靠。大型项目里入口可能不止一个，构建产物也可能不在默认路径。</p>
+<h3 id="3-ui-改动后的验证">3. UI 改动后的验证<a hidden class="anchor" aria-hidden="true" href="#3-ui-改动后的验证">#</a></h3>
+<p>修改 UI 后，不要只看构建是否通过。推荐最小验证闭环：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">./gradlew :app:assembleDebug
+</span></span><span class="line"><span class="cl">android run --apks<span class="o">=</span>app/build/outputs/apk/debug/app-debug.apk --device<span class="o">=</span>emulator-5554
+</span></span><span class="line"><span class="cl">android layout --pretty --output<span class="o">=</span>build/ai/layout.json
+</span></span><span class="line"><span class="cl">android screen capture --annotate --output<span class="o">=</span>build/ai/screen.png
+</span></span></code></pre></div><p><code>layout</code> 适合判断结构，截图适合判断视觉。比如：</p>
+<ul>
+<li>文案是否出现在 UI 树里：看 <code>layout.json</code>。</li>
+<li>按钮是否可点击：看 <code>interactions</code> 是否包含 <code>clickable</code>。</li>
+<li>输入框是否聚焦：看 <code>state</code> 是否包含 <code>focused</code>。</li>
+<li>颜色、遮挡、图片资源是否正确：看截图。</li>
+</ul>
+<p>如果第一次 <code>layout</code> 输出太大，后续操作后可以用 diff：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">android layout --diff --pretty
+</span></span></code></pre></div><p>这样能让 Agent 只关注变化部分，减少上下文噪音。</p>
+<h3 id="4-截图标注和坐标定位">4. 截图标注和坐标定位<a hidden class="anchor" aria-hidden="true" href="#4-截图标注和坐标定位">#</a></h3>
+<p>当 UI 树找不到目标元素，或者页面是 WebView、动画、图片内容时，使用标注截图：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">android screen capture --annotate --output<span class="o">=</span>build/ai/screen.png
+</span></span></code></pre></div><p>假设截图中目标按钮标号是 <code>#5</code>，可以转换成真实坐标：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">android screen resolve <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>  --screenshot<span class="o">=</span>build/ai/screen.png <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>  --string<span class="o">=</span><span class="s2">&#34;input tap #5&#34;</span>
+</span></span></code></pre></div><p>继续执行点击：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">adb shell <span class="k">$(</span>android screen resolve <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>  --screenshot<span class="o">=</span>build/ai/screen.png <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>  --string<span class="o">=</span><span class="s2">&#34;input tap #5&#34;</span><span class="k">)</span>
+</span></span></code></pre></div><p>这比让模型凭截图估算坐标更稳，也更容易复盘。</p>
+<h3 id="5-用官方文档给-agent-做-grounding">5. 用官方文档给 Agent 做 grounding<a hidden class="anchor" aria-hidden="true" href="#5-用官方文档给-agent-做-grounding">#</a></h3>
+<p>AI 写 Android 代码的主要风险之一，是用旧知识解决新问题。<code>android docs</code> 把 Android Knowledge Base 接进终端，适合在生成代码前先确认最新推荐写法。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">android docs search <span class="s2">&#34;Compose screenshot testing&#34;</span>
+</span></span><span class="line"><span class="cl">android docs fetch kb://android/studio/preview/compose-screenshot-testing
+</span></span></code></pre></div><p>推荐在这些场景中强制先查文档：</p>
+<ul>
+<li>Android 新版本行为变化。</li>
+<li>AGP、Gradle、Kotlin 插件升级。</li>
+<li>Compose、CameraX、Navigation、Media、Permissions 等 Jetpack API。</li>
+<li>权限、后台限制、前台服务、通知、存储等平台策略。</li>
+<li>官方明确有迁移指南的任务。</li>
+</ul>
+<h2 id="进阶使用">进阶使用<a hidden class="anchor" aria-hidden="true" href="#进阶使用">#</a></h2>
+<h3 id="1-建立-agent-工作协议">1. 建立 Agent 工作协议<a hidden class="anchor" aria-hidden="true" href="#1-建立-agent-工作协议">#</a></h3>
+<p>可以把 Android Agent 工作流固定成七步：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="cl">1. android info：确认 SDK 和 CLI 版本
+</span></span><span class="line"><span class="cl">2. android describe：理解工程结构和产物路径
+</span></span><span class="line"><span class="cl">3. android docs search/fetch：查询相关官方实践
+</span></span><span class="line"><span class="cl">4. 修改代码：只改必要文件
+</span></span><span class="line"><span class="cl">5. ./gradlew assembleDebug 或相关 test task
+</span></span><span class="line"><span class="cl">6. android run + android layout/screen：部署并观察结果
+</span></span><span class="line"><span class="cl">7. 输出变更文件、验证命令、关键截图或 JSON 证据
+</span></span></code></pre></div><p>这套协议的价值是减少“模型猜测”。每一步都有命令证据，失败也能定位在环境、构建、部署、UI 状态或代码实现。</p>
+<p>更严格一点，可以要求 Agent 每次交付时给出四类结果：</p>
+<table>
+  <thead>
+      <tr>
+          <th>结果</th>
+          <th>说明</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>变更文件</td>
+          <td>改了哪些 Kotlin、Java、XML、Gradle 或资源文件</td>
+      </tr>
+      <tr>
+          <td>验证命令</td>
+          <td>实际运行了哪些命令</td>
+      </tr>
+      <tr>
+          <td>关键证据</td>
+          <td><code>layout.json</code>、截图、Gradle 输出、日志片段</td>
+      </tr>
+      <tr>
+          <td>残余风险</td>
+          <td>没跑的测试、未覆盖设备、仍需人工确认的视觉细节</td>
+      </tr>
+  </tbody>
+</table>
+<h3 id="2-观察优先而不是改完再猜">2. 观察优先，而不是改完再猜<a hidden class="anchor" aria-hidden="true" href="#2-观察优先而不是改完再猜">#</a></h3>
+<p>Agent 调 UI 问题时，建议按“结构优先、视觉补充”的顺序：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="cl">android layout
+</span></span><span class="line"><span class="cl">  -&gt; 如果能看到目标元素，用 text/resourceId/contentDesc/bounds 判断
+</span></span><span class="line"><span class="cl">android layout --diff
+</span></span><span class="line"><span class="cl">  -&gt; 如果刚做过操作，用 diff 关注变化
+</span></span><span class="line"><span class="cl">android screen capture --annotate
+</span></span><span class="line"><span class="cl">  -&gt; 如果 UI 树不够，转成截图标注
+</span></span><span class="line"><span class="cl">android screen resolve + adb shell input
+</span></span><span class="line"><span class="cl">  -&gt; 需要交互时再把标号转成坐标
+</span></span></code></pre></div><p>不要一上来就让 Agent 用 <code>adb shell input tap 500 1200</code>。这种坐标在不同分辨率、字体大小、系统导航模式下都容易失效。</p>
+<h3 id="3-用-journeys-描述核心用户路径">3. 用 Journeys 描述核心用户路径<a hidden class="anchor" aria-hidden="true" href="#3-用-journeys-描述核心用户路径">#</a></h3>
+<p>Journeys 是面向 Agent 的自然语言测试说明。它不是传统 Espresso 脚本，而是把用户路径写成 XML，让 Agent 按步骤操作并验证。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-xml" data-lang="xml"><span class="line"><span class="cl"><span class="nt">&lt;journey</span> <span class="na">name=</span><span class="s">&#34;login success&#34;</span><span class="nt">&gt;</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&lt;description&gt;</span>验证用户可以完成登录并进入首页<span class="nt">&lt;/description&gt;</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&lt;actions&gt;</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&lt;action&gt;</span>Tap the username input<span class="nt">&lt;/action&gt;</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&lt;action&gt;</span>Enter text &#34;demo@example.com&#34;<span class="nt">&lt;/action&gt;</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&lt;action&gt;</span>Tap the password input<span class="nt">&lt;/action&gt;</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&lt;action&gt;</span>Enter text &#34;123456&#34;<span class="nt">&lt;/action&gt;</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&lt;action&gt;</span>Tap the &#34;Login&#34; button<span class="nt">&lt;/action&gt;</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&lt;action&gt;</span>Verify that the Home screen is visible<span class="nt">&lt;/action&gt;</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&lt;/actions&gt;</span>
+</span></span><span class="line"><span class="cl"><span class="nt">&lt;/journey&gt;</span>
+</span></span></code></pre></div><p>写 Journey 时有几个经验：</p>
+<ul>
+<li>一个 <code>&lt;action&gt;</code> 只表达一个动作或一个验证点。</li>
+<li><code>Tap</code>、<code>Enter text</code>、<code>Scroll</code> 这类动作步骤应该能被 UI 明确执行。</li>
+<li><code>Verify</code> 或 <code>Check</code> 步骤只做观察，不应该隐含点击、滚动或输入。</li>
+<li>失败也是结果，不要在 Journey 里写“如果失败就尝试另一种方式”。</li>
+<li>核心路径先写短，稳定后再增加分支和异常场景。</li>
+</ul>
+<p>适合写 Journey 的场景：</p>
+<ul>
+<li>登录、注册、搜索、下单这类主路径。</li>
+<li>多端形态适配后的关键页面检查。</li>
+<li>修复线上缺陷后的回归验证。</li>
+<li>AI Agent 修改 UI 后的端到端冒烟验证。</li>
+</ul>
+<p>Journey 的关键不是“自动化覆盖率”，而是把产品路径变成 Agent 可以执行和复盘的验收合同。</p>
+<h3 id="4-借-android-studio-做语义查询">4. 借 Android Studio 做语义查询<a hidden class="anchor" aria-hidden="true" href="#4-借-android-studio-做语义查询">#</a></h3>
+<p><code>android studio</code> 子命令可以连接运行中的 Android Studio，借 IDE 做语义分析。典型命令：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">android studio check
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">android studio analyze-file <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>  app/src/main/java/com/example/MainActivity.kt
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">android studio find-declaration --short HomeScreen
+</span></span><span class="line"><span class="cl">android studio find-usages --short HomeScreen
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">android studio render-compose-preview <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>  --output-image-file<span class="o">=</span>build/ai/home_preview.png <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>  --print-semantics <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>  app/src/main/java/com/example/HomeScreen.kt <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>  HomeScreenPreview
+</span></span></code></pre></div><p>这对 AI 工程很有用。Agent 不再只靠 <code>rg</code> 做文本搜索，而是可以借 IDE 解析 Kotlin/Java 符号、引用关系、lint 问题和 Compose Preview 语义树。</p>
+<p>适合调用 Studio 能力的任务：</p>
+<ul>
+<li>同名函数或同名 Composable 很多，文本搜索容易误判。</li>
+<li>需要找真实声明、引用点或调用链。</li>
+<li>需要确认 Compose Preview 是否能渲染。</li>
+<li>想让 IDE 对单个文件做静态分析。</li>
+</ul>
+<p>注意：<code>studio</code> 命令仍属于预览能力，要求项目在支持版本的 Android Studio 中打开，并启用 Gemini in Android Studio。它适合本地智能开发，不建议直接作为稳定 CI 基础。</p>
+<h3 id="5-用-android-skills-固化团队经验">5. 用 Android skills 固化团队经验<a hidden class="anchor" aria-hidden="true" href="#5-用-android-skills-固化团队经验">#</a></h3>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">android skills list --long
+</span></span><span class="line"><span class="cl">android skills find performance
+</span></span><span class="line"><span class="cl">android skills add edge-to-edge
+</span></span><span class="line"><span class="cl">android skills add agp-9-upgrade
+</span></span><span class="line"><span class="cl">android skills add --all
+</span></span></code></pre></div><p>Android skills 可以把某类任务的最佳实践交给 Agent，例如：</p>
+<ul>
+<li>XML View 迁移 Compose。</li>
+<li>Edge-to-edge 适配。</li>
+<li>AGP 9 升级。</li>
+<li>R8 配置审计。</li>
+<li>CameraX 迁移。</li>
+<li>Navigation 3 接入。</li>
+<li>测试环境搭建。</li>
+</ul>
+<p>如果团队要自定义 skill，一定要改名。官方提示过，直接修改已安装 skill，后续 <code>skills add</code> 更新时可能被覆盖。</p>
+<p>团队内部可以把 skills 分成三类：</p>
+<table>
+  <thead>
+      <tr>
+          <th>类型</th>
+          <th>内容</th>
+          <th>是否适合共享</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>官方 skill</td>
+          <td>Google 提供的迁移、测试、性能、Compose 等实践</td>
+          <td>适合直接安装</td>
+      </tr>
+      <tr>
+          <td>团队规范 skill</td>
+          <td>架构分层、命名、日志、埋点、错误处理规范</td>
+          <td>适合内部共享</td>
+      </tr>
+      <tr>
+          <td>项目专用 skill</td>
+          <td>某个项目的 module 结构、发布流程、测试账号</td>
+          <td>只适合项目内使用</td>
+      </tr>
+  </tbody>
+</table>
+<h2 id="提效脚本">提效脚本<a hidden class="anchor" aria-hidden="true" href="#提效脚本">#</a></h2>
+<h3 id="1-生成-ai-调试证据">1. 生成 AI 调试证据<a hidden class="anchor" aria-hidden="true" href="#1-生成-ai-调试证据">#</a></h3>
+<p>可以在项目中放一个 <code>scripts/android_ai_probe.sh</code>：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="cp">#!/usr/bin/env bash
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span><span class="nb">set</span> -euo pipefail
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="nv">DEVICE</span><span class="o">=</span><span class="s2">&#34;</span><span class="si">${</span><span class="nv">ANDROID_SERIAL</span><span class="k">:-</span><span class="si">}</span><span class="s2">&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="nv">APK</span><span class="o">=</span><span class="s2">&#34;</span><span class="si">${</span><span class="nv">APK</span><span class="k">:-</span><span class="nv">app</span><span class="p">/build/outputs/apk/debug/app-debug.apk</span><span class="si">}</span><span class="s2">&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="nv">OUT_DIR</span><span class="o">=</span><span class="s2">&#34;</span><span class="si">${</span><span class="nv">OUT_DIR</span><span class="k">:-</span><span class="nv">build</span><span class="p">/ai-artifacts</span><span class="si">}</span><span class="s2">&#34;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">mkdir -p <span class="s2">&#34;</span><span class="nv">$OUT_DIR</span><span class="s2">&#34;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">android info <span class="p">|</span> tee <span class="s2">&#34;</span><span class="nv">$OUT_DIR</span><span class="s2">/android-info.txt&#34;</span>
+</span></span><span class="line"><span class="cl">android describe --project_dir<span class="o">=</span>. &gt; <span class="s2">&#34;</span><span class="nv">$OUT_DIR</span><span class="s2">/android-describe.txt&#34;</span> <span class="o">||</span> <span class="nb">true</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">./gradlew :app:assembleDebug <span class="p">|</span> tee <span class="s2">&#34;</span><span class="nv">$OUT_DIR</span><span class="s2">/gradle-assemble.txt&#34;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">if</span> <span class="o">[[</span> -n <span class="s2">&#34;</span><span class="nv">$DEVICE</span><span class="s2">&#34;</span> <span class="o">]]</span><span class="p">;</span> <span class="k">then</span>
+</span></span><span class="line"><span class="cl">  android run --apks<span class="o">=</span><span class="s2">&#34;</span><span class="nv">$APK</span><span class="s2">&#34;</span> --device<span class="o">=</span><span class="s2">&#34;</span><span class="nv">$DEVICE</span><span class="s2">&#34;</span>
+</span></span><span class="line"><span class="cl">  android layout --device<span class="o">=</span><span class="s2">&#34;</span><span class="nv">$DEVICE</span><span class="s2">&#34;</span> --pretty --output<span class="o">=</span><span class="s2">&#34;</span><span class="nv">$OUT_DIR</span><span class="s2">/layout.json&#34;</span>
+</span></span><span class="line"><span class="cl">  adb -s <span class="s2">&#34;</span><span class="nv">$DEVICE</span><span class="s2">&#34;</span> exec-out screencap -p &gt; <span class="s2">&#34;</span><span class="nv">$OUT_DIR</span><span class="s2">/screen.png&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="k">else</span>
+</span></span><span class="line"><span class="cl">  android run --apks<span class="o">=</span><span class="s2">&#34;</span><span class="nv">$APK</span><span class="s2">&#34;</span>
+</span></span><span class="line"><span class="cl">  android layout --pretty --output<span class="o">=</span><span class="s2">&#34;</span><span class="nv">$OUT_DIR</span><span class="s2">/layout.json&#34;</span>
+</span></span><span class="line"><span class="cl">  android screen capture --annotate --output<span class="o">=</span><span class="s2">&#34;</span><span class="nv">$OUT_DIR</span><span class="s2">/screen.png&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="k">fi</span>
+</span></span></code></pre></div><p>这个脚本的目的不是替代完整测试，而是给 Agent 留下运行现场：工程信息、APK、UI 树和截图。当前示例中 <code>layout</code> 显式支持 <code>--device</code>，多设备截图则用 <code>adb -s</code> 保证目标明确；单设备环境下继续使用 <code>android screen capture --annotate</code> 生成标注截图。后续排查“页面没跳转”“按钮不可点”“文本没显示”时，不需要重新猜状态。</p>
+<h3 id="2-ui-问题排查模板">2. UI 问题排查模板<a hidden class="anchor" aria-hidden="true" href="#2-ui-问题排查模板">#</a></h3>
+<p>当用户说“这个页面不对”时，可以要求 Agent 按这个模板处理：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="cl">请按下面顺序排查：
+</span></span><span class="line"><span class="cl">1. 运行 android describe --project_dir=.，确认目标 module 和 APK 路径。
+</span></span><span class="line"><span class="cl">2. 构建目标 APK。
+</span></span><span class="line"><span class="cl">3. 用 android run 安装到指定设备。
+</span></span><span class="line"><span class="cl">4. 用 android layout --pretty 保存 UI 树。
+</span></span><span class="line"><span class="cl">5. 用 android screen capture --annotate 保存截图。
+</span></span><span class="line"><span class="cl">6. 根据 UI 树和截图判断问题属于数据、布局、样式、交互还是导航。
+</span></span><span class="line"><span class="cl">7. 修改最小必要代码。
+</span></span><span class="line"><span class="cl">8. 重新构建、部署、采集 layout 和截图。
+</span></span><span class="line"><span class="cl">9. 给出前后证据路径和剩余风险。
+</span></span></code></pre></div><p>这类提示词比“帮我修一下页面”更有效，因为它约束了 Agent 的观察、修改和验证方式。</p>
+<h3 id="3-适合放进-ci-的最小检查">3. 适合放进 CI 的最小检查<a hidden class="anchor" aria-hidden="true" href="#3-适合放进-ci-的最小检查">#</a></h3>
+<p>普通 CI 不一定要启动模拟器，但至少可以做：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">android info
+</span></span><span class="line"><span class="cl">./gradlew :app:assembleDebug
+</span></span><span class="line"><span class="cl">./gradlew :app:testDebugUnitTest
+</span></span></code></pre></div><p>如果 CI 有稳定模拟器环境，可以增加：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">android emulator start --cold Pixel_6_API_35
+</span></span><span class="line"><span class="cl">android run --apks<span class="o">=</span>app/build/outputs/apk/debug/app-debug.apk
+</span></span><span class="line"><span class="cl">android layout --pretty --output<span class="o">=</span>build/ci/layout.json
+</span></span><span class="line"><span class="cl">android screen capture --output<span class="o">=</span>build/ci/screen.png
+</span></span><span class="line"><span class="cl">android emulator stop Pixel_6_API_35
+</span></span></code></pre></div><p>注意，涉及视觉截图的 CI 要控制设备 profile、系统版本、字体大小、主题、语言和动画设置，否则结果会不稳定。多设备 CI 还要显式传 <code>--device</code> 给支持该参数的命令；截图如果无法指定设备，优先收敛到单设备环境，或者改用 <code>adb -s &lt;serial&gt; exec-out screencap -p</code>。</p>
+<h2 id="常见坑">常见坑<a hidden class="anchor" aria-hidden="true" href="#常见坑">#</a></h2>
+<h3 id="1-home-不可写会导致命令失败">1. HOME 不可写会导致命令失败<a hidden class="anchor" aria-hidden="true" href="#1-home-不可写会导致命令失败">#</a></h3>
+<p>Android CLI 启动时会写入本地配置和 analytics 目录。沙箱或 CI 中如果 <code>$HOME</code> 不可写，可能连 <code>android --version</code> 都失败。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="nb">export</span> <span class="nv">HOME</span><span class="o">=</span><span class="s2">&#34;</span><span class="nv">$PWD</span><span class="s2">/.ci-home&#34;</span>
+</span></span><span class="line"><span class="cl">mkdir -p <span class="s2">&#34;</span><span class="nv">$HOME</span><span class="s2">&#34;</span>
+</span></span><span class="line"><span class="cl">android --version
+</span></span></code></pre></div><h3 id="2-android-run-不会自动构建">2. <code>android run</code> 不会自动构建<a hidden class="anchor" aria-hidden="true" href="#2-android-run-不会自动构建">#</a></h3>
+<p>下面这个命令只负责部署已有 APK：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">android run --apks<span class="o">=</span>app/build/outputs/apk/debug/app-debug.apk
+</span></span></code></pre></div><p>如果 APK 不存在，先执行：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">./gradlew :app:assembleDebug
+</span></span></code></pre></div><p>不要让 Agent 把“部署失败”误判成“代码编译失败”。</p>
+<h3 id="3-layout-和截图不能互相替代">3. <code>layout</code> 和截图不能互相替代<a hidden class="anchor" aria-hidden="true" href="#3-layout-和截图不能互相替代">#</a></h3>
+<p><code>layout</code> 适合结构化判断，截图适合视觉判断。颜色、遮挡、裁剪、图片资源、WebView 内容，仍然需要截图确认。</p>
+<p>反过来，截图也不能替代 <code>layout</code>。只靠截图很难稳定判断 resourceId、可点击状态、焦点状态和滚动容器。</p>
+<h3 id="4-多设备环境必须显式指定目标">4. 多设备环境必须显式指定目标<a hidden class="anchor" aria-hidden="true" href="#4-多设备环境必须显式指定目标">#</a></h3>
+<p>多设备场景要先看设备：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">adb devices
+</span></span><span class="line"><span class="cl">android emulator list
+</span></span></code></pre></div><p>然后显式指定：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">android run --apks<span class="o">=</span>app-debug.apk --device<span class="o">=</span>emulator-5554
+</span></span><span class="line"><span class="cl">android layout --device<span class="o">=</span>emulator-5554 --pretty
+</span></span></code></pre></div><h3 id="5-不要把自动更新放进普通-ci">5. 不要把自动更新放进普通 CI<a hidden class="anchor" aria-hidden="true" href="#5-不要把自动更新放进普通-ci">#</a></h3>
+<p><code>android update</code> 适合本地追新。普通 CI 要固定版本；只有专门验证工具链兼容性的流水线才适合定期更新。</p>
+<h3 id="6-studio-子命令不等于无头-ci-能力">6. Studio 子命令不等于无头 CI 能力<a hidden class="anchor" aria-hidden="true" href="#6-studio-子命令不等于无头-ci-能力">#</a></h3>
+<p><code>android studio</code> 相关命令依赖正在运行的 Android Studio 和 IDE 索引。它适合本地 Agent 辅助开发，不要默认放进无头 CI。</p>
+<h3 id="7-windows-能力要单独校验">7. Windows 能力要单独校验<a hidden class="anchor" aria-hidden="true" href="#7-windows-能力要单独校验">#</a></h3>
+<p>官方已说明 Windows 上 <code>android emulator</code> 当前不可用，PowerShell 下载 Android CLI 也有已知限制。跨平台脚本要显式分支。</p>
+<h2 id="小结">小结<a hidden class="anchor" aria-hidden="true" href="#小结">#</a></h2>
+<p>Android CLI 的深层价值，是把 Android 开发拆成一组 Agent 可调用的工程动作：查环境、识别工程、查官方文档、构建、部署、观察 UI、截图定位、执行 Journey、调用 IDE 语义能力。</p>
+<p>对个人开发者来说，它减少工具切换；对 AI 工程来说，它把“模型凭经验猜”变成“模型基于命令观察、执行和验证”。未来 Android Agent 能不能稳定完成复杂任务，很大程度取决于我们是否把这些 CLI 能力沉淀成脚本、提示词、CI 流程和团队 skills。</p>
+<p>如果只记住一条原则，就是：不要让 Agent 直接猜 Android 工程状态。先让它用 <code>android info</code>、<code>android describe</code>、<code>android layout</code> 和 <code>android screen</code> 观察，再让它修改和验证。</p>
+<h2 id="参考资料">参考资料<a hidden class="anchor" aria-hidden="true" href="#参考资料">#</a></h2>
+<ul>
+<li><a href="https://developer.android.com/tools/agents/android-cli">Android CLI Overview</a></li>
+<li><a href="https://developer.android.com/tools/agents/android-cli/release-notes">Android CLI Release Notes</a></li>
+<li><a href="https://developer.android.com/tools/agents/android-cli/journeys">Journeys</a></li>
+<li><a href="https://developer.android.com/tools/agents/android-skills">Android skills</a></li>
+</ul>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="/tags/android-cli/">Android CLI</a></li>
+      <li><a href="/tags/ai%E5%B7%A5%E7%A8%8B/">AI工程</a></li>
+      <li><a href="/tags/agent/">Agent</a></li>
+      <li><a href="/tags/%E8%87%AA%E5%8A%A8%E5%8C%96%E6%B5%8B%E8%AF%95/">自动化测试</a></li>
+      <li><a href="/tags/compose/">Compose</a></li>
+    </ul>
+<nav class="paginav">
+  <a class="next" href="/posts/sdd/openspec_sdd_guide/">
+    <span class="title">Next »</span>
+    <br>
+    <span>OpenSpec SDD 开发套件使用指南</span>
+  </a>
+</nav>
+
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2026 <a href="/">缥缈夏鸢</a></span> · 
+
+    <span>
+        Powered by
+        <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+        <path d="M12 6H0l6-6z" />
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu')
+    if (menu) {
+        menu.scrollLeft = localStorage.getItem("menu-scroll-position");
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        if (document.body.className.includes("dark")) {
+            document.body.classList.remove('dark');
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            document.body.classList.add('dark');
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerHTML = 'copy';
+
+        function copyingDone() {
+            copybutton.innerHTML = 'copied!';
+            setTimeout(() => {
+                copybutton.innerHTML = 'copy';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+</body>
+
+</html>

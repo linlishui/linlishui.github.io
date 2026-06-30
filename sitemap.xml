@@ -2,10 +2,40 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
-    <loc>/tags/ai-coding/</loc>
-    <lastmod>2026-06-11T15:15:50+08:00</lastmod>
+    <loc>/tags/agent/</loc>
+    <lastmod>2026-06-30T10:58:09+08:00</lastmod>
+  </url><url>
+    <loc>/tags/ai%E5%B7%A5%E7%A8%8B/</loc>
+    <lastmod>2026-06-30T10:58:09+08:00</lastmod>
+  </url><url>
+    <loc>/categories/android/</loc>
+    <lastmod>2026-06-30T10:58:09+08:00</lastmod>
+  </url><url>
+    <loc>/tags/android-cli/</loc>
+    <lastmod>2026-06-30T10:58:09+08:00</lastmod>
   </url><url>
     <loc>/categories/</loc>
+    <lastmod>2026-06-30T10:58:09+08:00</lastmod>
+  </url><url>
+    <loc>/tags/compose/</loc>
+    <lastmod>2026-06-30T10:58:09+08:00</lastmod>
+  </url><url>
+    <loc>/posts/</loc>
+    <lastmod>2026-06-30T10:58:09+08:00</lastmod>
+  </url><url>
+    <loc>/tags/</loc>
+    <lastmod>2026-06-30T10:58:09+08:00</lastmod>
+  </url><url>
+    <loc>/posts/android/android_cli_agent_deep_dive/</loc>
+    <lastmod>2026-06-30T10:58:09+08:00</lastmod>
+  </url><url>
+    <loc>/</loc>
+    <lastmod>2026-06-30T10:58:09+08:00</lastmod>
+  </url><url>
+    <loc>/tags/%E8%87%AA%E5%8A%A8%E5%8C%96%E6%B5%8B%E8%AF%95/</loc>
+    <lastmod>2026-06-30T10:58:09+08:00</lastmod>
+  </url><url>
+    <loc>/tags/ai-coding/</loc>
     <lastmod>2026-06-11T15:15:50+08:00</lastmod>
   </url><url>
     <loc>/tags/openspec/</loc>
@@ -14,23 +44,11 @@
     <loc>/posts/sdd/openspec_sdd_guide/</loc>
     <lastmod>2026-06-11T15:15:50+08:00</lastmod>
   </url><url>
-    <loc>/posts/</loc>
-    <lastmod>2026-06-11T15:15:50+08:00</lastmod>
-  </url><url>
     <loc>/tags/sdd/</loc>
     <lastmod>2026-06-11T15:15:50+08:00</lastmod>
   </url><url>
     <loc>/categories/sdd/</loc>
     <lastmod>2026-06-11T15:15:50+08:00</lastmod>
-  </url><url>
-    <loc>/tags/</loc>
-    <lastmod>2026-06-11T15:15:50+08:00</lastmod>
-  </url><url>
-    <loc>/</loc>
-    <lastmod>2026-06-11T15:15:50+08:00</lastmod>
-  </url><url>
-    <loc>/categories/android/</loc>
-    <lastmod>2026-06-11T12:02:24+08:00</lastmod>
   </url><url>
     <loc>/posts/android/android_audio_io_basic/</loc>
     <lastmod>2026-06-11T12:02:24+08:00</lastmod>

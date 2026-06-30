@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>Android CLI on 缥缈夏鸢</title>
+    <link>/tags/android-cli/</link>
+    <description>Recent content in Android CLI on 缥缈夏鸢</description>
+    <generator>Hugo -- 0.138.0</generator>
+    <language>en-us</language>
+    <lastBuildDate>Tue, 30 Jun 2026 10:58:09 +0800</lastBuildDate>
+    <atom:link href="/tags/android-cli/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>把 Android 交给 Agent：Google Android CLI 工程化实战指南</title>
+      <link>/posts/android/android_cli_agent_deep_dive/</link>
+      <pubDate>Tue, 30 Jun 2026 10:58:09 +0800</pubDate>
+      <guid>/posts/android/android_cli_agent_deep_dive/</guid>
+      <description>&lt;p&gt;Android CLI 的重点不是“又多了一个 adb 替代品”，而是 Google 正在把 Android 工程能力整理成更适合 AI Agent 调用的命令入口。它把 SDK 管理、项目模板、模拟器、部署、UI 观察、截图定位、官方文档检索、Android skills、Android Studio 语义能力放到统一的 &lt;code&gt;android&lt;/code&gt; 命令下。&lt;/p&gt;
+&lt;p&gt;如果只做手工开发，Android Studio、Gradle 和 adb 已经能覆盖绝大多数工作。但 AI 工程的核心问题不是“人能不能做”，而是“Agent 能不能稳定观察、执行、验证，并留下可复盘证据”。Android CLI 的价值就在这里：它把原本分散在 IDE、终端、设备和文档里的动作，收敛成一组更清晰的命令协议。&lt;/p&gt;
+&lt;p&gt;Android CLI 可以按下面这几层理解。表格比关系图更适合放在文章开头，读者可以先建立全局印象，再按后文逐段展开。&lt;/p&gt;
+&lt;table&gt;
+  &lt;thead&gt;
+      &lt;tr&gt;
+          &lt;th&gt;层级&lt;/th&gt;
+          &lt;th&gt;能力&lt;/th&gt;
+          &lt;th&gt;常用命令&lt;/th&gt;
+          &lt;th&gt;Agent 拿到什么&lt;/th&gt;
+      &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+      &lt;tr&gt;
+          &lt;td&gt;环境与 SDK&lt;/td&gt;
+          &lt;td&gt;确认 CLI、SDK 和工具链状态&lt;/td&gt;
+          &lt;td&gt;&lt;code&gt;android info&lt;/code&gt;、&lt;code&gt;android sdk list/install/update&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;当前 SDK 路径、可用平台包、工具链是否完整&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;工程创建与理解&lt;/td&gt;
+          &lt;td&gt;创建模板工程，分析现有项目&lt;/td&gt;
+          &lt;td&gt;&lt;code&gt;android create&lt;/code&gt;、&lt;code&gt;android describe&lt;/code&gt;、&lt;code&gt;./gradlew tasks&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;module、构建目标、APK 产物路径&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;设备与运行&lt;/td&gt;
+          &lt;td&gt;管理模拟器并部署应用&lt;/td&gt;
+          &lt;td&gt;&lt;code&gt;android emulator list/start/stop/create&lt;/code&gt;、&lt;code&gt;android run&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;可用设备、安装结果、运行入口&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;观察与验证&lt;/td&gt;
+          &lt;td&gt;读取 UI 树、截图、定位坐标&lt;/td&gt;
+          &lt;td&gt;&lt;code&gt;android layout&lt;/code&gt;、&lt;code&gt;android screen capture/resolve&lt;/code&gt;、&lt;code&gt;adb input&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;页面结构、可点击元素、视觉证据、交互坐标&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;知识与实践&lt;/td&gt;
+          &lt;td&gt;查询官方资料，安装任务技能&lt;/td&gt;
+          &lt;td&gt;&lt;code&gt;android docs search/fetch&lt;/code&gt;、&lt;code&gt;android skills&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;最新 API 建议、迁移指引、任务级操作规范&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;IDE 语义能力&lt;/td&gt;
+          &lt;td&gt;复用 Android Studio 索引和预览&lt;/td&gt;
+          &lt;td&gt;&lt;code&gt;android studio analyze-file/find-usages/render-compose-preview&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;声明位置、引用点、静态分析、Compose Preview 结果&lt;/td&gt;
+      &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;h2 id=&#34;工具边界&#34;&gt;工具边界&lt;/h2&gt;
+&lt;h3 id=&#34;1-android-cli-不是什么&#34;&gt;1. Android CLI 不是什么&lt;/h3&gt;
+&lt;p&gt;Android CLI 不是要替代所有 Android 工具。更准确地说，它是 Agent 友好的编排入口。&lt;/p&gt;</description>
+    </item>
+  </channel>
+</rss>
