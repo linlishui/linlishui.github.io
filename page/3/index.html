@@ -203,6 +203,27 @@ window.onload = () => {
 
 <article class="post-entry"> 
   <header class="entry-header">
+    <h2 class="entry-hint-parent">Android View基础知识
+    </h2>
+  </header>
+  <div class="entry-content">
+    <p>View是Android所有控件的基类，是一种界面层控件的抽象角色。在Android的设计中，ViewGroup也继承了View，这就意味着View本身就可以是单个控件也可以是由多个控件组成的一组控件，通过这种关系就形成了View树的结构。
+View位置参数 View的位置主要由它的四个顶点来决定，分别对应于View的四个属性：top、left、right、bottom，其中top是左上角纵坐标，left是左上角横坐标，right是右下角横坐标，bottom是右下角纵坐标。注意，这些坐标是相对于View的父容器来说的，它是一种相对坐标。
+View的宽高和坐标的关系：width = right -left; height = bottom - top;
+从Android3.0开始，View增加参数：x、y、translationX、translationY，其中x和y是View左上角的坐标，而translationX和translationY是View左上角相对于父容器的偏移量。这几个参数也是相对于父容器的坐标，并且translationX和translationY的默认值是0。
+这几个参数的换算关系如下：x = left &#43; translationX; y = top &#43; translationY;
+在View在平移的过程中，top和left是原始左上角的位置信息，不会发生改变。发生改变的是x、y、translationX和translationY这四个参数。
+MotionEvent和TouchSlop 在手指接触屏幕后产生的一系列事件，该事件对象是MotionEvent。
+下面是常用的事件类型：
+public final class MotionEvent extends InputEvent implements Parcelable { public static final int ACTION_MASK = 0xff; public static final int ACTION_DOWN = 0; public static final int ACTION_UP = 1; public static final int ACTION_MOVE = 2; public static final int ACTION_CANCEL = 3; public static final int ACTION_OUTSIDE = 4; public static final int ACTION_POINTER_DOWN = 5; public static final int ACTION_POINTER_UP = 6; ... } TouchSlop是系统所能识别出的被认为是滑动的最小距离。可以通过如下代码获取：ViewConfiguration. get(getContext()).getScaledTouchSlop()。当我们在处理滑动时，可以利用这个常量来做一些过滤，比如当两次滑动事件的滑动距离小于这个值，我们就可以认为未达到滑动距离的临界值，因此就可以认为它们不是滑动，这样做可以有更好的用户体验
+...</p>
+  </div>
+  <footer class="entry-footer"><span title='2025-05-13 15:11:46 +0800 CST'>May 13, 2025</span>&nbsp;·&nbsp;2 min&nbsp;·&nbsp;254 words&nbsp;·&nbsp;夏天的小西瓜</footer>
+  <a class="entry-link" aria-label="post link to Android View基础知识" href="/posts/android/view_basic/"></a>
+</article>
+
+<article class="post-entry"> 
+  <header class="entry-header">
     <h2 class="entry-hint-parent">Charles网络抓包
     </h2>
   </header>

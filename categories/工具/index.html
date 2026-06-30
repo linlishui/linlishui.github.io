@@ -201,6 +201,25 @@ window.onload = () => {
 
 <article class="post-entry tag-entry"> 
   <header class="entry-header">
+    <h2 class="entry-hint-parent">Mac环境下iTerm2使用指南
+    </h2>
+  </header>
+  <div class="entry-content">
+    <p>概述 iTerm2 是 macOS 上常用的终端工具。相比系统自带 Terminal，它在分屏、标签页、搜索、复制粘贴、Profile 配置和会话体验上更适合长期开发使用。
+日常使用时，可以把终端工作流拆成三层：
+iTerm2：负责窗口、标签页、分屏、快捷键、复制、搜索等界面能力 Shell：负责命令解释，例如 zsh、bash tmux：负责终端会话复用，让远程任务和本地窗口解耦 结论很简单：本地临时任务优先用 iTerm2，远程和长期任务优先用 tmux。iTerm2 管入口和操作体验，tmux 管现场和恢复能力。
+基础使用 1. 标签页和窗口 标签页适合按项目或任务隔离上下文，不建议在同一个窗口里反复 cd 来回切换。
+快捷键 作用 Command &#43; T 新建标签页 Command &#43; W 关闭当前标签页或窗口 Command &#43; N 新建窗口 Command &#43; 数字 切换到指定标签页 Command &#43; Shift &#43; [ 切换到上一个标签页 Command &#43; Shift &#43; ] 切换到下一个标签页 Command &#43; Enter 全屏切换 常见标签页组织方式：
+api：后端服务 web：前端工程 log：日志观察 db：数据库命令 scratch：临时命令 2. 分屏 iTerm2 分屏适合短时间同时观察多个命令输出，例如一边运行服务，一边查看日志。
+快捷键 作用 Command &#43; D 垂直分屏 Command &#43; Shift &#43; D 水平分屏 Command &#43; [ 切换到上一个分屏 Command &#43; ] 切换到下一个分屏 示例：
+...</p>
+  </div>
+  <footer class="entry-footer"><span title='2026-06-30 16:08:33 +0800 CST'>June 30, 2026</span>&nbsp;·&nbsp;4 min&nbsp;·&nbsp;793 words&nbsp;·&nbsp;夏天的小西瓜</footer>
+  <a class="entry-link" aria-label="post link to Mac环境下iTerm2使用指南" href="/posts/tools/iterm2_on_mac/"></a>
+</article>
+
+<article class="post-entry tag-entry"> 
+  <header class="entry-header">
     <h2 class="entry-hint-parent">Docker 从入门到实践
     </h2>
   </header>
@@ -376,23 +395,12 @@ adb logcat -b events：输出指定buffer的log adb logcat -s “ActivityManager
   <footer class="entry-footer"><span title='2024-11-15 14:20:18 +0800 CST'>November 15, 2024</span>&nbsp;·&nbsp;6 min&nbsp;·&nbsp;1158 words&nbsp;·&nbsp;夏天的小西瓜</footer>
   <a class="entry-link" aria-label="post link to adb日常使用" href="/posts/tools/adb/"></a>
 </article>
-
-<article class="post-entry tag-entry"> 
-  <header class="entry-header">
-    <h2 class="entry-hint-parent">Hugo入门使用
-    </h2>
-  </header>
-  <div class="entry-content">
-    <p>安装Hugo 不同系统环境安装命令：
-# Ubuntu 环境 ## apt方式。下载版本可能会旧一些 sudo apt update sudo apt install hugo ## deb包方式 uname -i # 64位：x86_64；32位：i686 sudo dpkg -i hugo*.deb # Mac 环境 brew install hugo 查看HUGO版本确认安装成功：
-hugo version 快速开始 可参考文档：Hugo快速入门
-hugo 创建站点： # 说明：my-site 是站点的名称 hugo new site my-site 创建完成后，站点目录 包含以下文件：
-. ├── archetypes/ │ └── default.md &lt;-- default.md是默认的博文模版 ├── assets/ &lt;-- 存放被 Hugo Pipes 处理的文件 ├── content/ &lt;-- 存放markdown文件作为博文内容 ├── data/ &lt;-- 存放 Hugo 处理的数据 ├── i18n/ ├── layouts/ ├── static/ &lt;-- 存放静态文件,例如 图片 CSS JS文件 ├── themes/ &lt;-- 存放不同的主题 └── config.yaml &lt;-- site configuration 创建文章 hugo new content/posts/hugo_intro.md # 指定模板创建内容 hugo new --kind &lt;template&gt; &lt;name&gt; 设置主题（子模块形式） git submodule add --depth=1 https://github.com/adityatelange/hugo-PaperMod.git themes/PaperMod git submodule update --init --recursive # needed when you reclone your repo (submodules may not get cloned automatically) # 重新clone，需要初始化子模块，等同于上面的复合命令 git submodule init git submodule update 这里使用的主题为：PaperMod
-...</p>
-  </div>
-  <footer class="entry-footer"><span title='2024-11-14 10:43:59 +0800 CST'>November 14, 2024</span>&nbsp;·&nbsp;2 min&nbsp;·&nbsp;342 words&nbsp;·&nbsp;夏天的小西瓜</footer>
-  <a class="entry-link" aria-label="post link to Hugo入门使用" href="/posts/hugo_intro/"></a>
-</article>
+<footer class="page-footer">
+  <nav class="pagination">
+    <a class="next" href="/categories/%E5%B7%A5%E5%85%B7/page/2/">Next&nbsp;&nbsp;»
+    </a>
+  </nav>
+</footer>
     </main>
     
 <footer class="footer">

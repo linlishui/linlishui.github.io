@@ -201,6 +201,25 @@ window.onload = () => {
 
 <article class="post-entry tag-entry"> 
   <header class="entry-header">
+    <h2 class="entry-hint-parent">Mac环境下iTerm2使用指南
+    </h2>
+  </header>
+  <div class="entry-content">
+    <p>概述 iTerm2 是 macOS 上常用的终端工具。相比系统自带 Terminal，它在分屏、标签页、搜索、复制粘贴、Profile 配置和会话体验上更适合长期开发使用。
+日常使用时，可以把终端工作流拆成三层：
+iTerm2：负责窗口、标签页、分屏、快捷键、复制、搜索等界面能力 Shell：负责命令解释，例如 zsh、bash tmux：负责终端会话复用，让远程任务和本地窗口解耦 结论很简单：本地临时任务优先用 iTerm2，远程和长期任务优先用 tmux。iTerm2 管入口和操作体验，tmux 管现场和恢复能力。
+基础使用 1. 标签页和窗口 标签页适合按项目或任务隔离上下文，不建议在同一个窗口里反复 cd 来回切换。
+快捷键 作用 Command &#43; T 新建标签页 Command &#43; W 关闭当前标签页或窗口 Command &#43; N 新建窗口 Command &#43; 数字 切换到指定标签页 Command &#43; Shift &#43; [ 切换到上一个标签页 Command &#43; Shift &#43; ] 切换到下一个标签页 Command &#43; Enter 全屏切换 常见标签页组织方式：
+api：后端服务 web：前端工程 log：日志观察 db：数据库命令 scratch：临时命令 2. 分屏 iTerm2 分屏适合短时间同时观察多个命令输出，例如一边运行服务，一边查看日志。
+快捷键 作用 Command &#43; D 垂直分屏 Command &#43; Shift &#43; D 水平分屏 Command &#43; [ 切换到上一个分屏 Command &#43; ] 切换到下一个分屏 示例：
+...</p>
+  </div>
+  <footer class="entry-footer"><span title='2026-06-30 16:08:33 +0800 CST'>June 30, 2026</span>&nbsp;·&nbsp;4 min&nbsp;·&nbsp;793 words&nbsp;·&nbsp;夏天的小西瓜</footer>
+  <a class="entry-link" aria-label="post link to Mac环境下iTerm2使用指南" href="/posts/tools/iterm2_on_mac/"></a>
+</article>
+
+<article class="post-entry tag-entry"> 
+  <header class="entry-header">
     <h2 class="entry-hint-parent">Mac 环境下使用 OrbStack 运行 Docker
     </h2>
   </header>

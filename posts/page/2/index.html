@@ -216,6 +216,30 @@ window.onload = () => {
 
 <article class="post-entry"> 
   <header class="entry-header">
+    <h2 class="entry-hint-parent">Python常用基础回顾
+    </h2>
+  </header>
+  <div class="entry-content">
+    <p>Python 是常用的动态类型脚本语言，这篇文章面向已经用过 Python、但想快速回顾常用基础写法的读者。
+变量与基础类型 Python 变量不需要先声明类型，直接赋值即可。
+name = &#34;Tom&#34; age = 18 price = 19.9 passed = True 常见基础类型有：
+str：字符串 int：整数 float：小数 bool：布尔值 NoneType：空值类型，对应 None 常见基础数据结构有：
+list：列表，有顺序、可修改 tuple：元组，有顺序、不可修改 set：集合，无序、不重复 dict：字典，键值对结构 如果想看变量类型，可以直接用 type()：
+name = &#34;Tom&#34; age = 18 # 查看变量运行时的实际类型 print(type(name)) print(type(age)) 实际开发里，大多数时候不用刻意写类型判断，但在调试阶段它很有用。
+1. Python 是动态类型语言 Python 是动态类型语言。
+变量本身不固定类型，类型跟当前保存的值有关。
+value = 10 # 当前是 int print(type(value)) value = &#34;hello&#34; # 同一个变量现在变成了 str print(type(value)) 同一个变量先保存整数、后保存字符串，在 Python 里是允许的。
+2. 变量可以是空值，也可能未定义 变量未定义时，直接访问会报错：
+print(name) # NameError 变量已经定义但当前没有值时，一般用 None 表示：
+name = None print(name) nickname = None # 用 is None 判断空值 if nickname is None: print(&#34;nickname is empty&#34;) None 就表示“现在没有值”。
+...</p>
+  </div>
+  <footer class="entry-footer"><span title='2026-04-11 00:40:23 +0800 CST'>April 11, 2026</span>&nbsp;·&nbsp;4 min&nbsp;·&nbsp;724 words&nbsp;·&nbsp;夏天的小西瓜</footer>
+  <a class="entry-link" aria-label="post link to Python常用基础回顾" href="/posts/python/python_intro/"></a>
+</article>
+
+<article class="post-entry"> 
+  <header class="entry-header">
     <h2 class="entry-hint-parent">Redis 基础用法
     </h2>
   </header>
@@ -382,27 +406,6 @@ public void setView(View view, WindowManager.LayoutParams attrs, View panelParen
   </div>
   <footer class="entry-footer"><span title='2025-05-14 13:10:56 +0800 CST'>May 14, 2025</span>&nbsp;·&nbsp;5 min&nbsp;·&nbsp;869 words&nbsp;·&nbsp;夏天的小西瓜</footer>
   <a class="entry-link" aria-label="post link to Android View工作流程" href="/posts/android/view_traversals/"></a>
-</article>
-
-<article class="post-entry"> 
-  <header class="entry-header">
-    <h2 class="entry-hint-parent">Android View基础知识
-    </h2>
-  </header>
-  <div class="entry-content">
-    <p>View是Android所有控件的基类，是一种界面层控件的抽象角色。在Android的设计中，ViewGroup也继承了View，这就意味着View本身就可以是单个控件也可以是由多个控件组成的一组控件，通过这种关系就形成了View树的结构。
-View位置参数 View的位置主要由它的四个顶点来决定，分别对应于View的四个属性：top、left、right、bottom，其中top是左上角纵坐标，left是左上角横坐标，right是右下角横坐标，bottom是右下角纵坐标。注意，这些坐标是相对于View的父容器来说的，它是一种相对坐标。
-View的宽高和坐标的关系：width = right -left; height = bottom - top;
-从Android3.0开始，View增加参数：x、y、translationX、translationY，其中x和y是View左上角的坐标，而translationX和translationY是View左上角相对于父容器的偏移量。这几个参数也是相对于父容器的坐标，并且translationX和translationY的默认值是0。
-这几个参数的换算关系如下：x = left &#43; translationX; y = top &#43; translationY;
-在View在平移的过程中，top和left是原始左上角的位置信息，不会发生改变。发生改变的是x、y、translationX和translationY这四个参数。
-MotionEvent和TouchSlop 在手指接触屏幕后产生的一系列事件，该事件对象是MotionEvent。
-下面是常用的事件类型：
-public final class MotionEvent extends InputEvent implements Parcelable { public static final int ACTION_MASK = 0xff; public static final int ACTION_DOWN = 0; public static final int ACTION_UP = 1; public static final int ACTION_MOVE = 2; public static final int ACTION_CANCEL = 3; public static final int ACTION_OUTSIDE = 4; public static final int ACTION_POINTER_DOWN = 5; public static final int ACTION_POINTER_UP = 6; ... } TouchSlop是系统所能识别出的被认为是滑动的最小距离。可以通过如下代码获取：ViewConfiguration. get(getContext()).getScaledTouchSlop()。当我们在处理滑动时，可以利用这个常量来做一些过滤，比如当两次滑动事件的滑动距离小于这个值，我们就可以认为未达到滑动距离的临界值，因此就可以认为它们不是滑动，这样做可以有更好的用户体验
-...</p>
-  </div>
-  <footer class="entry-footer"><span title='2025-05-13 15:11:46 +0800 CST'>May 13, 2025</span>&nbsp;·&nbsp;2 min&nbsp;·&nbsp;254 words&nbsp;·&nbsp;夏天的小西瓜</footer>
-  <a class="entry-link" aria-label="post link to Android View基础知识" href="/posts/android/view_basic/"></a>
 </article>
 <footer class="page-footer">
   <nav class="pagination">

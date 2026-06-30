@@ -6,8 +6,101 @@
     <description>Recent content on 缥缈夏鸢</description>
     <generator>Hugo -- 0.138.0</generator>
     <language>en-us</language>
-    <lastBuildDate>Tue, 30 Jun 2026 10:58:09 +0800</lastBuildDate>
+    <lastBuildDate>Tue, 30 Jun 2026 16:08:33 +0800</lastBuildDate>
     <atom:link href="/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Mac环境下iTerm2使用指南</title>
+      <link>/posts/tools/iterm2_on_mac/</link>
+      <pubDate>Tue, 30 Jun 2026 16:08:33 +0800</pubDate>
+      <guid>/posts/tools/iterm2_on_mac/</guid>
+      <description>&lt;h2 id=&#34;概述&#34;&gt;概述&lt;/h2&gt;
+&lt;p&gt;iTerm2 是 macOS 上常用的终端工具。相比系统自带 Terminal，它在分屏、标签页、搜索、复制粘贴、Profile 配置和会话体验上更适合长期开发使用。&lt;/p&gt;
+&lt;p&gt;日常使用时，可以把终端工作流拆成三层：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;iTerm2：负责窗口、标签页、分屏、快捷键、复制、搜索等界面能力&lt;/li&gt;
+&lt;li&gt;Shell：负责命令解释，例如 zsh、bash&lt;/li&gt;
+&lt;li&gt;tmux：负责终端会话复用，让远程任务和本地窗口解耦&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;结论很简单：本地临时任务优先用 iTerm2，远程和长期任务优先用 tmux。iTerm2 管入口和操作体验，tmux 管现场和恢复能力。&lt;/p&gt;
+&lt;h2 id=&#34;基础使用&#34;&gt;基础使用&lt;/h2&gt;
+&lt;h3 id=&#34;1-标签页和窗口&#34;&gt;1. 标签页和窗口&lt;/h3&gt;
+&lt;p&gt;标签页适合按项目或任务隔离上下文，不建议在同一个窗口里反复 &lt;code&gt;cd&lt;/code&gt; 来回切换。&lt;/p&gt;
+&lt;table&gt;
+  &lt;thead&gt;
+      &lt;tr&gt;
+          &lt;th&gt;快捷键&lt;/th&gt;
+          &lt;th&gt;作用&lt;/th&gt;
+      &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;Command + T&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;新建标签页&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;Command + W&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;关闭当前标签页或窗口&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;Command + N&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;新建窗口&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;Command + 数字&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;切换到指定标签页&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;Command + Shift + [&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;切换到上一个标签页&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;Command + Shift + ]&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;切换到下一个标签页&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;Command + Enter&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;全屏切换&lt;/td&gt;
+      &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;常见标签页组织方式：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;api&lt;/code&gt;：后端服务&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;web&lt;/code&gt;：前端工程&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;log&lt;/code&gt;：日志观察&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;db&lt;/code&gt;：数据库命令&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;scratch&lt;/code&gt;：临时命令&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;2-分屏&#34;&gt;2. 分屏&lt;/h3&gt;
+&lt;p&gt;iTerm2 分屏适合短时间同时观察多个命令输出，例如一边运行服务，一边查看日志。&lt;/p&gt;
+&lt;table&gt;
+  &lt;thead&gt;
+      &lt;tr&gt;
+          &lt;th&gt;快捷键&lt;/th&gt;
+          &lt;th&gt;作用&lt;/th&gt;
+      &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;Command + D&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;垂直分屏&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;Command + Shift + D&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;水平分屏&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;Command + [&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;切换到上一个分屏&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;Command + ]&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;切换到下一个分屏&lt;/td&gt;
+      &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;示例：&lt;/p&gt;</description>
+    </item>
     <item>
       <title>把 Android 交给 Agent：Google Android CLI 工程化实战指南</title>
       <link>/posts/android/android_cli_agent_deep_dive/</link>
