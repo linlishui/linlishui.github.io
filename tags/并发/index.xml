@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>并发 on 缥缈夏鸢</title>
+    <link>/tags/%E5%B9%B6%E5%8F%91/</link>
+    <description>Recent content in 并发 on 缥缈夏鸢</description>
+    <generator>Hugo -- 0.138.0</generator>
+    <language>en-us</language>
+    <lastBuildDate>Wed, 08 Jul 2026 11:58:58 +0800</lastBuildDate>
+    <atom:link href="/tags/%E5%B9%B6%E5%8F%91/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>面向Kotlin开发者的Swift基础入门</title>
+      <link>/posts/ios/swift_basic_for_kotlin_developers/</link>
+      <pubDate>Wed, 08 Jul 2026 11:58:58 +0800</pubDate>
+      <guid>/posts/ios/swift_basic_for_kotlin_developers/</guid>
+      <description>&lt;p&gt;Swift 是 Apple 平台开发的主要语言，常用于 iOS、macOS、watchOS 和 visionOS 应用开发。对已经熟悉 Kotlin 的开发者来说，Swift 的入门难点通常不在“变量、函数、条件判断”这些基础语法，而在几组容易误判的概念：&lt;code&gt;Optional&lt;/code&gt;、值类型、协议、闭包、错误处理和并发模型。&lt;/p&gt;
+&lt;p&gt;这篇文章不按零基础教程展开，而是从 Kotlin 开发者的视角，梳理 Swift 中最值得优先掌握的基础能力。&lt;/p&gt;
+&lt;h2 id=&#34;为什么-kotlin-开发者学-swift-不难&#34;&gt;为什么 Kotlin 开发者学 Swift 不难&lt;/h2&gt;
+&lt;p&gt;Kotlin 和 Swift 都是现代静态类型语言，很多设计目标相似：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;都支持类型推断&lt;/li&gt;
+&lt;li&gt;都强调空值安全&lt;/li&gt;
+&lt;li&gt;都有 lambda / closure&lt;/li&gt;
+&lt;li&gt;都支持泛型&lt;/li&gt;
+&lt;li&gt;都有扩展能力&lt;/li&gt;
+&lt;li&gt;都适合写简洁的业务代码&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;例如，Kotlin 中的 &lt;code&gt;val&lt;/code&gt;、&lt;code&gt;var&lt;/code&gt;：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-kotlin&#34; data-lang=&#34;kotlin&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;k&#34;&gt;val&lt;/span&gt; &lt;span class=&#34;py&#34;&gt;name&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;Tom&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;k&#34;&gt;var&lt;/span&gt; &lt;span class=&#34;py&#34;&gt;age&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;m&#34;&gt;18&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;n&#34;&gt;age&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;m&#34;&gt;19&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Swift 中对应的是 &lt;code&gt;let&lt;/code&gt;、&lt;code&gt;var&lt;/code&gt;：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-swift&#34; data-lang=&#34;swift&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;kd&#34;&gt;let&lt;/span&gt; &lt;span class=&#34;nv&#34;&gt;name&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;s&#34;&gt;&amp;#34;Tom&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;kd&#34;&gt;var&lt;/span&gt; &lt;span class=&#34;nv&#34;&gt;age&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;18&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;n&#34;&gt;age&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;19&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;从语法观感上看，两者差异不大。但 Swift 更强调值类型、协议组合和编译期约束，这些地方需要单独适应。&lt;/p&gt;
+&lt;h2 id=&#34;语法对照速查&#34;&gt;语法对照速查&lt;/h2&gt;
+&lt;p&gt;下面这张表可以作为初学 Swift 时的快速参照。&lt;/p&gt;
+&lt;table&gt;
+  &lt;thead&gt;
+      &lt;tr&gt;
+          &lt;th&gt;Kotlin&lt;/th&gt;
+          &lt;th&gt;Swift&lt;/th&gt;
+          &lt;th&gt;说明&lt;/th&gt;
+      &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;val&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;&lt;code&gt;let&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;不可重新赋值&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;var&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;&lt;code&gt;var&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;可以重新赋值&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;String?&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;&lt;code&gt;String?&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;可空 / 可选值&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;null&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;&lt;code&gt;nil&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;空值&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;?:&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;&lt;code&gt;??&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;空值默认值&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;fun&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;&lt;code&gt;func&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;函数声明&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;interface&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;&lt;code&gt;protocol&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;能力约束&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;class&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;&lt;code&gt;class&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;引用类型&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;data class&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;&lt;code&gt;struct&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;只能粗略类比，语义不同&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;lambda&lt;/td&gt;
+          &lt;td&gt;closure&lt;/td&gt;
+          &lt;td&gt;可传递代码块&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;suspend&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;&lt;code&gt;async&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;异步函数&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;try/catch&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;&lt;code&gt;do/try/catch&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;错误处理&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;Dispatchers.Main&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;&lt;code&gt;MainActor&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;只能类比，机制不同&lt;/td&gt;
+      &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;这张表只能帮助建立直觉，不能完全等价迁移。Swift 中有些概念和 Kotlin 看起来相似，但底层语义不同。&lt;/p&gt;</description>
+    </item>
+  </channel>
+</rss>

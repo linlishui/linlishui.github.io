@@ -203,6 +203,67 @@ window.onload = () => {
 
 <article class="post-entry"> 
   <header class="entry-header">
+    <h2 class="entry-hint-parent">Shell入门
+    </h2>
+  </header>
+  <div class="entry-content">
+    <p>概述 Shell 是操作系统的命令行解释器，是用户与操作系统内核交互的接口。常见的 Shell 类型包括：
+Bash：Linux 默认 Shell，功能丰富 Zsh：增强版 Shell，支持更多特性 入门 shell脚本基本结构
+#!/bin/bash # 脚本注释 echo &#34;Hello World&#34; 1. 参数 脚本参数小知识
+#!/bin/bash # 1. 位置参数 ## 脚本名: script.sh echo &#34;脚本名称: $0&#34; echo &#34;第一个参数: $1&#34; echo &#34;第二个参数: $2&#34; echo &#34;第三个参数: $3&#34; ## 使用方式: ./script.sh arg1 arg2 arg3 # 2. 特殊参数变量 echo &#34;参数总数: $#&#34; echo &#34;所有参数(作为单个字符串): $*&#34; echo &#34;所有参数(作为独立字符串): $@&#34; echo &#34;脚本进程ID: $$&#34; echo &#34;上一个命令退出状态: $?&#34; # 3. 参数检查 if [ $# -eq 0 ]; then echo &#34;用法: $0 &lt;文件名&gt; [选项]&#34; exit 1 fi if [ $# -lt 2 ]; then echo &#34;错误: 需要至少2个参数&#34; exit 1 fi # 4. 参数默认值 filename=${1:-&#34;default.txt&#34;} action=${2:-&#34;read&#34;} verbose=${3:-&#34;false&#34;} echo &#34;文件名: $filename&#34; echo &#34;操作: $action&#34; echo &#34;详细模式: $verbose&#34; 2. 变量 变量操作
+...</p>
+  </div>
+  <footer class="entry-footer"><span title='2025-07-07 20:28:24 +0800 CST'>July 7, 2025</span>&nbsp;·&nbsp;5 min&nbsp;·&nbsp;858 words&nbsp;·&nbsp;夏天的小西瓜</footer>
+  <a class="entry-link" aria-label="post link to Shell入门" href="/posts/tools/shell/"></a>
+</article>
+
+<article class="post-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">Vim基础使用
+    </h2>
+  </header>
+  <div class="entry-content">
+    <p>Vim基本操作 1. 移动光标 键位 含义 hjkl，方向键 移动一位，hjkl代表左、下、上、右 数字0 移至本行开头 ^ 移至本行第一个非空字符，匹配开头 $ 移至本行结尾，可以包含空格 w 移至下一单词或标点的开头 b 移至上一单词或标点开头 ctrl-f/PgDn 下翻一页 ctrl-b/PgUp 上翻一页 nG 移至第n行（n为数字） gg 光标移至第一行 G 光标移至最后一行 :n enter键 移至第n行 n&#43; 向下跳n行 n- 向上跳n行 H 移至当前屏幕的第一行 L 移至当前屏幕的最后一行 注意：许多vi的命令前面都可以缀上数字，前缀数字可以控制该命令执行的次数，比如5j可以使得光标向下移动5行
+2. 基本编辑 键位 含义 a 在当前字符后插入文本 A 在行尾插入文本 i 在当前字符前插入文本 I 在行首插入文本 o 当前行下方插入新行并进入插入模式 O 当前行上方插入新行并进入插入模式 3. 删除和撤销 键位 含义 x 删除当前字符（剪切） nx 向后删除当前行在内的n个字符（剪切） dd 删除（剪切）当前行 ndd 向下删除当前行在内的n行（剪切） u 撤销上一次操作 nu 撤销n次操作 U 撤销对当前行的所有操作 结合光标移动以及这里的删除和撤销，可以组合命令。如：dG，代表删除当前行到文件末尾（剪切）
+...</p>
+  </div>
+  <footer class="entry-footer"><span title='2025-05-30 14:41:49 +0800 CST'>May 30, 2025</span>&nbsp;·&nbsp;1 min&nbsp;·&nbsp;168 words&nbsp;·&nbsp;夏天的小西瓜</footer>
+  <a class="entry-link" aria-label="post link to Vim基础使用" href="/posts/tools/vim/"></a>
+</article>
+
+<article class="post-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">NestedScrolling机制基础篇
+    </h2>
+  </header>
+  <div class="entry-content">
+    <p>NestedScrollingChild 1. 接口版本对比 接口名称 引入版本 核心改进 NestedScrollingChild Support 23.1 基础嵌套滚动功能 NestedScrollingChild2 Support 25.0 增加滚动类型（Touch/Fling）区分 NestedScrollingChild3 AndroidX 支持 NestedScrollingParent3 的扩展方法 2. 接口方法列表 NestedScrollingChild接口方法：
+public interface NestedScrollingChild { // 启用/禁用嵌套滚动 void setNestedScrollingEnabled(boolean enabled); boolean isNestedScrollingEnabled(); // 启动/停止嵌套滚动 boolean startNestedScroll(@ScrollAxis int axes); void stopNestedScroll(); // 检查是否存在嵌套滚动父级 boolean hasNestedScrollingParent(); // 分发滚动事件 boolean dispatchNestedPreScroll(int dx, int dy, @Nullable int[] consumed, @Nullable int[] offsetInWindow); boolean dispatchNestedScroll(int dxConsumed, int dyConsumed, int dxUnconsumed, int dyUnconsumed, @Nullable int[] offsetInWindow); // 处理惯性滚动 boolean dispatchNestedPreFling(float velocityX, float velocityY); boolean dispatchNestedFling(float velocityX, float velocityY, boolean consumed); } NestedScrollingChild2接口方法：
+...</p>
+  </div>
+  <footer class="entry-footer"><span title='2025-05-14 14:30:22 +0800 CST'>May 14, 2025</span>&nbsp;·&nbsp;3 min&nbsp;·&nbsp;625 words&nbsp;·&nbsp;夏天的小西瓜</footer>
+  <a class="entry-link" aria-label="post link to NestedScrolling机制基础篇" href="/posts/android/nested_scroll_basic/"></a>
+</article>
+
+<article class="post-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">Android View工作流程
+    </h2>
+  </header>
+  <div class="entry-content">
+    <p>概述 在Android的知识体系中，View扮演着很重要的角色，简单来理解，View是Android里Window的表现形式。
+ViewRootImpl在整个View体系中起着中流砥柱的作用，它是控件树正常运作的动力所在，主要功能有：
+连接WindowManager和DecorView的纽带； 向DecorView分发输入事件； 完成View的绘制(measure，layout，draw)； 负责与WMS交互通信，调整窗口大小及布局。 View工作流程 1. ViewRootImpl.setView 在WindowManagerGlobal.addView方法中，会创建ViewRootImpl对象，并通过setView方法将DecorView对象和WindowManager.LayoutParams等参数传入。View流程相关的代码如下：
+public void setView(View view, WindowManager.LayoutParams attrs, View panelParentView) { ... mView = view; mWindowAttributes.copyFrom(attrs); ... mAdded = true; requestLayout(); ... } 通过内部的requestLayout()方法开启View的工作流程。
+2. ViewRootImpl.requestLayout @Override public void requestLayout() { if (!mHandlingLayoutInLayoutRequest) { // 检查线程对象，调用方若不在当前ViewRootImpl线程将会出错 checkThread(); mLayoutRequested = true; // 计划执行遍历任务 scheduleTraversals(); } } void checkThread() { if (mThread != Thread.currentThread()) { throw new CalledFromWrongThreadException( &#34;Only the original thread that created a view hierarchy&#34; &#43; &#34;can touch its views.&#34;); } } 这里需要说明的是，View的工作流程是在创建ViewRootImpl的线程中运行的，而ViewRootImpl是在主线程被创建的！
+...</p>
+  </div>
+  <footer class="entry-footer"><span title='2025-05-14 13:10:56 +0800 CST'>May 14, 2025</span>&nbsp;·&nbsp;5 min&nbsp;·&nbsp;869 words&nbsp;·&nbsp;夏天的小西瓜</footer>
+  <a class="entry-link" aria-label="post link to Android View工作流程" href="/posts/android/view_traversals/"></a>
+</article>
+
+<article class="post-entry"> 
+  <header class="entry-header">
     <h2 class="entry-hint-parent">Android View基础知识
     </h2>
   </header>
@@ -327,27 +388,12 @@ adb logcat -b events：输出指定buffer的log adb logcat -s “ActivityManager
   <footer class="entry-footer"><span title='2024-11-15 14:20:18 +0800 CST'>November 15, 2024</span>&nbsp;·&nbsp;6 min&nbsp;·&nbsp;1158 words&nbsp;·&nbsp;夏天的小西瓜</footer>
   <a class="entry-link" aria-label="post link to adb日常使用" href="/posts/tools/adb/"></a>
 </article>
-
-<article class="post-entry"> 
-  <header class="entry-header">
-    <h2 class="entry-hint-parent">Hugo入门使用
-    </h2>
-  </header>
-  <div class="entry-content">
-    <p>安装Hugo 不同系统环境安装命令：
-# Ubuntu 环境 ## apt方式。下载版本可能会旧一些 sudo apt update sudo apt install hugo ## deb包方式 uname -i # 64位：x86_64；32位：i686 sudo dpkg -i hugo*.deb # Mac 环境 brew install hugo 查看HUGO版本确认安装成功：
-hugo version 快速开始 可参考文档：Hugo快速入门
-hugo 创建站点： # 说明：my-site 是站点的名称 hugo new site my-site 创建完成后，站点目录 包含以下文件：
-. ├── archetypes/ │ └── default.md &lt;-- default.md是默认的博文模版 ├── assets/ &lt;-- 存放被 Hugo Pipes 处理的文件 ├── content/ &lt;-- 存放markdown文件作为博文内容 ├── data/ &lt;-- 存放 Hugo 处理的数据 ├── i18n/ ├── layouts/ ├── static/ &lt;-- 存放静态文件,例如 图片 CSS JS文件 ├── themes/ &lt;-- 存放不同的主题 └── config.yaml &lt;-- site configuration 创建文章 hugo new content/posts/hugo_intro.md # 指定模板创建内容 hugo new --kind &lt;template&gt; &lt;name&gt; 设置主题（子模块形式） git submodule add --depth=1 https://github.com/adityatelange/hugo-PaperMod.git themes/PaperMod git submodule update --init --recursive # needed when you reclone your repo (submodules may not get cloned automatically) # 重新clone，需要初始化子模块，等同于上面的复合命令 git submodule init git submodule update 这里使用的主题为：PaperMod
-...</p>
-  </div>
-  <footer class="entry-footer"><span title='2024-11-14 10:43:59 +0800 CST'>November 14, 2024</span>&nbsp;·&nbsp;2 min&nbsp;·&nbsp;342 words&nbsp;·&nbsp;夏天的小西瓜</footer>
-  <a class="entry-link" aria-label="post link to Hugo入门使用" href="/posts/hugo_intro/"></a>
-</article>
 <footer class="page-footer">
   <nav class="pagination">
     <a class="prev" href="/page/2/">
       «&nbsp;Prev&nbsp;
+    </a>
+    <a class="next" href="/page/4/">Next&nbsp;&nbsp;»
     </a>
   </nav>
 </footer>

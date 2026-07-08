@@ -1,0 +1,1125 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>SwiftUI列表与导航基础 | 缥缈夏鸢</title>
+<meta name="keywords" content="SwiftUI, List, NavigationStack, iOS">
+<meta name="description" content="上一篇 SwiftUI 文章重点讲“状态驱动界面”。这篇继续往实际页面推进，聚焦两个最常见的能力：列表和导航。
+大多数 App 都离不开这类页面：展示一组数据，点击某一项进入详情页。SwiftUI 中对应的核心组件是 List、ForEach、NavigationStack 和 NavigationLink。
+这篇文章的目标不是罗列所有 API，而是写清楚一条常见数据流：
+ViewModel 加载数据 -&gt; View 根据状态切换 UI -&gt; List 渲染数据 -&gt; NavigationLink 进入详情
+数据模型与稳定 id
+列表页面首先需要一个数据模型。比如文章列表：
+struct Article: Identifiable, Hashable {
+    let id: UUID
+    let title: String
+    let summary: String
+    let author: String
+}
+这里同时遵守了两个协议：
+
+Identifiable：让 List 能识别每一项
+Hashable：后面做基于值的导航时会用到
+
+Identifiable 很重要。SwiftUI 需要通过稳定的 id 判断哪些行被新增、删除或更新。
+如果数据来自服务端，通常应该直接使用服务端返回的业务 id：
+struct Article: Identifiable, Hashable {
+    let id: String
+    let title: String
+    let summary: String
+}
+不要随手用数组下标当作长期稳定 id。插入、删除、排序后，下标会变化，容易导致列表刷新异常。
+用 List 展示集合数据
+一个最小列表可以这样写：
+struct ArticleListView: View {
+    let articles: [Article]
+
+    var body: some View {
+        List(articles) { article in
+            Text(article.title)
+        }
+    }
+}
+这段代码表达的是：对 articles 中的每个元素生成一行 View。
+如果列表结构很简单，List(items) { item in ... } 就够了。">
+<meta name="author" content="夏天的小西瓜">
+<link rel="canonical" href="/posts/ios/swiftui_list_navigation_basic/">
+<meta name="google-site-verification" content="XYZabc">
+<meta name="msvalidate.01" content="XYZabc">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.44278f16c6e7e77192a15a0565fb5b0f220c56128442fcfa6937b4d84456ecf0.css" integrity="sha256-RCePFsbn53GSoVoFZftbDyIMVhKEQvz6aTe02ERW7PA=" rel="preload stylesheet" as="style">
+<link rel="icon" href="/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="mask-icon" href="/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="en" href="/posts/ios/swiftui_list_navigation_basic/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-track {
+                background: 0 0;
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-thumb {
+                border-color: var(--theme);
+            }
+        }
+
+    </style>
+</noscript><script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+<script>
+
+const config = {
+    startOnLoad: true,
+    theme: "base",
+    themeVariables: {
+        primaryColor: "#f8fafc",
+        primaryTextColor: "#111827",
+        primaryBorderColor: "#6b7280",
+        lineColor: "#6b7280",
+        secondaryColor: "#eef2ff",
+        secondaryTextColor: "#111827",
+        secondaryBorderColor: "#6b7280",
+        tertiaryColor: "#f1f5f9",
+        tertiaryTextColor: "#111827",
+        tertiaryBorderColor: "#6b7280",
+        edgeLabelBackground: "#f8fafc",
+        clusterBkg: "#f8fafc",
+        clusterBorder: "#6b7280",
+        noteBkgColor: "#fef3c7",
+        noteTextColor: "#111827",
+        noteBorderColor: "#6b7280"
+    },
+    flowchart: {
+        useMaxWidth: false,
+        htmlLabels: true
+    }
+};
+mermaid.initialize(config);
+
+
+window.onload = () => {
+    window.mermaid.init(undefined, document.querySelectorAll('.language-mermaid'));
+}
+</script>
+<meta property="og:url" content="/posts/ios/swiftui_list_navigation_basic/">
+  <meta property="og:site_name" content="缥缈夏鸢">
+  <meta property="og:title" content="SwiftUI列表与导航基础">
+  <meta property="og:description" content="上一篇 SwiftUI 文章重点讲“状态驱动界面”。这篇继续往实际页面推进，聚焦两个最常见的能力：列表和导航。
+大多数 App 都离不开这类页面：展示一组数据，点击某一项进入详情页。SwiftUI 中对应的核心组件是 List、ForEach、NavigationStack 和 NavigationLink。
+这篇文章的目标不是罗列所有 API，而是写清楚一条常见数据流：
+ViewModel 加载数据 -&gt; View 根据状态切换 UI -&gt; List 渲染数据 -&gt; NavigationLink 进入详情 数据模型与稳定 id 列表页面首先需要一个数据模型。比如文章列表：
+struct Article: Identifiable, Hashable { let id: UUID let title: String let summary: String let author: String } 这里同时遵守了两个协议：
+Identifiable：让 List 能识别每一项 Hashable：后面做基于值的导航时会用到 Identifiable 很重要。SwiftUI 需要通过稳定的 id 判断哪些行被新增、删除或更新。
+如果数据来自服务端，通常应该直接使用服务端返回的业务 id：
+struct Article: Identifiable, Hashable { let id: String let title: String let summary: String } 不要随手用数组下标当作长期稳定 id。插入、删除、排序后，下标会变化，容易导致列表刷新异常。
+用 List 展示集合数据 一个最小列表可以这样写：
+struct ArticleListView: View { let articles: [Article] var body: some View { List(articles) { article in Text(article.title) } } } 这段代码表达的是：对 articles 中的每个元素生成一行 View。
+如果列表结构很简单，List(items) { item in ... } 就够了。">
+  <meta property="og:locale" content="en-us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2026-07-08T14:20:30+08:00">
+    <meta property="article:modified_time" content="2026-07-08T14:20:30+08:00">
+    <meta property="article:tag" content="SwiftUI">
+    <meta property="article:tag" content="List">
+    <meta property="article:tag" content="NavigationStack">
+    <meta property="article:tag" content="IOS">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="SwiftUI列表与导航基础">
+<meta name="twitter:description" content="上一篇 SwiftUI 文章重点讲“状态驱动界面”。这篇继续往实际页面推进，聚焦两个最常见的能力：列表和导航。
+大多数 App 都离不开这类页面：展示一组数据，点击某一项进入详情页。SwiftUI 中对应的核心组件是 List、ForEach、NavigationStack 和 NavigationLink。
+这篇文章的目标不是罗列所有 API，而是写清楚一条常见数据流：
+ViewModel 加载数据 -&gt; View 根据状态切换 UI -&gt; List 渲染数据 -&gt; NavigationLink 进入详情
+数据模型与稳定 id
+列表页面首先需要一个数据模型。比如文章列表：
+struct Article: Identifiable, Hashable {
+    let id: UUID
+    let title: String
+    let summary: String
+    let author: String
+}
+这里同时遵守了两个协议：
+
+Identifiable：让 List 能识别每一项
+Hashable：后面做基于值的导航时会用到
+
+Identifiable 很重要。SwiftUI 需要通过稳定的 id 判断哪些行被新增、删除或更新。
+如果数据来自服务端，通常应该直接使用服务端返回的业务 id：
+struct Article: Identifiable, Hashable {
+    let id: String
+    let title: String
+    let summary: String
+}
+不要随手用数组下标当作长期稳定 id。插入、删除、排序后，下标会变化，容易导致列表刷新异常。
+用 List 展示集合数据
+一个最小列表可以这样写：
+struct ArticleListView: View {
+    let articles: [Article]
+
+    var body: some View {
+        List(articles) { article in
+            Text(article.title)
+        }
+    }
+}
+这段代码表达的是：对 articles 中的每个元素生成一行 View。
+如果列表结构很简单，List(items) { item in ... } 就够了。">
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Posts",
+      "item": "/posts/"
+    }
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "SwiftUI列表与导航基础",
+      "item": "/posts/ios/swiftui_list_navigation_basic/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "SwiftUI列表与导航基础",
+  "name": "SwiftUI列表与导航基础",
+  "description": "上一篇 SwiftUI 文章重点讲“状态驱动界面”。这篇继续往实际页面推进，聚焦两个最常见的能力：列表和导航。\n大多数 App 都离不开这类页面：展示一组数据，点击某一项进入详情页。SwiftUI 中对应的核心组件是 List、ForEach、NavigationStack 和 NavigationLink。\n这篇文章的目标不是罗列所有 API，而是写清楚一条常见数据流：\nViewModel 加载数据 -\u0026gt; View 根据状态切换 UI -\u0026gt; List 渲染数据 -\u0026gt; NavigationLink 进入详情 数据模型与稳定 id 列表页面首先需要一个数据模型。比如文章列表：\nstruct Article: Identifiable, Hashable { let id: UUID let title: String let summary: String let author: String } 这里同时遵守了两个协议：\nIdentifiable：让 List 能识别每一项 Hashable：后面做基于值的导航时会用到 Identifiable 很重要。SwiftUI 需要通过稳定的 id 判断哪些行被新增、删除或更新。\n如果数据来自服务端，通常应该直接使用服务端返回的业务 id：\nstruct Article: Identifiable, Hashable { let id: String let title: String let summary: String } 不要随手用数组下标当作长期稳定 id。插入、删除、排序后，下标会变化，容易导致列表刷新异常。\n用 List 展示集合数据 一个最小列表可以这样写：\nstruct ArticleListView: View { let articles: [Article] var body: some View { List(articles) { article in Text(article.title) } } } 这段代码表达的是：对 articles 中的每个元素生成一行 View。\n如果列表结构很简单，List(items) { item in ... } 就够了。\n",
+  "keywords": [
+    "SwiftUI", "List", "NavigationStack", "iOS"
+  ],
+  "articleBody": "上一篇 SwiftUI 文章重点讲“状态驱动界面”。这篇继续往实际页面推进，聚焦两个最常见的能力：列表和导航。\n大多数 App 都离不开这类页面：展示一组数据，点击某一项进入详情页。SwiftUI 中对应的核心组件是 List、ForEach、NavigationStack 和 NavigationLink。\n这篇文章的目标不是罗列所有 API，而是写清楚一条常见数据流：\nViewModel 加载数据 -\u003e View 根据状态切换 UI -\u003e List 渲染数据 -\u003e NavigationLink 进入详情 数据模型与稳定 id 列表页面首先需要一个数据模型。比如文章列表：\nstruct Article: Identifiable, Hashable { let id: UUID let title: String let summary: String let author: String } 这里同时遵守了两个协议：\nIdentifiable：让 List 能识别每一项 Hashable：后面做基于值的导航时会用到 Identifiable 很重要。SwiftUI 需要通过稳定的 id 判断哪些行被新增、删除或更新。\n如果数据来自服务端，通常应该直接使用服务端返回的业务 id：\nstruct Article: Identifiable, Hashable { let id: String let title: String let summary: String } 不要随手用数组下标当作长期稳定 id。插入、删除、排序后，下标会变化，容易导致列表刷新异常。\n用 List 展示集合数据 一个最小列表可以这样写：\nstruct ArticleListView: View { let articles: [Article] var body: some View { List(articles) { article in Text(article.title) } } } 这段代码表达的是：对 articles 中的每个元素生成一行 View。\n如果列表结构很简单，List(items) { item in ... } 就够了。\n如果列表中还有分组、头部、静态项混排，通常显式使用 ForEach：\nList { Section(\"文章\") { ForEach(articles) { article in Text(article.title) } } Section(\"操作\") { Button(\"刷新\") { print(\"reload\") } } } 入门阶段可以先这样判断：\n简单数据列表：List(items) { item in ... } 分组、头部、静态项混排：List { Section { ForEach(...) } } 拆分列表行 View 真实页面里，一行通常不只是一个标题。可以把行拆成单独的 View。\nstruct ArticleRowView: View { let article: Article var body: some View { VStack(alignment: .leading, spacing: 6) { Text(article.title) .font(.headline) .lineLimit(1) Text(article.summary) .font(.subheadline) .foregroundStyle(.secondary) .lineLimit(2) Text(article.author) .font(.caption) .foregroundStyle(.secondary) } .padding(.vertical, 4) } } 列表中使用：\nList(articles) { article in ArticleRowView(article: article) } 拆出行 View 的好处是列表页面更清楚，行样式也更容易复用和预览。\n处理加载、错误和空状态 列表页面不是只有“有数据”这一种状态。常见状态至少有四类：\n加载中 加载失败 空列表 有数据 可以先用一个 ViewModel 管理这些状态：\n@MainActor final class ArticleListViewModel: ObservableObject { @Published var articles: [Article] = [] @Published var isLoading = false @Published var errorMessage: String? func load() async { isLoading = true errorMessage = nil do { articles = [ Article( id: UUID(), title: \"SwiftUI 列表基础\", summary: \"学习 List、ForEach 和列表行拆分\", author: \"Tom\" ), Article( id: UUID(), title: \"SwiftUI 导航基础\", summary: \"学习 NavigationStack 和 NavigationLink\", author: \"Jerry\" ) ] } catch { errorMessage = \"加载文章失败\" } isLoading = false } } 页面根据状态切换 UI：\nstruct ArticleListContentView: View { let isLoading: Bool let errorMessage: String? let articles: [Article] var body: some View { Group { if isLoading { ProgressView() } else if let message = errorMessage { ContentUnavailableView(message, systemImage: \"exclamationmark.triangle\") } else if articles.isEmpty { ContentUnavailableView(\"暂无文章\", systemImage: \"doc.text\") } else { List(articles) { article in ArticleRowView(article: article) } } } } } 不要把空状态硬塞成列表中的一行。空状态、错误状态和加载状态通常是页面状态，不是列表数据本身。\n用 NavigationStack 建立导航容器 NavigationStack 是 SwiftUI 中管理页面跳转的常用容器。它表示一个导航栈：从列表页进入详情页，再从详情页返回列表页。\nstruct ArticleListPage: View { let articles: [Article] var body: some View { NavigationStack { List(articles) { article in ArticleRowView(article: article) } .navigationTitle(\"文章\") } } } navigationTitle 设置当前页面标题。通常每个需要导航栏标题的页面都应该设置它。\n新代码建议优先使用 NavigationStack。老项目里可能还会看到 NavigationView，它是较早的导航 API。维护旧代码时需要认识它，但新写 SwiftUI 页面时可以优先从 NavigationStack 开始。\n用 NavigationLink 进入详情页 先定义一个详情页：\nstruct ArticleDetailView: View { let article: Article var body: some View { ScrollView { VStack(alignment: .leading, spacing: 12) { Text(article.title) .font(.title) .bold() Text(article.author) .font(.subheadline) .foregroundStyle(.secondary) Divider() Text(article.summary) .font(.body) } .padding() } .navigationTitle(\"详情\") } } 在列表中使用 NavigationLink：\nNavigationStack { List(articles) { article in NavigationLink { ArticleDetailView(article: article) } label: { ArticleRowView(article: article) } } .navigationTitle(\"文章\") } 这里的 NavigationLink 同时描述了两件事：\n当前列表行展示什么 点击后跳到哪个详情页面 这种写法适合简单列表详情页，直观、代码少。\n基于值的导航 页面复杂后，可以使用基于值的导航，把“点击了什么值”和“这个值对应哪个页面”分开。\nNavigationStack { List(articles) { article in NavigationLink(value: article) { ArticleRowView(article: article) } } .navigationDestination(for: Article.self) { article in ArticleDetailView(article: article) } .navigationTitle(\"文章\") } 这种写法有两个特点：\nNavigationLink(value:) 只负责把某个值放进导航系统 navigationDestination(for:) 统一声明这种值应该跳到哪个页面 如果页面里有多种跳转目标，这种方式会更清楚。\n.navigationDestination(for: Article.self) { article in ArticleDetailView(article: article) } .navigationDestination(for: Author.self) { author in AuthorDetailView(author: author) } 入门阶段可以先这样判断：\n简单列表跳详情：直接在 NavigationLink 中写目标 View 多种目标页、复杂路径：使用 value + navigationDestination 一个完整的列表详情页示例 把前面的内容组合起来，一个完整的列表详情页大致如下。\nimport SwiftUI struct Article: Identifiable, Hashable { let id: UUID let title: String let summary: String let author: String } @MainActor final class ArticleListViewModel: ObservableObject { @Published var articles: [Article] = [] @Published var isLoading = false @Published var errorMessage: String? func load() async { isLoading = true errorMessage = nil do { articles = [ Article( id: UUID(), title: \"SwiftUI 列表基础\", summary: \"学习 List、ForEach 和列表行拆分\", author: \"Tom\" ), Article( id: UUID(), title: \"SwiftUI 导航基础\", summary: \"学习 NavigationStack 和 NavigationLink\", author: \"Jerry\" ) ] } catch { errorMessage = \"加载文章失败\" } isLoading = false } } struct ArticleListPage: View { @StateObject private var viewModel = ArticleListViewModel() var body: some View { NavigationStack { Group { if viewModel.isLoading { ProgressView() } else if let message = viewModel.errorMessage { ContentUnavailableView(message, systemImage: \"exclamationmark.triangle\") } else if viewModel.articles.isEmpty { ContentUnavailableView(\"暂无文章\", systemImage: \"doc.text\") } else { List(viewModel.articles) { article in NavigationLink(value: article) { ArticleRowView(article: article) } } } } .navigationTitle(\"文章\") .navigationDestination(for: Article.self) { article in ArticleDetailView(article: article) } .task { await viewModel.load() } } } } struct ArticleRowView: View { let article: Article var body: some View { VStack(alignment: .leading, spacing: 6) { Text(article.title) .font(.headline) .lineLimit(1) Text(article.summary) .font(.subheadline) .foregroundStyle(.secondary) .lineLimit(2) Text(article.author) .font(.caption) .foregroundStyle(.secondary) } .padding(.vertical, 4) } } struct ArticleDetailView: View { let article: Article var body: some View { ScrollView { VStack(alignment: .leading, spacing: 12) { Text(article.title) .font(.title) .bold() Text(article.author) .font(.subheadline) .foregroundStyle(.secondary) Divider() Text(article.summary) .font(.body) } .padding() } .navigationTitle(\"详情\") } } 这段代码串起了完整流程：\nViewModel 加载 articles -\u003e ArticleListPage 根据状态显示加载、空状态或列表 -\u003e List 渲染 ArticleRowView -\u003e NavigationLink(value:) 进入 ArticleDetailView 下拉刷新与分页加载 列表页通常还会遇到刷新和分页。\n下拉刷新可以使用 .refreshable：\nList(viewModel.articles) { article in NavigationLink(value: article) { ArticleRowView(article: article) } } .refreshable { await viewModel.load() } 首次进入页面加载，可以使用 .task：\n.task { await viewModel.load() } 分页加载通常在某一行出现时触发：\nList(viewModel.articles) { article in ArticleRowView(article: article) .onAppear { if article == viewModel.articles.last { Task { await viewModel.loadMore() } } } } 这里没有展开完整分页实现，因为真实分页还需要处理 page、hasMore、isLoadingMore、重复请求保护和错误重试。入门阶段先理解触发位置即可。\n删除与移动 SwiftUI 的 List 支持常见编辑操作，比如删除。\nstruct Todo: Identifiable { let id: UUID var title: String } struct TodoListView: View { @State private var todos: [Todo] = [ Todo(id: UUID(), title: \"学习 SwiftUI\"), Todo(id: UUID(), title: \"写一个列表页面\") ] var body: some View { List { ForEach(todos) { todo in Text(todo.title) } .onDelete { offsets in todos.remove(atOffsets: offsets) } } .toolbar { EditButton() } } } 移动列表项：\nList { ForEach(todos) { todo in Text(todo.title) } .onMove { source, destination in todos.move(fromOffsets: source, toOffset: destination) } } 这类操作适合本地数据或已经有明确更新逻辑的业务数据。真实项目里删除后通常还要同步服务端，并处理失败回滚。\n程序化导航 有些跳转不是用户点击某一行触发的，比如登录成功后进入首页、保存成功后进入详情。这时可以用 NavigationPath 管理导航路径。\nstruct ArticleHomeView: View { @State private var path = NavigationPath() let articles: [Article] var body: some View { NavigationStack(path: $path) { List(articles) { article in Button(article.title) { path.append(article) } } .navigationDestination(for: Article.self) { article in ArticleDetailView(article: article) } .navigationTitle(\"文章\") } } } path.append(article) 表示向导航栈中压入一个页面。返回时，系统会从路径中移除对应项。\n入门阶段不需要一开始就使用 NavigationPath。如果只是列表点击进详情，优先使用 NavigationLink。\n常见误区 1. 列表项没有稳定 id 不要为了省事用数组下标当作长期稳定 id。数据插入、删除或排序后，下标会变化，可能导致列表刷新异常。\n更推荐模型本身提供稳定标识：\nstruct Article: Identifiable { let id: UUID let title: String } 2. 把所有逻辑都写进 List List 只应该负责展示列表结构。加载、错误、空状态、数据请求更适合放在外层状态判断或 ViewModel 中。\n3. 每一行写得太复杂 如果列表行超过十几行代码，就应该考虑拆成独立 View。列表页重点是组织数据流和导航关系，不应该被行样式淹没。\n4. 滥用 NavigationPath NavigationPath 适合程序化导航和复杂路径管理。普通列表跳详情，用 NavigationLink 就够了。过早引入路径管理，会让入门代码变复杂。\n5. 忘记 NavigationStack NavigationLink 通常需要放在 NavigationStack 中才能得到完整的导航行为和标题栏。列表页如果需要跳转，先检查外层是否有 NavigationStack。\n6. 在 onAppear 中重复触发分页 列表行的 onAppear 可能触发多次。分页时一定要在 ViewModel 里加 isLoadingMore 或 hasMore 判断，避免重复请求。\n和 Jetpack Compose 的类比 如果有 Compose 经验，可以先这样建立直觉：\nJetpack Compose SwiftUI 说明 LazyColumn List / LazyVStack 展示集合数据 items(...) ForEach 遍历数据生成行 NavHost NavigationStack 导航容器 composable(route) navigationDestination 定义目标页面 navController.navigate(...) NavigationPath.append(...) 程序化跳转 rememberNavController() @State NavigationPath 持有导航状态 这个类比只适合帮助理解，不要直接照搬。SwiftUI 更强调通过值和类型声明导航目标，Compose 更多围绕 route 和 NavController 组织导航。\n小结 SwiftUI 列表和导航的入门重点可以压缩成几句话：\n用 List 展示集合数据 用 Identifiable 提供稳定 id 用独立 View 拆分复杂列表行 用状态区分加载、错误、空数据和正常列表 用 NavigationStack 管理导航层级 用 NavigationLink 完成普通列表到详情的跳转 复杂程序化跳转再考虑 NavigationPath 刷新和分页要注意重复触发与状态保护 掌握这些之后，就可以写出大多数常见的列表详情页。后续再继续深入搜索、分页加载、筛选、编辑模式和多级导航。\n",
+  "wordCount" : "1060",
+  "inLanguage": "en",
+  "datePublished": "2026-07-08T14:20:30+08:00",
+  "dateModified": "2026-07-08T14:20:30+08:00",
+  "author":[{
+    "@type": "Person",
+    "name": "夏天的小西瓜"
+  }],
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "/posts/ios/swiftui_list_navigation_basic/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "缥缈夏鸢",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "/favicon.ico"
+    }
+  }
+}
+</script>
+</head>
+
+<body class="" id="top">
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.body.classList.add('dark');
+    } else if (localStorage.getItem("pref-theme") === "light") {
+        document.body.classList.remove('dark')
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.body.classList.add('dark');
+    }
+
+</script>
+
+<header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="/" accesskey="h" title="缥缈夏鸢 (Alt + H)">缥缈夏鸢</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" accesskey="t" title="(Alt + T)">
+                    <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu">
+            <li>
+                <a href="/" title="首页">
+                    <span>首页</span>
+                </a>
+            </li>
+            <li>
+                <a href="/posts/" title="文章">
+                    <span>文章</span>
+                </a>
+            </li>
+            <li>
+                <a href="/categories/" title="分类">
+                    <span>分类</span>
+                </a>
+            </li>
+            <li>
+                <a href="/tags/" title="标签">
+                    <span>标签</span>
+                </a>
+            </li>
+            <li>
+                <a href="/archives/" title="归档">
+                    <span>归档</span>
+                </a>
+            </li>
+            <li>
+                <a href="/search/" title="搜索">
+                    <span>搜索</span>
+                </a>
+            </li>
+            <li>
+                <a href="/about/" title="关于">
+                    <span>关于</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <div class="breadcrumbs"><a href="/">Home</a>&nbsp;»&nbsp;<a href="/posts/">Posts</a></div>
+    <h1 class="post-title entry-hint-parent">
+      SwiftUI列表与导航基础
+    </h1>
+    <div class="post-meta"><span title='2026-07-08 14:20:30 +0800 CST'>July 8, 2026</span>&nbsp;·&nbsp;5 min&nbsp;·&nbsp;1060 words&nbsp;·&nbsp;夏天的小西瓜
+
+</div>
+  </header> <aside id="toc-container" class="toc-container wide">
+    <div class="toc">
+        <details  open>
+            <summary accesskey="c" title="(Alt + C)">
+                <span class="details">Table of Contents</span>
+            </summary>
+
+            <div class="inner"><ul>
+                    <li>
+                        <a href="#%e6%95%b0%e6%8d%ae%e6%a8%a1%e5%9e%8b%e4%b8%8e%e7%a8%b3%e5%ae%9a-id" aria-label="数据模型与稳定 id">数据模型与稳定 id</a></li>
+                    <li>
+                        <a href="#%e7%94%a8-list-%e5%b1%95%e7%a4%ba%e9%9b%86%e5%90%88%e6%95%b0%e6%8d%ae" aria-label="用 List 展示集合数据">用 List 展示集合数据</a></li>
+                    <li>
+                        <a href="#%e6%8b%86%e5%88%86%e5%88%97%e8%a1%a8%e8%a1%8c-view" aria-label="拆分列表行 View">拆分列表行 View</a></li>
+                    <li>
+                        <a href="#%e5%a4%84%e7%90%86%e5%8a%a0%e8%bd%bd%e9%94%99%e8%af%af%e5%92%8c%e7%a9%ba%e7%8a%b6%e6%80%81" aria-label="处理加载、错误和空状态">处理加载、错误和空状态</a></li>
+                    <li>
+                        <a href="#%e7%94%a8-navigationstack-%e5%bb%ba%e7%ab%8b%e5%af%bc%e8%88%aa%e5%ae%b9%e5%99%a8" aria-label="用 NavigationStack 建立导航容器">用 NavigationStack 建立导航容器</a></li>
+                    <li>
+                        <a href="#%e7%94%a8-navigationlink-%e8%bf%9b%e5%85%a5%e8%af%a6%e6%83%85%e9%a1%b5" aria-label="用 NavigationLink 进入详情页">用 NavigationLink 进入详情页</a></li>
+                    <li>
+                        <a href="#%e5%9f%ba%e4%ba%8e%e5%80%bc%e7%9a%84%e5%af%bc%e8%88%aa" aria-label="基于值的导航">基于值的导航</a></li>
+                    <li>
+                        <a href="#%e4%b8%80%e4%b8%aa%e5%ae%8c%e6%95%b4%e7%9a%84%e5%88%97%e8%a1%a8%e8%af%a6%e6%83%85%e9%a1%b5%e7%a4%ba%e4%be%8b" aria-label="一个完整的列表详情页示例">一个完整的列表详情页示例</a></li>
+                    <li>
+                        <a href="#%e4%b8%8b%e6%8b%89%e5%88%b7%e6%96%b0%e4%b8%8e%e5%88%86%e9%a1%b5%e5%8a%a0%e8%bd%bd" aria-label="下拉刷新与分页加载">下拉刷新与分页加载</a></li>
+                    <li>
+                        <a href="#%e5%88%a0%e9%99%a4%e4%b8%8e%e7%a7%bb%e5%8a%a8" aria-label="删除与移动">删除与移动</a></li>
+                    <li>
+                        <a href="#%e7%a8%8b%e5%ba%8f%e5%8c%96%e5%af%bc%e8%88%aa" aria-label="程序化导航">程序化导航</a></li>
+                    <li>
+                        <a href="#%e5%b8%b8%e8%a7%81%e8%af%af%e5%8c%ba" aria-label="常见误区">常见误区</a><ul>
+                            
+                    <li>
+                        <a href="#1-%e5%88%97%e8%a1%a8%e9%a1%b9%e6%b2%a1%e6%9c%89%e7%a8%b3%e5%ae%9a-id" aria-label="1. 列表项没有稳定 id">1. 列表项没有稳定 id</a></li>
+                    <li>
+                        <a href="#2-%e6%8a%8a%e6%89%80%e6%9c%89%e9%80%bb%e8%be%91%e9%83%bd%e5%86%99%e8%bf%9b-list" aria-label="2. 把所有逻辑都写进 List">2. 把所有逻辑都写进 List</a></li>
+                    <li>
+                        <a href="#3-%e6%af%8f%e4%b8%80%e8%a1%8c%e5%86%99%e5%be%97%e5%a4%aa%e5%a4%8d%e6%9d%82" aria-label="3. 每一行写得太复杂">3. 每一行写得太复杂</a></li>
+                    <li>
+                        <a href="#4-%e6%bb%a5%e7%94%a8-navigationpath" aria-label="4. 滥用 NavigationPath">4. 滥用 NavigationPath</a></li>
+                    <li>
+                        <a href="#5-%e5%bf%98%e8%ae%b0-navigationstack" aria-label="5. 忘记 NavigationStack">5. 忘记 NavigationStack</a></li>
+                    <li>
+                        <a href="#6-%e5%9c%a8-onappear-%e4%b8%ad%e9%87%8d%e5%a4%8d%e8%a7%a6%e5%8f%91%e5%88%86%e9%a1%b5" aria-label="6. 在 onAppear 中重复触发分页">6. 在 onAppear 中重复触发分页</a></li></ul>
+                    </li>
+                    <li>
+                        <a href="#%e5%92%8c-jetpack-compose-%e7%9a%84%e7%b1%bb%e6%af%94" aria-label="和 Jetpack Compose 的类比">和 Jetpack Compose 的类比</a></li>
+                    <li>
+                        <a href="#%e5%b0%8f%e7%bb%93" aria-label="小结">小结</a>
+                    </li>
+                </ul>
+            </div>
+        </details>
+    </div>
+</aside>
+<script>
+    let activeElement;
+    let elements;
+    window.addEventListener('DOMContentLoaded', function (event) {
+        checkTocPosition();
+
+        elements = document.querySelectorAll('h1[id],h2[id],h3[id],h4[id],h5[id],h6[id]');
+         
+         activeElement = elements[0];
+         const id = encodeURI(activeElement.getAttribute('id')).toLowerCase();
+         document.querySelector(`.inner ul li a[href="#${id}"]`).classList.add('active');
+     }, false);
+
+    window.addEventListener('resize', function(event) {
+        checkTocPosition();
+    }, false);
+
+    window.addEventListener('scroll', () => {
+        
+        activeElement = Array.from(elements).find((element) => {
+            if ((getOffsetTop(element) - window.pageYOffset) > 0 && 
+                (getOffsetTop(element) - window.pageYOffset) < window.innerHeight/2) {
+                return element;
+            }
+        }) || activeElement
+
+        elements.forEach(element => {
+             const id = encodeURI(element.getAttribute('id')).toLowerCase();
+             if (element === activeElement){
+                 document.querySelector(`.inner ul li a[href="#${id}"]`).classList.add('active');
+             } else {
+                 document.querySelector(`.inner ul li a[href="#${id}"]`).classList.remove('active');
+             }
+         })
+     }, false);
+
+    const main = parseInt(getComputedStyle(document.body).getPropertyValue('--article-width'), 10);
+    const toc = parseInt(getComputedStyle(document.body).getPropertyValue('--toc-width'), 10);
+    const gap = parseInt(getComputedStyle(document.body).getPropertyValue('--gap'), 10);
+
+    function checkTocPosition() {
+        const width = document.body.scrollWidth;
+
+        if (width - main - (toc * 2) - (gap * 4) > 0) {
+            document.getElementById("toc-container").classList.add("wide");
+        } else {
+            document.getElementById("toc-container").classList.remove("wide");
+        }
+    }
+
+    function getOffsetTop(element) {
+        if (!element.getClientRects().length) {
+            return 0;
+        }
+        let rect = element.getBoundingClientRect();
+        let win = element.ownerDocument.defaultView;
+        return rect.top + win.pageYOffset;   
+    }
+</script>
+
+  <div class="post-content"><p>上一篇 SwiftUI 文章重点讲“状态驱动界面”。这篇继续往实际页面推进，聚焦两个最常见的能力：列表和导航。</p>
+<p>大多数 App 都离不开这类页面：展示一组数据，点击某一项进入详情页。SwiftUI 中对应的核心组件是 <code>List</code>、<code>ForEach</code>、<code>NavigationStack</code> 和 <code>NavigationLink</code>。</p>
+<p>这篇文章的目标不是罗列所有 API，而是写清楚一条常见数据流：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="cl">ViewModel 加载数据 -&gt; View 根据状态切换 UI -&gt; List 渲染数据 -&gt; NavigationLink 进入详情
+</span></span></code></pre></div><h2 id="数据模型与稳定-id">数据模型与稳定 id<a hidden class="anchor" aria-hidden="true" href="#数据模型与稳定-id">#</a></h2>
+<p>列表页面首先需要一个数据模型。比如文章列表：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-swift" data-lang="swift"><span class="line"><span class="cl"><span class="kd">struct</span> <span class="nc">Article</span><span class="p">:</span> <span class="n">Identifiable</span><span class="p">,</span> <span class="nb">Hashable</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">let</span> <span class="nv">id</span><span class="p">:</span> <span class="n">UUID</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">let</span> <span class="nv">title</span><span class="p">:</span> <span class="nb">String</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">let</span> <span class="nv">summary</span><span class="p">:</span> <span class="nb">String</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">let</span> <span class="nv">author</span><span class="p">:</span> <span class="nb">String</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>这里同时遵守了两个协议：</p>
+<ul>
+<li><code>Identifiable</code>：让 <code>List</code> 能识别每一项</li>
+<li><code>Hashable</code>：后面做基于值的导航时会用到</li>
+</ul>
+<p><code>Identifiable</code> 很重要。SwiftUI 需要通过稳定的 <code>id</code> 判断哪些行被新增、删除或更新。</p>
+<p>如果数据来自服务端，通常应该直接使用服务端返回的业务 id：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-swift" data-lang="swift"><span class="line"><span class="cl"><span class="kd">struct</span> <span class="nc">Article</span><span class="p">:</span> <span class="n">Identifiable</span><span class="p">,</span> <span class="nb">Hashable</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">let</span> <span class="nv">id</span><span class="p">:</span> <span class="nb">String</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">let</span> <span class="nv">title</span><span class="p">:</span> <span class="nb">String</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">let</span> <span class="nv">summary</span><span class="p">:</span> <span class="nb">String</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>不要随手用数组下标当作长期稳定 id。插入、删除、排序后，下标会变化，容易导致列表刷新异常。</p>
+<h2 id="用-list-展示集合数据">用 List 展示集合数据<a hidden class="anchor" aria-hidden="true" href="#用-list-展示集合数据">#</a></h2>
+<p>一个最小列表可以这样写：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-swift" data-lang="swift"><span class="line"><span class="cl"><span class="kd">struct</span> <span class="nc">ArticleListView</span><span class="p">:</span> <span class="n">View</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">let</span> <span class="nv">articles</span><span class="p">:</span> <span class="p">[</span><span class="n">Article</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kd">var</span> <span class="nv">body</span><span class="p">:</span> <span class="n">some</span> <span class="n">View</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">List</span><span class="p">(</span><span class="n">articles</span><span class="p">)</span> <span class="p">{</span> <span class="n">article</span> <span class="k">in</span>
+</span></span><span class="line"><span class="cl">            <span class="n">Text</span><span class="p">(</span><span class="n">article</span><span class="p">.</span><span class="n">title</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>这段代码表达的是：对 <code>articles</code> 中的每个元素生成一行 View。</p>
+<p>如果列表结构很简单，<code>List(items) { item in ... }</code> 就够了。</p>
+<p>如果列表中还有分组、头部、静态项混排，通常显式使用 <code>ForEach</code>：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-swift" data-lang="swift"><span class="line"><span class="cl"><span class="n">List</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">Section</span><span class="p">(</span><span class="s">&#34;文章&#34;</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">ForEach</span><span class="p">(</span><span class="n">articles</span><span class="p">)</span> <span class="p">{</span> <span class="n">article</span> <span class="k">in</span>
+</span></span><span class="line"><span class="cl">            <span class="n">Text</span><span class="p">(</span><span class="n">article</span><span class="p">.</span><span class="n">title</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">Section</span><span class="p">(</span><span class="s">&#34;操作&#34;</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">Button</span><span class="p">(</span><span class="s">&#34;刷新&#34;</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="bp">print</span><span class="p">(</span><span class="s">&#34;reload&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>入门阶段可以先这样判断：</p>
+<ul>
+<li>简单数据列表：<code>List(items) { item in ... }</code></li>
+<li>分组、头部、静态项混排：<code>List { Section { ForEach(...) } }</code></li>
+</ul>
+<h2 id="拆分列表行-view">拆分列表行 View<a hidden class="anchor" aria-hidden="true" href="#拆分列表行-view">#</a></h2>
+<p>真实页面里，一行通常不只是一个标题。可以把行拆成单独的 View。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-swift" data-lang="swift"><span class="line"><span class="cl"><span class="kd">struct</span> <span class="nc">ArticleRowView</span><span class="p">:</span> <span class="n">View</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">let</span> <span class="nv">article</span><span class="p">:</span> <span class="n">Article</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kd">var</span> <span class="nv">body</span><span class="p">:</span> <span class="n">some</span> <span class="n">View</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">VStack</span><span class="p">(</span><span class="n">alignment</span><span class="p">:</span> <span class="p">.</span><span class="n">leading</span><span class="p">,</span> <span class="n">spacing</span><span class="p">:</span> <span class="mi">6</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">Text</span><span class="p">(</span><span class="n">article</span><span class="p">.</span><span class="n">title</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">                <span class="p">.</span><span class="n">font</span><span class="p">(.</span><span class="n">headline</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">                <span class="p">.</span><span class="n">lineLimit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">            <span class="n">Text</span><span class="p">(</span><span class="n">article</span><span class="p">.</span><span class="n">summary</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">                <span class="p">.</span><span class="n">font</span><span class="p">(.</span><span class="n">subheadline</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">                <span class="p">.</span><span class="n">foregroundStyle</span><span class="p">(.</span><span class="n">secondary</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">                <span class="p">.</span><span class="n">lineLimit</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">            <span class="n">Text</span><span class="p">(</span><span class="n">article</span><span class="p">.</span><span class="n">author</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">                <span class="p">.</span><span class="n">font</span><span class="p">(.</span><span class="n">caption</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">                <span class="p">.</span><span class="n">foregroundStyle</span><span class="p">(.</span><span class="n">secondary</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">        <span class="p">.</span><span class="n">padding</span><span class="p">(.</span><span class="n">vertical</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>列表中使用：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-swift" data-lang="swift"><span class="line"><span class="cl"><span class="n">List</span><span class="p">(</span><span class="n">articles</span><span class="p">)</span> <span class="p">{</span> <span class="n">article</span> <span class="k">in</span>
+</span></span><span class="line"><span class="cl">    <span class="n">ArticleRowView</span><span class="p">(</span><span class="n">article</span><span class="p">:</span> <span class="n">article</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>拆出行 View 的好处是列表页面更清楚，行样式也更容易复用和预览。</p>
+<h2 id="处理加载错误和空状态">处理加载、错误和空状态<a hidden class="anchor" aria-hidden="true" href="#处理加载错误和空状态">#</a></h2>
+<p>列表页面不是只有“有数据”这一种状态。常见状态至少有四类：</p>
+<ul>
+<li>加载中</li>
+<li>加载失败</li>
+<li>空列表</li>
+<li>有数据</li>
+</ul>
+<p>可以先用一个 ViewModel 管理这些状态：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-swift" data-lang="swift"><span class="line"><span class="cl"><span class="p">@</span><span class="n">MainActor</span>
+</span></span><span class="line"><span class="cl"><span class="kr">final</span> <span class="kd">class</span> <span class="nc">ArticleListViewModel</span><span class="p">:</span> <span class="n">ObservableObject</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="p">@</span><span class="n">Published</span> <span class="kd">var</span> <span class="nv">articles</span><span class="p">:</span> <span class="p">[</span><span class="n">Article</span><span class="p">]</span> <span class="p">=</span> <span class="p">[]</span>
+</span></span><span class="line"><span class="cl">    <span class="p">@</span><span class="n">Published</span> <span class="kd">var</span> <span class="nv">isLoading</span> <span class="p">=</span> <span class="kc">false</span>
+</span></span><span class="line"><span class="cl">    <span class="p">@</span><span class="n">Published</span> <span class="kd">var</span> <span class="nv">errorMessage</span><span class="p">:</span> <span class="nb">String</span><span class="p">?</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kd">func</span> <span class="nf">load</span><span class="p">()</span> <span class="n">async</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">isLoading</span> <span class="p">=</span> <span class="kc">true</span>
+</span></span><span class="line"><span class="cl">        <span class="n">errorMessage</span> <span class="p">=</span> <span class="kc">nil</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="k">do</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">articles</span> <span class="p">=</span> <span class="p">[</span>
+</span></span><span class="line"><span class="cl">                <span class="n">Article</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">                    <span class="n">id</span><span class="p">:</span> <span class="n">UUID</span><span class="p">(),</span>
+</span></span><span class="line"><span class="cl">                    <span class="n">title</span><span class="p">:</span> <span class="s">&#34;SwiftUI 列表基础&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">                    <span class="n">summary</span><span class="p">:</span> <span class="s">&#34;学习 List、ForEach 和列表行拆分&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">                    <span class="n">author</span><span class="p">:</span> <span class="s">&#34;Tom&#34;</span>
+</span></span><span class="line"><span class="cl">                <span class="p">),</span>
+</span></span><span class="line"><span class="cl">                <span class="n">Article</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">                    <span class="n">id</span><span class="p">:</span> <span class="n">UUID</span><span class="p">(),</span>
+</span></span><span class="line"><span class="cl">                    <span class="n">title</span><span class="p">:</span> <span class="s">&#34;SwiftUI 导航基础&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">                    <span class="n">summary</span><span class="p">:</span> <span class="s">&#34;学习 NavigationStack 和 NavigationLink&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">                    <span class="n">author</span><span class="p">:</span> <span class="s">&#34;Jerry&#34;</span>
+</span></span><span class="line"><span class="cl">                <span class="p">)</span>
+</span></span><span class="line"><span class="cl">            <span class="p">]</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span> <span class="k">catch</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">errorMessage</span> <span class="p">=</span> <span class="s">&#34;加载文章失败&#34;</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="n">isLoading</span> <span class="p">=</span> <span class="kc">false</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>页面根据状态切换 UI：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-swift" data-lang="swift"><span class="line"><span class="cl"><span class="kd">struct</span> <span class="nc">ArticleListContentView</span><span class="p">:</span> <span class="n">View</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">let</span> <span class="nv">isLoading</span><span class="p">:</span> <span class="nb">Bool</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">let</span> <span class="nv">errorMessage</span><span class="p">:</span> <span class="nb">String</span><span class="p">?</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">let</span> <span class="nv">articles</span><span class="p">:</span> <span class="p">[</span><span class="n">Article</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kd">var</span> <span class="nv">body</span><span class="p">:</span> <span class="n">some</span> <span class="n">View</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">Group</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="k">if</span> <span class="n">isLoading</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                <span class="n">ProgressView</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">            <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="kd">let</span> <span class="nv">message</span> <span class="p">=</span> <span class="n">errorMessage</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                <span class="n">ContentUnavailableView</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="n">systemImage</span><span class="p">:</span> <span class="s">&#34;exclamationmark.triangle&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">            <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="n">articles</span><span class="p">.</span><span class="bp">isEmpty</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                <span class="n">ContentUnavailableView</span><span class="p">(</span><span class="s">&#34;暂无文章&#34;</span><span class="p">,</span> <span class="n">systemImage</span><span class="p">:</span> <span class="s">&#34;doc.text&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">            <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                <span class="n">List</span><span class="p">(</span><span class="n">articles</span><span class="p">)</span> <span class="p">{</span> <span class="n">article</span> <span class="k">in</span>
+</span></span><span class="line"><span class="cl">                    <span class="n">ArticleRowView</span><span class="p">(</span><span class="n">article</span><span class="p">:</span> <span class="n">article</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">                <span class="p">}</span>
+</span></span><span class="line"><span class="cl">            <span class="p">}</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>不要把空状态硬塞成列表中的一行。空状态、错误状态和加载状态通常是页面状态，不是列表数据本身。</p>
+<h2 id="用-navigationstack-建立导航容器">用 NavigationStack 建立导航容器<a hidden class="anchor" aria-hidden="true" href="#用-navigationstack-建立导航容器">#</a></h2>
+<p><code>NavigationStack</code> 是 SwiftUI 中管理页面跳转的常用容器。它表示一个导航栈：从列表页进入详情页，再从详情页返回列表页。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-swift" data-lang="swift"><span class="line"><span class="cl"><span class="kd">struct</span> <span class="nc">ArticleListPage</span><span class="p">:</span> <span class="n">View</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">let</span> <span class="nv">articles</span><span class="p">:</span> <span class="p">[</span><span class="n">Article</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kd">var</span> <span class="nv">body</span><span class="p">:</span> <span class="n">some</span> <span class="n">View</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">NavigationStack</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">List</span><span class="p">(</span><span class="n">articles</span><span class="p">)</span> <span class="p">{</span> <span class="n">article</span> <span class="k">in</span>
+</span></span><span class="line"><span class="cl">                <span class="n">ArticleRowView</span><span class="p">(</span><span class="n">article</span><span class="p">:</span> <span class="n">article</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">            <span class="p">}</span>
+</span></span><span class="line"><span class="cl">            <span class="p">.</span><span class="n">navigationTitle</span><span class="p">(</span><span class="s">&#34;文章&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p><code>navigationTitle</code> 设置当前页面标题。通常每个需要导航栏标题的页面都应该设置它。</p>
+<p>新代码建议优先使用 <code>NavigationStack</code>。老项目里可能还会看到 <code>NavigationView</code>，它是较早的导航 API。维护旧代码时需要认识它，但新写 SwiftUI 页面时可以优先从 <code>NavigationStack</code> 开始。</p>
+<h2 id="用-navigationlink-进入详情页">用 NavigationLink 进入详情页<a hidden class="anchor" aria-hidden="true" href="#用-navigationlink-进入详情页">#</a></h2>
+<p>先定义一个详情页：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-swift" data-lang="swift"><span class="line"><span class="cl"><span class="kd">struct</span> <span class="nc">ArticleDetailView</span><span class="p">:</span> <span class="n">View</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">let</span> <span class="nv">article</span><span class="p">:</span> <span class="n">Article</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kd">var</span> <span class="nv">body</span><span class="p">:</span> <span class="n">some</span> <span class="n">View</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">ScrollView</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">VStack</span><span class="p">(</span><span class="n">alignment</span><span class="p">:</span> <span class="p">.</span><span class="n">leading</span><span class="p">,</span> <span class="n">spacing</span><span class="p">:</span> <span class="mi">12</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                <span class="n">Text</span><span class="p">(</span><span class="n">article</span><span class="p">.</span><span class="n">title</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">                    <span class="p">.</span><span class="n">font</span><span class="p">(.</span><span class="n">title</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">                    <span class="p">.</span><span class="n">bold</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                <span class="n">Text</span><span class="p">(</span><span class="n">article</span><span class="p">.</span><span class="n">author</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">                    <span class="p">.</span><span class="n">font</span><span class="p">(.</span><span class="n">subheadline</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">                    <span class="p">.</span><span class="n">foregroundStyle</span><span class="p">(.</span><span class="n">secondary</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                <span class="n">Divider</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                <span class="n">Text</span><span class="p">(</span><span class="n">article</span><span class="p">.</span><span class="n">summary</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">                    <span class="p">.</span><span class="n">font</span><span class="p">(.</span><span class="n">body</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">            <span class="p">}</span>
+</span></span><span class="line"><span class="cl">            <span class="p">.</span><span class="n">padding</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">        <span class="p">.</span><span class="n">navigationTitle</span><span class="p">(</span><span class="s">&#34;详情&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>在列表中使用 <code>NavigationLink</code>：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-swift" data-lang="swift"><span class="line"><span class="cl"><span class="n">NavigationStack</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">List</span><span class="p">(</span><span class="n">articles</span><span class="p">)</span> <span class="p">{</span> <span class="n">article</span> <span class="k">in</span>
+</span></span><span class="line"><span class="cl">        <span class="n">NavigationLink</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">ArticleDetailView</span><span class="p">(</span><span class="n">article</span><span class="p">:</span> <span class="n">article</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span> <span class="n">label</span><span class="p">:</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">ArticleRowView</span><span class="p">(</span><span class="n">article</span><span class="p">:</span> <span class="n">article</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="p">.</span><span class="n">navigationTitle</span><span class="p">(</span><span class="s">&#34;文章&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>这里的 <code>NavigationLink</code> 同时描述了两件事：</p>
+<ul>
+<li>当前列表行展示什么</li>
+<li>点击后跳到哪个详情页面</li>
+</ul>
+<p>这种写法适合简单列表详情页，直观、代码少。</p>
+<h2 id="基于值的导航">基于值的导航<a hidden class="anchor" aria-hidden="true" href="#基于值的导航">#</a></h2>
+<p>页面复杂后，可以使用基于值的导航，把“点击了什么值”和“这个值对应哪个页面”分开。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-swift" data-lang="swift"><span class="line"><span class="cl"><span class="n">NavigationStack</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">List</span><span class="p">(</span><span class="n">articles</span><span class="p">)</span> <span class="p">{</span> <span class="n">article</span> <span class="k">in</span>
+</span></span><span class="line"><span class="cl">        <span class="n">NavigationLink</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="n">article</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">ArticleRowView</span><span class="p">(</span><span class="n">article</span><span class="p">:</span> <span class="n">article</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="p">.</span><span class="n">navigationDestination</span><span class="p">(</span><span class="k">for</span><span class="p">:</span> <span class="n">Article</span><span class="p">.</span><span class="kc">self</span><span class="p">)</span> <span class="p">{</span> <span class="n">article</span> <span class="k">in</span>
+</span></span><span class="line"><span class="cl">        <span class="n">ArticleDetailView</span><span class="p">(</span><span class="n">article</span><span class="p">:</span> <span class="n">article</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="p">.</span><span class="n">navigationTitle</span><span class="p">(</span><span class="s">&#34;文章&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>这种写法有两个特点：</p>
+<ul>
+<li><code>NavigationLink(value:)</code> 只负责把某个值放进导航系统</li>
+<li><code>navigationDestination(for:)</code> 统一声明这种值应该跳到哪个页面</li>
+</ul>
+<p>如果页面里有多种跳转目标，这种方式会更清楚。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-swift" data-lang="swift"><span class="line"><span class="cl"><span class="p">.</span><span class="n">navigationDestination</span><span class="p">(</span><span class="k">for</span><span class="p">:</span> <span class="n">Article</span><span class="p">.</span><span class="kc">self</span><span class="p">)</span> <span class="p">{</span> <span class="n">article</span> <span class="k">in</span>
+</span></span><span class="line"><span class="cl">    <span class="n">ArticleDetailView</span><span class="p">(</span><span class="n">article</span><span class="p">:</span> <span class="n">article</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">.</span><span class="n">navigationDestination</span><span class="p">(</span><span class="k">for</span><span class="p">:</span> <span class="n">Author</span><span class="p">.</span><span class="kc">self</span><span class="p">)</span> <span class="p">{</span> <span class="n">author</span> <span class="k">in</span>
+</span></span><span class="line"><span class="cl">    <span class="n">AuthorDetailView</span><span class="p">(</span><span class="n">author</span><span class="p">:</span> <span class="n">author</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>入门阶段可以先这样判断：</p>
+<ul>
+<li>简单列表跳详情：直接在 <code>NavigationLink</code> 中写目标 View</li>
+<li>多种目标页、复杂路径：使用 <code>value + navigationDestination</code></li>
+</ul>
+<h2 id="一个完整的列表详情页示例">一个完整的列表详情页示例<a hidden class="anchor" aria-hidden="true" href="#一个完整的列表详情页示例">#</a></h2>
+<p>把前面的内容组合起来，一个完整的列表详情页大致如下。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-swift" data-lang="swift"><span class="line"><span class="cl"><span class="kd">import</span> <span class="nc">SwiftUI</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">struct</span> <span class="nc">Article</span><span class="p">:</span> <span class="n">Identifiable</span><span class="p">,</span> <span class="nb">Hashable</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">let</span> <span class="nv">id</span><span class="p">:</span> <span class="n">UUID</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">let</span> <span class="nv">title</span><span class="p">:</span> <span class="nb">String</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">let</span> <span class="nv">summary</span><span class="p">:</span> <span class="nb">String</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">let</span> <span class="nv">author</span><span class="p">:</span> <span class="nb">String</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="p">@</span><span class="n">MainActor</span>
+</span></span><span class="line"><span class="cl"><span class="kr">final</span> <span class="kd">class</span> <span class="nc">ArticleListViewModel</span><span class="p">:</span> <span class="n">ObservableObject</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="p">@</span><span class="n">Published</span> <span class="kd">var</span> <span class="nv">articles</span><span class="p">:</span> <span class="p">[</span><span class="n">Article</span><span class="p">]</span> <span class="p">=</span> <span class="p">[]</span>
+</span></span><span class="line"><span class="cl">    <span class="p">@</span><span class="n">Published</span> <span class="kd">var</span> <span class="nv">isLoading</span> <span class="p">=</span> <span class="kc">false</span>
+</span></span><span class="line"><span class="cl">    <span class="p">@</span><span class="n">Published</span> <span class="kd">var</span> <span class="nv">errorMessage</span><span class="p">:</span> <span class="nb">String</span><span class="p">?</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kd">func</span> <span class="nf">load</span><span class="p">()</span> <span class="n">async</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">isLoading</span> <span class="p">=</span> <span class="kc">true</span>
+</span></span><span class="line"><span class="cl">        <span class="n">errorMessage</span> <span class="p">=</span> <span class="kc">nil</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="k">do</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">articles</span> <span class="p">=</span> <span class="p">[</span>
+</span></span><span class="line"><span class="cl">                <span class="n">Article</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">                    <span class="n">id</span><span class="p">:</span> <span class="n">UUID</span><span class="p">(),</span>
+</span></span><span class="line"><span class="cl">                    <span class="n">title</span><span class="p">:</span> <span class="s">&#34;SwiftUI 列表基础&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">                    <span class="n">summary</span><span class="p">:</span> <span class="s">&#34;学习 List、ForEach 和列表行拆分&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">                    <span class="n">author</span><span class="p">:</span> <span class="s">&#34;Tom&#34;</span>
+</span></span><span class="line"><span class="cl">                <span class="p">),</span>
+</span></span><span class="line"><span class="cl">                <span class="n">Article</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">                    <span class="n">id</span><span class="p">:</span> <span class="n">UUID</span><span class="p">(),</span>
+</span></span><span class="line"><span class="cl">                    <span class="n">title</span><span class="p">:</span> <span class="s">&#34;SwiftUI 导航基础&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">                    <span class="n">summary</span><span class="p">:</span> <span class="s">&#34;学习 NavigationStack 和 NavigationLink&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">                    <span class="n">author</span><span class="p">:</span> <span class="s">&#34;Jerry&#34;</span>
+</span></span><span class="line"><span class="cl">                <span class="p">)</span>
+</span></span><span class="line"><span class="cl">            <span class="p">]</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span> <span class="k">catch</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">errorMessage</span> <span class="p">=</span> <span class="s">&#34;加载文章失败&#34;</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="n">isLoading</span> <span class="p">=</span> <span class="kc">false</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">struct</span> <span class="nc">ArticleListPage</span><span class="p">:</span> <span class="n">View</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="p">@</span><span class="n">StateObject</span> <span class="kd">private</span> <span class="kd">var</span> <span class="nv">viewModel</span> <span class="p">=</span> <span class="n">ArticleListViewModel</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kd">var</span> <span class="nv">body</span><span class="p">:</span> <span class="n">some</span> <span class="n">View</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">NavigationStack</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">Group</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                <span class="k">if</span> <span class="n">viewModel</span><span class="p">.</span><span class="n">isLoading</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                    <span class="n">ProgressView</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">                <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="kd">let</span> <span class="nv">message</span> <span class="p">=</span> <span class="n">viewModel</span><span class="p">.</span><span class="n">errorMessage</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                    <span class="n">ContentUnavailableView</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="n">systemImage</span><span class="p">:</span> <span class="s">&#34;exclamationmark.triangle&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">                <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="n">viewModel</span><span class="p">.</span><span class="n">articles</span><span class="p">.</span><span class="bp">isEmpty</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                    <span class="n">ContentUnavailableView</span><span class="p">(</span><span class="s">&#34;暂无文章&#34;</span><span class="p">,</span> <span class="n">systemImage</span><span class="p">:</span> <span class="s">&#34;doc.text&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">                <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                    <span class="n">List</span><span class="p">(</span><span class="n">viewModel</span><span class="p">.</span><span class="n">articles</span><span class="p">)</span> <span class="p">{</span> <span class="n">article</span> <span class="k">in</span>
+</span></span><span class="line"><span class="cl">                        <span class="n">NavigationLink</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="n">article</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                            <span class="n">ArticleRowView</span><span class="p">(</span><span class="n">article</span><span class="p">:</span> <span class="n">article</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">                        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">                    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">                <span class="p">}</span>
+</span></span><span class="line"><span class="cl">            <span class="p">}</span>
+</span></span><span class="line"><span class="cl">            <span class="p">.</span><span class="n">navigationTitle</span><span class="p">(</span><span class="s">&#34;文章&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">            <span class="p">.</span><span class="n">navigationDestination</span><span class="p">(</span><span class="k">for</span><span class="p">:</span> <span class="n">Article</span><span class="p">.</span><span class="kc">self</span><span class="p">)</span> <span class="p">{</span> <span class="n">article</span> <span class="k">in</span>
+</span></span><span class="line"><span class="cl">                <span class="n">ArticleDetailView</span><span class="p">(</span><span class="n">article</span><span class="p">:</span> <span class="n">article</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">            <span class="p">}</span>
+</span></span><span class="line"><span class="cl">            <span class="p">.</span><span class="n">task</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                <span class="n">await</span> <span class="n">viewModel</span><span class="p">.</span><span class="n">load</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">            <span class="p">}</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">struct</span> <span class="nc">ArticleRowView</span><span class="p">:</span> <span class="n">View</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">let</span> <span class="nv">article</span><span class="p">:</span> <span class="n">Article</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kd">var</span> <span class="nv">body</span><span class="p">:</span> <span class="n">some</span> <span class="n">View</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">VStack</span><span class="p">(</span><span class="n">alignment</span><span class="p">:</span> <span class="p">.</span><span class="n">leading</span><span class="p">,</span> <span class="n">spacing</span><span class="p">:</span> <span class="mi">6</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">Text</span><span class="p">(</span><span class="n">article</span><span class="p">.</span><span class="n">title</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">                <span class="p">.</span><span class="n">font</span><span class="p">(.</span><span class="n">headline</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">                <span class="p">.</span><span class="n">lineLimit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">            <span class="n">Text</span><span class="p">(</span><span class="n">article</span><span class="p">.</span><span class="n">summary</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">                <span class="p">.</span><span class="n">font</span><span class="p">(.</span><span class="n">subheadline</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">                <span class="p">.</span><span class="n">foregroundStyle</span><span class="p">(.</span><span class="n">secondary</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">                <span class="p">.</span><span class="n">lineLimit</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">            <span class="n">Text</span><span class="p">(</span><span class="n">article</span><span class="p">.</span><span class="n">author</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">                <span class="p">.</span><span class="n">font</span><span class="p">(.</span><span class="n">caption</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">                <span class="p">.</span><span class="n">foregroundStyle</span><span class="p">(.</span><span class="n">secondary</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">        <span class="p">.</span><span class="n">padding</span><span class="p">(.</span><span class="n">vertical</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">struct</span> <span class="nc">ArticleDetailView</span><span class="p">:</span> <span class="n">View</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">let</span> <span class="nv">article</span><span class="p">:</span> <span class="n">Article</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kd">var</span> <span class="nv">body</span><span class="p">:</span> <span class="n">some</span> <span class="n">View</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">ScrollView</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">VStack</span><span class="p">(</span><span class="n">alignment</span><span class="p">:</span> <span class="p">.</span><span class="n">leading</span><span class="p">,</span> <span class="n">spacing</span><span class="p">:</span> <span class="mi">12</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                <span class="n">Text</span><span class="p">(</span><span class="n">article</span><span class="p">.</span><span class="n">title</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">                    <span class="p">.</span><span class="n">font</span><span class="p">(.</span><span class="n">title</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">                    <span class="p">.</span><span class="n">bold</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                <span class="n">Text</span><span class="p">(</span><span class="n">article</span><span class="p">.</span><span class="n">author</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">                    <span class="p">.</span><span class="n">font</span><span class="p">(.</span><span class="n">subheadline</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">                    <span class="p">.</span><span class="n">foregroundStyle</span><span class="p">(.</span><span class="n">secondary</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                <span class="n">Divider</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                <span class="n">Text</span><span class="p">(</span><span class="n">article</span><span class="p">.</span><span class="n">summary</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">                    <span class="p">.</span><span class="n">font</span><span class="p">(.</span><span class="n">body</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">            <span class="p">}</span>
+</span></span><span class="line"><span class="cl">            <span class="p">.</span><span class="n">padding</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">        <span class="p">.</span><span class="n">navigationTitle</span><span class="p">(</span><span class="s">&#34;详情&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>这段代码串起了完整流程：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="cl">ViewModel 加载 articles
+</span></span><span class="line"><span class="cl">-&gt; ArticleListPage 根据状态显示加载、空状态或列表
+</span></span><span class="line"><span class="cl">-&gt; List 渲染 ArticleRowView
+</span></span><span class="line"><span class="cl">-&gt; NavigationLink(value:) 进入 ArticleDetailView
+</span></span></code></pre></div><h2 id="下拉刷新与分页加载">下拉刷新与分页加载<a hidden class="anchor" aria-hidden="true" href="#下拉刷新与分页加载">#</a></h2>
+<p>列表页通常还会遇到刷新和分页。</p>
+<p>下拉刷新可以使用 <code>.refreshable</code>：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-swift" data-lang="swift"><span class="line"><span class="cl"><span class="n">List</span><span class="p">(</span><span class="n">viewModel</span><span class="p">.</span><span class="n">articles</span><span class="p">)</span> <span class="p">{</span> <span class="n">article</span> <span class="k">in</span>
+</span></span><span class="line"><span class="cl">    <span class="n">NavigationLink</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="n">article</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">ArticleRowView</span><span class="p">(</span><span class="n">article</span><span class="p">:</span> <span class="n">article</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">.</span><span class="n">refreshable</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">await</span> <span class="n">viewModel</span><span class="p">.</span><span class="n">load</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>首次进入页面加载，可以使用 <code>.task</code>：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-swift" data-lang="swift"><span class="line"><span class="cl"><span class="p">.</span><span class="n">task</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">await</span> <span class="n">viewModel</span><span class="p">.</span><span class="n">load</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>分页加载通常在某一行出现时触发：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-swift" data-lang="swift"><span class="line"><span class="cl"><span class="n">List</span><span class="p">(</span><span class="n">viewModel</span><span class="p">.</span><span class="n">articles</span><span class="p">)</span> <span class="p">{</span> <span class="n">article</span> <span class="k">in</span>
+</span></span><span class="line"><span class="cl">    <span class="n">ArticleRowView</span><span class="p">(</span><span class="n">article</span><span class="p">:</span> <span class="n">article</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="p">.</span><span class="n">onAppear</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="k">if</span> <span class="n">article</span> <span class="p">==</span> <span class="n">viewModel</span><span class="p">.</span><span class="n">articles</span><span class="p">.</span><span class="bp">last</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                <span class="n">Task</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                    <span class="n">await</span> <span class="n">viewModel</span><span class="p">.</span><span class="n">loadMore</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">                <span class="p">}</span>
+</span></span><span class="line"><span class="cl">            <span class="p">}</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>这里没有展开完整分页实现，因为真实分页还需要处理 <code>page</code>、<code>hasMore</code>、<code>isLoadingMore</code>、重复请求保护和错误重试。入门阶段先理解触发位置即可。</p>
+<h2 id="删除与移动">删除与移动<a hidden class="anchor" aria-hidden="true" href="#删除与移动">#</a></h2>
+<p>SwiftUI 的 <code>List</code> 支持常见编辑操作，比如删除。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-swift" data-lang="swift"><span class="line"><span class="cl"><span class="kd">struct</span> <span class="nc">Todo</span><span class="p">:</span> <span class="n">Identifiable</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">let</span> <span class="nv">id</span><span class="p">:</span> <span class="n">UUID</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">var</span> <span class="nv">title</span><span class="p">:</span> <span class="nb">String</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">struct</span> <span class="nc">TodoListView</span><span class="p">:</span> <span class="n">View</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="p">@</span><span class="n">State</span> <span class="kd">private</span> <span class="kd">var</span> <span class="nv">todos</span><span class="p">:</span> <span class="p">[</span><span class="n">Todo</span><span class="p">]</span> <span class="p">=</span> <span class="p">[</span>
+</span></span><span class="line"><span class="cl">        <span class="n">Todo</span><span class="p">(</span><span class="n">id</span><span class="p">:</span> <span class="n">UUID</span><span class="p">(),</span> <span class="n">title</span><span class="p">:</span> <span class="s">&#34;学习 SwiftUI&#34;</span><span class="p">),</span>
+</span></span><span class="line"><span class="cl">        <span class="n">Todo</span><span class="p">(</span><span class="n">id</span><span class="p">:</span> <span class="n">UUID</span><span class="p">(),</span> <span class="n">title</span><span class="p">:</span> <span class="s">&#34;写一个列表页面&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">]</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kd">var</span> <span class="nv">body</span><span class="p">:</span> <span class="n">some</span> <span class="n">View</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">List</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">ForEach</span><span class="p">(</span><span class="n">todos</span><span class="p">)</span> <span class="p">{</span> <span class="n">todo</span> <span class="k">in</span>
+</span></span><span class="line"><span class="cl">                <span class="n">Text</span><span class="p">(</span><span class="n">todo</span><span class="p">.</span><span class="n">title</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">            <span class="p">}</span>
+</span></span><span class="line"><span class="cl">            <span class="p">.</span><span class="n">onDelete</span> <span class="p">{</span> <span class="n">offsets</span> <span class="k">in</span>
+</span></span><span class="line"><span class="cl">                <span class="n">todos</span><span class="p">.</span><span class="n">remove</span><span class="p">(</span><span class="n">atOffsets</span><span class="p">:</span> <span class="n">offsets</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">            <span class="p">}</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">        <span class="p">.</span><span class="n">toolbar</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">EditButton</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>移动列表项：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-swift" data-lang="swift"><span class="line"><span class="cl"><span class="n">List</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">ForEach</span><span class="p">(</span><span class="n">todos</span><span class="p">)</span> <span class="p">{</span> <span class="n">todo</span> <span class="k">in</span>
+</span></span><span class="line"><span class="cl">        <span class="n">Text</span><span class="p">(</span><span class="n">todo</span><span class="p">.</span><span class="n">title</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="p">.</span><span class="n">onMove</span> <span class="p">{</span> <span class="n">source</span><span class="p">,</span> <span class="n">destination</span> <span class="k">in</span>
+</span></span><span class="line"><span class="cl">        <span class="n">todos</span><span class="p">.</span><span class="n">move</span><span class="p">(</span><span class="n">fromOffsets</span><span class="p">:</span> <span class="n">source</span><span class="p">,</span> <span class="n">toOffset</span><span class="p">:</span> <span class="n">destination</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>这类操作适合本地数据或已经有明确更新逻辑的业务数据。真实项目里删除后通常还要同步服务端，并处理失败回滚。</p>
+<h2 id="程序化导航">程序化导航<a hidden class="anchor" aria-hidden="true" href="#程序化导航">#</a></h2>
+<p>有些跳转不是用户点击某一行触发的，比如登录成功后进入首页、保存成功后进入详情。这时可以用 <code>NavigationPath</code> 管理导航路径。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-swift" data-lang="swift"><span class="line"><span class="cl"><span class="kd">struct</span> <span class="nc">ArticleHomeView</span><span class="p">:</span> <span class="n">View</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="p">@</span><span class="n">State</span> <span class="kd">private</span> <span class="kd">var</span> <span class="nv">path</span> <span class="p">=</span> <span class="n">NavigationPath</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kd">let</span> <span class="nv">articles</span><span class="p">:</span> <span class="p">[</span><span class="n">Article</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kd">var</span> <span class="nv">body</span><span class="p">:</span> <span class="n">some</span> <span class="n">View</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">NavigationStack</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="err">$</span><span class="n">path</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">List</span><span class="p">(</span><span class="n">articles</span><span class="p">)</span> <span class="p">{</span> <span class="n">article</span> <span class="k">in</span>
+</span></span><span class="line"><span class="cl">                <span class="n">Button</span><span class="p">(</span><span class="n">article</span><span class="p">.</span><span class="n">title</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                    <span class="n">path</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">article</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">                <span class="p">}</span>
+</span></span><span class="line"><span class="cl">            <span class="p">}</span>
+</span></span><span class="line"><span class="cl">            <span class="p">.</span><span class="n">navigationDestination</span><span class="p">(</span><span class="k">for</span><span class="p">:</span> <span class="n">Article</span><span class="p">.</span><span class="kc">self</span><span class="p">)</span> <span class="p">{</span> <span class="n">article</span> <span class="k">in</span>
+</span></span><span class="line"><span class="cl">                <span class="n">ArticleDetailView</span><span class="p">(</span><span class="n">article</span><span class="p">:</span> <span class="n">article</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">            <span class="p">}</span>
+</span></span><span class="line"><span class="cl">            <span class="p">.</span><span class="n">navigationTitle</span><span class="p">(</span><span class="s">&#34;文章&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p><code>path.append(article)</code> 表示向导航栈中压入一个页面。返回时，系统会从路径中移除对应项。</p>
+<p>入门阶段不需要一开始就使用 <code>NavigationPath</code>。如果只是列表点击进详情，优先使用 <code>NavigationLink</code>。</p>
+<h2 id="常见误区">常见误区<a hidden class="anchor" aria-hidden="true" href="#常见误区">#</a></h2>
+<h3 id="1-列表项没有稳定-id">1. 列表项没有稳定 id<a hidden class="anchor" aria-hidden="true" href="#1-列表项没有稳定-id">#</a></h3>
+<p>不要为了省事用数组下标当作长期稳定 id。数据插入、删除或排序后，下标会变化，可能导致列表刷新异常。</p>
+<p>更推荐模型本身提供稳定标识：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-swift" data-lang="swift"><span class="line"><span class="cl"><span class="kd">struct</span> <span class="nc">Article</span><span class="p">:</span> <span class="n">Identifiable</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">let</span> <span class="nv">id</span><span class="p">:</span> <span class="n">UUID</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">let</span> <span class="nv">title</span><span class="p">:</span> <span class="nb">String</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><h3 id="2-把所有逻辑都写进-list">2. 把所有逻辑都写进 List<a hidden class="anchor" aria-hidden="true" href="#2-把所有逻辑都写进-list">#</a></h3>
+<p><code>List</code> 只应该负责展示列表结构。加载、错误、空状态、数据请求更适合放在外层状态判断或 ViewModel 中。</p>
+<h3 id="3-每一行写得太复杂">3. 每一行写得太复杂<a hidden class="anchor" aria-hidden="true" href="#3-每一行写得太复杂">#</a></h3>
+<p>如果列表行超过十几行代码，就应该考虑拆成独立 View。列表页重点是组织数据流和导航关系，不应该被行样式淹没。</p>
+<h3 id="4-滥用-navigationpath">4. 滥用 NavigationPath<a hidden class="anchor" aria-hidden="true" href="#4-滥用-navigationpath">#</a></h3>
+<p><code>NavigationPath</code> 适合程序化导航和复杂路径管理。普通列表跳详情，用 <code>NavigationLink</code> 就够了。过早引入路径管理，会让入门代码变复杂。</p>
+<h3 id="5-忘记-navigationstack">5. 忘记 NavigationStack<a hidden class="anchor" aria-hidden="true" href="#5-忘记-navigationstack">#</a></h3>
+<p><code>NavigationLink</code> 通常需要放在 <code>NavigationStack</code> 中才能得到完整的导航行为和标题栏。列表页如果需要跳转，先检查外层是否有 <code>NavigationStack</code>。</p>
+<h3 id="6-在-onappear-中重复触发分页">6. 在 onAppear 中重复触发分页<a hidden class="anchor" aria-hidden="true" href="#6-在-onappear-中重复触发分页">#</a></h3>
+<p>列表行的 <code>onAppear</code> 可能触发多次。分页时一定要在 ViewModel 里加 <code>isLoadingMore</code> 或 <code>hasMore</code> 判断，避免重复请求。</p>
+<h2 id="和-jetpack-compose-的类比">和 Jetpack Compose 的类比<a hidden class="anchor" aria-hidden="true" href="#和-jetpack-compose-的类比">#</a></h2>
+<p>如果有 Compose 经验，可以先这样建立直觉：</p>
+<table>
+  <thead>
+      <tr>
+          <th>Jetpack Compose</th>
+          <th>SwiftUI</th>
+          <th>说明</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>LazyColumn</code></td>
+          <td><code>List</code> / <code>LazyVStack</code></td>
+          <td>展示集合数据</td>
+      </tr>
+      <tr>
+          <td><code>items(...)</code></td>
+          <td><code>ForEach</code></td>
+          <td>遍历数据生成行</td>
+      </tr>
+      <tr>
+          <td><code>NavHost</code></td>
+          <td><code>NavigationStack</code></td>
+          <td>导航容器</td>
+      </tr>
+      <tr>
+          <td><code>composable(route)</code></td>
+          <td><code>navigationDestination</code></td>
+          <td>定义目标页面</td>
+      </tr>
+      <tr>
+          <td><code>navController.navigate(...)</code></td>
+          <td><code>NavigationPath.append(...)</code></td>
+          <td>程序化跳转</td>
+      </tr>
+      <tr>
+          <td><code>rememberNavController()</code></td>
+          <td><code>@State NavigationPath</code></td>
+          <td>持有导航状态</td>
+      </tr>
+  </tbody>
+</table>
+<p>这个类比只适合帮助理解，不要直接照搬。SwiftUI 更强调通过值和类型声明导航目标，Compose 更多围绕 route 和 NavController 组织导航。</p>
+<h2 id="小结">小结<a hidden class="anchor" aria-hidden="true" href="#小结">#</a></h2>
+<p>SwiftUI 列表和导航的入门重点可以压缩成几句话：</p>
+<ul>
+<li>用 <code>List</code> 展示集合数据</li>
+<li>用 <code>Identifiable</code> 提供稳定 id</li>
+<li>用独立 View 拆分复杂列表行</li>
+<li>用状态区分加载、错误、空数据和正常列表</li>
+<li>用 <code>NavigationStack</code> 管理导航层级</li>
+<li>用 <code>NavigationLink</code> 完成普通列表到详情的跳转</li>
+<li>复杂程序化跳转再考虑 <code>NavigationPath</code></li>
+<li>刷新和分页要注意重复触发与状态保护</li>
+</ul>
+<p>掌握这些之后，就可以写出大多数常见的列表详情页。后续再继续深入搜索、分页加载、筛选、编辑模式和多级导航。</p>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="/tags/swiftui/">SwiftUI</a></li>
+      <li><a href="/tags/list/">List</a></li>
+      <li><a href="/tags/navigationstack/">NavigationStack</a></li>
+      <li><a href="/tags/ios/">IOS</a></li>
+    </ul>
+<nav class="paginav">
+  <a class="next" href="/posts/ios/swiftui_state_driven_ui/">
+    <span class="title">Next »</span>
+    <br>
+    <span>SwiftUI基础入门：从状态驱动界面开始</span>
+  </a>
+</nav>
+
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2026 <a href="/">缥缈夏鸢</a></span> · 
+
+    <span>
+        Powered by
+        <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+        <path d="M12 6H0l6-6z" />
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu')
+    if (menu) {
+        menu.scrollLeft = localStorage.getItem("menu-scroll-position");
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        if (document.body.className.includes("dark")) {
+            document.body.classList.remove('dark');
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            document.body.classList.add('dark');
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerHTML = 'copy';
+
+        function copyingDone() {
+            copybutton.innerHTML = 'copied!';
+            setTimeout(() => {
+                copybutton.innerHTML = 'copy';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+</body>
+
+</html>

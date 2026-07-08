@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>Swift | 缥缈夏鸢</title>
+<meta name="keywords" content="">
+<meta name="description" content="Android 开发工程师，持续探索 Agent 应用开发，长期关注全栈能力建设。">
+<meta name="author" content="夏天的小西瓜">
+<link rel="canonical" href="/tags/swift/">
+<meta name="google-site-verification" content="XYZabc">
+<meta name="msvalidate.01" content="XYZabc">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.44278f16c6e7e77192a15a0565fb5b0f220c56128442fcfa6937b4d84456ecf0.css" integrity="sha256-RCePFsbn53GSoVoFZftbDyIMVhKEQvz6aTe02ERW7PA=" rel="preload stylesheet" as="style">
+<link rel="icon" href="/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="mask-icon" href="/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" type="application/rss+xml" href="/tags/swift/index.xml">
+<link rel="alternate" hreflang="en" href="/tags/swift/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-track {
+                background: 0 0;
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-thumb {
+                border-color: var(--theme);
+            }
+        }
+
+    </style>
+</noscript><script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+<script>
+
+const config = {
+    startOnLoad: true,
+    theme: "base",
+    themeVariables: {
+        primaryColor: "#f8fafc",
+        primaryTextColor: "#111827",
+        primaryBorderColor: "#6b7280",
+        lineColor: "#6b7280",
+        secondaryColor: "#eef2ff",
+        secondaryTextColor: "#111827",
+        secondaryBorderColor: "#6b7280",
+        tertiaryColor: "#f1f5f9",
+        tertiaryTextColor: "#111827",
+        tertiaryBorderColor: "#6b7280",
+        edgeLabelBackground: "#f8fafc",
+        clusterBkg: "#f8fafc",
+        clusterBorder: "#6b7280",
+        noteBkgColor: "#fef3c7",
+        noteTextColor: "#111827",
+        noteBorderColor: "#6b7280"
+    },
+    flowchart: {
+        useMaxWidth: false,
+        htmlLabels: true
+    }
+};
+mermaid.initialize(config);
+
+
+window.onload = () => {
+    window.mermaid.init(undefined, document.querySelectorAll('.language-mermaid'));
+}
+</script>
+<meta property="og:url" content="/tags/swift/">
+  <meta property="og:site_name" content="缥缈夏鸢">
+  <meta property="og:title" content="Swift">
+  <meta property="og:description" content="Android 开发工程师，持续探索 Agent 应用开发，长期关注全栈能力建设。">
+  <meta property="og:locale" content="en-us">
+  <meta property="og:type" content="website">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Swift">
+<meta name="twitter:description" content="Android 开发工程师，持续探索 Agent 应用开发，长期关注全栈能力建设。">
+
+</head>
+
+<body class="list" id="top">
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.body.classList.add('dark');
+    } else if (localStorage.getItem("pref-theme") === "light") {
+        document.body.classList.remove('dark')
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.body.classList.add('dark');
+    }
+
+</script>
+
+<header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="/" accesskey="h" title="缥缈夏鸢 (Alt + H)">缥缈夏鸢</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" accesskey="t" title="(Alt + T)">
+                    <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu">
+            <li>
+                <a href="/" title="首页">
+                    <span>首页</span>
+                </a>
+            </li>
+            <li>
+                <a href="/posts/" title="文章">
+                    <span>文章</span>
+                </a>
+            </li>
+            <li>
+                <a href="/categories/" title="分类">
+                    <span>分类</span>
+                </a>
+            </li>
+            <li>
+                <a href="/tags/" title="标签">
+                    <span>标签</span>
+                </a>
+            </li>
+            <li>
+                <a href="/archives/" title="归档">
+                    <span>归档</span>
+                </a>
+            </li>
+            <li>
+                <a href="/search/" title="搜索">
+                    <span>搜索</span>
+                </a>
+            </li>
+            <li>
+                <a href="/about/" title="关于">
+                    <span>关于</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main"> 
+<header class="page-header"><div class="breadcrumbs"><a href="/">Home</a>&nbsp;»&nbsp;<a href="/tags/">Tags</a></div>
+  <h1>
+    Swift
+    <a href="/tags/swift/index.xml" title="RSS" aria-label="RSS">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" height="23">
+        <path d="M4 11a9 9 0 0 1 9 9" />
+        <path d="M4 4a16 16 0 0 1 16 16" />
+        <circle cx="5" cy="19" r="1" />
+      </svg>
+    </a>
+  </h1>
+</header>
+
+<article class="post-entry tag-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">SwiftUI基础入门：从状态驱动界面开始
+    </h2>
+  </header>
+  <div class="entry-content">
+    <p>SwiftUI 是 Apple 提供的声明式 UI 框架。和 UIKit 里手动创建控件、修改属性、维护页面层级不同，SwiftUI 更强调“界面是状态的函数”：状态变了，界面自动重新计算并刷新。
+如果已经有 Kotlin、Android 或 Compose 经验，可以把 SwiftUI 先理解为 Apple 平台上的声明式 UI 方案。它和 Jetpack Compose 很像，都不是简单的 XML 或 View 替代品，而是一套围绕状态、组合和数据流设计的 UI 编程模型。
+SwiftUI 解决什么问题 在 UIKit 中，常见写法是先拿到控件，再手动更新控件状态。
+label.text = user.name button.isEnabled = !isLoading loadingView.isHidden = !isLoading 这种方式本身没有问题，但页面复杂后，状态和 UI 很容易分散在多个地方。比如加载中、加载成功、加载失败、空列表、按钮是否可点，都需要开发者手动维护。
+SwiftUI 的思路是反过来：先描述不同状态下界面应该长什么样，然后让框架根据状态变化刷新界面。
+struct ContentView: View { @State private var isLoading = false var body: some View { VStack { if isLoading { ProgressView() } else { Text(&#34;加载完成&#34;) } Button(&#34;加载&#34;) { isLoading = true } } } } 这里没有手动隐藏 ProgressView，也没有手动修改 Text。只要 isLoading 变化，body 会重新计算，界面会随之更新。
+View 是什么 SwiftUI 中的页面和组件通常是一个 struct，并且遵守 View 协议。
+...</p>
+  </div>
+  <footer class="entry-footer"><span title='2026-07-08 14:16:54 +0800 CST'>July 8, 2026</span>&nbsp;·&nbsp;4 min&nbsp;·&nbsp;799 words&nbsp;·&nbsp;夏天的小西瓜</footer>
+  <a class="entry-link" aria-label="post link to SwiftUI基础入门：从状态驱动界面开始" href="/posts/ios/swiftui_state_driven_ui/"></a>
+</article>
+
+<article class="post-entry tag-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">面向Kotlin开发者的Swift基础入门
+    </h2>
+  </header>
+  <div class="entry-content">
+    <p>Swift 是 Apple 平台开发的主要语言，常用于 iOS、macOS、watchOS 和 visionOS 应用开发。对已经熟悉 Kotlin 的开发者来说，Swift 的入门难点通常不在“变量、函数、条件判断”这些基础语法，而在几组容易误判的概念：Optional、值类型、协议、闭包、错误处理和并发模型。
+这篇文章不按零基础教程展开，而是从 Kotlin 开发者的视角，梳理 Swift 中最值得优先掌握的基础能力。
+为什么 Kotlin 开发者学 Swift 不难 Kotlin 和 Swift 都是现代静态类型语言，很多设计目标相似：
+都支持类型推断 都强调空值安全 都有 lambda / closure 都支持泛型 都有扩展能力 都适合写简洁的业务代码 例如，Kotlin 中的 val、var：
+val name = &#34;Tom&#34; var age = 18 age = 19 Swift 中对应的是 let、var：
+let name = &#34;Tom&#34; var age = 18 age = 19 从语法观感上看，两者差异不大。但 Swift 更强调值类型、协议组合和编译期约束，这些地方需要单独适应。
+语法对照速查 下面这张表可以作为初学 Swift 时的快速参照。
+Kotlin Swift 说明 val let 不可重新赋值 var var 可以重新赋值 String? String? 可空 / 可选值 null nil 空值 ?: ?? 空值默认值 fun func 函数声明 interface protocol 能力约束 class class 引用类型 data class struct 只能粗略类比，语义不同 lambda closure 可传递代码块 suspend async 异步函数 try/catch do/try/catch 错误处理 Dispatchers.Main MainActor 只能类比，机制不同 这张表只能帮助建立直觉，不能完全等价迁移。Swift 中有些概念和 Kotlin 看起来相似，但底层语义不同。
+...</p>
+  </div>
+  <footer class="entry-footer"><span title='2026-07-08 11:58:58 +0800 CST'>July 8, 2026</span>&nbsp;·&nbsp;6 min&nbsp;·&nbsp;1149 words&nbsp;·&nbsp;夏天的小西瓜</footer>
+  <a class="entry-link" aria-label="post link to 面向Kotlin开发者的Swift基础入门" href="/posts/ios/swift_basic_for_kotlin_developers/"></a>
+</article>
+
+<article class="post-entry tag-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">iOS开发入门总览：开发与学习路线
+    </h2>
+  </header>
+  <div class="entry-content">
+    <p>iOS 开发入门最容易遇到的问题，不是某一个 API 难，而是知识点分散：Swift、SwiftUI、UIKit、Xcode、网络、数据存储、调试、签名、上架，每一块都能展开很深。
+如果没有路线，很容易在语法、UI 框架和工程配置之间来回跳，学了很多零散概念，却迟迟做不出一个完整 App。
+这篇文章先做总览，目标是回答四个问题：
+iOS 开发主要由哪些部分组成 初学者应该按什么顺序学习 每个阶段应该做到什么程度再进入下一步 最适合入门的练习项目应该怎么安排 iOS 开发包括什么 iOS 开发不是只会 Swift 语法就够了。一个可运行、可维护的 App，通常会涉及下面几类能力。
+1. 语言基础 Swift 是当前 Apple 平台开发的主要语言。入门阶段需要优先掌握：
+let、var 和基础类型 Optional 和空值处理 struct 与 class 函数、闭包、协议、泛型 错误处理 async/await、Task、MainActor 如果已经有 Kotlin、Java 或 TypeScript 经验，可以重点关注 Swift 和这些语言在空值、值类型、协议和并发上的差异，而不是从变量和条件判断重新学起。
+2. UI 框架 iOS UI 开发主要会遇到两套框架：
+SwiftUI：声明式 UI 框架，适合新项目和入门学习 UIKit：传统命令式 UI 框架，大量存量项目仍在使用 建议入门阶段优先学习 SwiftUI。SwiftUI 更容易帮助初学者理解“状态驱动界面”：状态变化后，界面自动根据状态重新计算。
+但 UIKit 不能完全跳过。实际工作中，经常会遇到 UIKit 项目、UIKit 组件，或者 SwiftUI 与 UIKit 混用的场景。
+3. 工程工具 Xcode 是 iOS 开发的主要 IDE。至少需要熟悉：
+...</p>
+  </div>
+  <footer class="entry-footer"><span title='2026-07-07 14:37:51 +0800 CST'>July 7, 2026</span>&nbsp;·&nbsp;4 min&nbsp;·&nbsp;668 words&nbsp;·&nbsp;夏天的小西瓜</footer>
+  <a class="entry-link" aria-label="post link to iOS开发入门总览：开发与学习路线" href="/posts/ios/ios_development_learning_route/"></a>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2026 <a href="/">缥缈夏鸢</a></span> · 
+
+    <span>
+        Powered by
+        <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+        <path d="M12 6H0l6-6z" />
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu')
+    if (menu) {
+        menu.scrollLeft = localStorage.getItem("menu-scroll-position");
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        if (document.body.className.includes("dark")) {
+            document.body.classList.remove('dark');
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            document.body.classList.add('dark');
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+</body>
+
+</html>

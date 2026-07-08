@@ -1,0 +1,1204 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>面向Kotlin开发者的Swift基础入门 | 缥缈夏鸢</title>
+<meta name="keywords" content="Swift, Kotlin, iOS, 并发">
+<meta name="description" content="Swift 是 Apple 平台开发的主要语言，常用于 iOS、macOS、watchOS 和 visionOS 应用开发。对已经熟悉 Kotlin 的开发者来说，Swift 的入门难点通常不在“变量、函数、条件判断”这些基础语法，而在几组容易误判的概念：Optional、值类型、协议、闭包、错误处理和并发模型。
+这篇文章不按零基础教程展开，而是从 Kotlin 开发者的视角，梳理 Swift 中最值得优先掌握的基础能力。
+为什么 Kotlin 开发者学 Swift 不难
+Kotlin 和 Swift 都是现代静态类型语言，很多设计目标相似：
+
+都支持类型推断
+都强调空值安全
+都有 lambda / closure
+都支持泛型
+都有扩展能力
+都适合写简洁的业务代码
+
+例如，Kotlin 中的 val、var：
+val name = &#34;Tom&#34;
+var age = 18
+
+age = 19
+Swift 中对应的是 let、var：
+let name = &#34;Tom&#34;
+var age = 18
+
+age = 19
+从语法观感上看，两者差异不大。但 Swift 更强调值类型、协议组合和编译期约束，这些地方需要单独适应。
+语法对照速查
+下面这张表可以作为初学 Swift 时的快速参照。
+
+  
+      
+          Kotlin
+          Swift
+          说明
+      
+  
+  
+      
+          val
+          let
+          不可重新赋值
+      
+      
+          var
+          var
+          可以重新赋值
+      
+      
+          String?
+          String?
+          可空 / 可选值
+      
+      
+          null
+          nil
+          空值
+      
+      
+          ?:
+          ??
+          空值默认值
+      
+      
+          fun
+          func
+          函数声明
+      
+      
+          interface
+          protocol
+          能力约束
+      
+      
+          class
+          class
+          引用类型
+      
+      
+          data class
+          struct
+          只能粗略类比，语义不同
+      
+      
+          lambda
+          closure
+          可传递代码块
+      
+      
+          suspend
+          async
+          异步函数
+      
+      
+          try/catch
+          do/try/catch
+          错误处理
+      
+      
+          Dispatchers.Main
+          MainActor
+          只能类比，机制不同
+      
+  
+
+这张表只能帮助建立直觉，不能完全等价迁移。Swift 中有些概念和 Kotlin 看起来相似，但底层语义不同。">
+<meta name="author" content="夏天的小西瓜">
+<link rel="canonical" href="/posts/ios/swift_basic_for_kotlin_developers/">
+<meta name="google-site-verification" content="XYZabc">
+<meta name="msvalidate.01" content="XYZabc">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.44278f16c6e7e77192a15a0565fb5b0f220c56128442fcfa6937b4d84456ecf0.css" integrity="sha256-RCePFsbn53GSoVoFZftbDyIMVhKEQvz6aTe02ERW7PA=" rel="preload stylesheet" as="style">
+<link rel="icon" href="/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="mask-icon" href="/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="en" href="/posts/ios/swift_basic_for_kotlin_developers/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-track {
+                background: 0 0;
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-thumb {
+                border-color: var(--theme);
+            }
+        }
+
+    </style>
+</noscript><script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+<script>
+
+const config = {
+    startOnLoad: true,
+    theme: "base",
+    themeVariables: {
+        primaryColor: "#f8fafc",
+        primaryTextColor: "#111827",
+        primaryBorderColor: "#6b7280",
+        lineColor: "#6b7280",
+        secondaryColor: "#eef2ff",
+        secondaryTextColor: "#111827",
+        secondaryBorderColor: "#6b7280",
+        tertiaryColor: "#f1f5f9",
+        tertiaryTextColor: "#111827",
+        tertiaryBorderColor: "#6b7280",
+        edgeLabelBackground: "#f8fafc",
+        clusterBkg: "#f8fafc",
+        clusterBorder: "#6b7280",
+        noteBkgColor: "#fef3c7",
+        noteTextColor: "#111827",
+        noteBorderColor: "#6b7280"
+    },
+    flowchart: {
+        useMaxWidth: false,
+        htmlLabels: true
+    }
+};
+mermaid.initialize(config);
+
+
+window.onload = () => {
+    window.mermaid.init(undefined, document.querySelectorAll('.language-mermaid'));
+}
+</script>
+<meta property="og:url" content="/posts/ios/swift_basic_for_kotlin_developers/">
+  <meta property="og:site_name" content="缥缈夏鸢">
+  <meta property="og:title" content="面向Kotlin开发者的Swift基础入门">
+  <meta property="og:description" content="Swift 是 Apple 平台开发的主要语言，常用于 iOS、macOS、watchOS 和 visionOS 应用开发。对已经熟悉 Kotlin 的开发者来说，Swift 的入门难点通常不在“变量、函数、条件判断”这些基础语法，而在几组容易误判的概念：Optional、值类型、协议、闭包、错误处理和并发模型。
+这篇文章不按零基础教程展开，而是从 Kotlin 开发者的视角，梳理 Swift 中最值得优先掌握的基础能力。
+为什么 Kotlin 开发者学 Swift 不难 Kotlin 和 Swift 都是现代静态类型语言，很多设计目标相似：
+都支持类型推断 都强调空值安全 都有 lambda / closure 都支持泛型 都有扩展能力 都适合写简洁的业务代码 例如，Kotlin 中的 val、var：
+val name = &#34;Tom&#34; var age = 18 age = 19 Swift 中对应的是 let、var：
+let name = &#34;Tom&#34; var age = 18 age = 19 从语法观感上看，两者差异不大。但 Swift 更强调值类型、协议组合和编译期约束，这些地方需要单独适应。
+语法对照速查 下面这张表可以作为初学 Swift 时的快速参照。
+Kotlin Swift 说明 val let 不可重新赋值 var var 可以重新赋值 String? String? 可空 / 可选值 null nil 空值 ?: ?? 空值默认值 fun func 函数声明 interface protocol 能力约束 class class 引用类型 data class struct 只能粗略类比，语义不同 lambda closure 可传递代码块 suspend async 异步函数 try/catch do/try/catch 错误处理 Dispatchers.Main MainActor 只能类比，机制不同 这张表只能帮助建立直觉，不能完全等价迁移。Swift 中有些概念和 Kotlin 看起来相似，但底层语义不同。">
+  <meta property="og:locale" content="en-us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2026-07-08T11:58:58+08:00">
+    <meta property="article:modified_time" content="2026-07-08T11:58:58+08:00">
+    <meta property="article:tag" content="Swift">
+    <meta property="article:tag" content="Kotlin">
+    <meta property="article:tag" content="IOS">
+    <meta property="article:tag" content="并发">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="面向Kotlin开发者的Swift基础入门">
+<meta name="twitter:description" content="Swift 是 Apple 平台开发的主要语言，常用于 iOS、macOS、watchOS 和 visionOS 应用开发。对已经熟悉 Kotlin 的开发者来说，Swift 的入门难点通常不在“变量、函数、条件判断”这些基础语法，而在几组容易误判的概念：Optional、值类型、协议、闭包、错误处理和并发模型。
+这篇文章不按零基础教程展开，而是从 Kotlin 开发者的视角，梳理 Swift 中最值得优先掌握的基础能力。
+为什么 Kotlin 开发者学 Swift 不难
+Kotlin 和 Swift 都是现代静态类型语言，很多设计目标相似：
+
+都支持类型推断
+都强调空值安全
+都有 lambda / closure
+都支持泛型
+都有扩展能力
+都适合写简洁的业务代码
+
+例如，Kotlin 中的 val、var：
+val name = &#34;Tom&#34;
+var age = 18
+
+age = 19
+Swift 中对应的是 let、var：
+let name = &#34;Tom&#34;
+var age = 18
+
+age = 19
+从语法观感上看，两者差异不大。但 Swift 更强调值类型、协议组合和编译期约束，这些地方需要单独适应。
+语法对照速查
+下面这张表可以作为初学 Swift 时的快速参照。
+
+  
+      
+          Kotlin
+          Swift
+          说明
+      
+  
+  
+      
+          val
+          let
+          不可重新赋值
+      
+      
+          var
+          var
+          可以重新赋值
+      
+      
+          String?
+          String?
+          可空 / 可选值
+      
+      
+          null
+          nil
+          空值
+      
+      
+          ?:
+          ??
+          空值默认值
+      
+      
+          fun
+          func
+          函数声明
+      
+      
+          interface
+          protocol
+          能力约束
+      
+      
+          class
+          class
+          引用类型
+      
+      
+          data class
+          struct
+          只能粗略类比，语义不同
+      
+      
+          lambda
+          closure
+          可传递代码块
+      
+      
+          suspend
+          async
+          异步函数
+      
+      
+          try/catch
+          do/try/catch
+          错误处理
+      
+      
+          Dispatchers.Main
+          MainActor
+          只能类比，机制不同
+      
+  
+
+这张表只能帮助建立直觉，不能完全等价迁移。Swift 中有些概念和 Kotlin 看起来相似，但底层语义不同。">
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Posts",
+      "item": "/posts/"
+    }
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "面向Kotlin开发者的Swift基础入门",
+      "item": "/posts/ios/swift_basic_for_kotlin_developers/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "面向Kotlin开发者的Swift基础入门",
+  "name": "面向Kotlin开发者的Swift基础入门",
+  "description": "Swift 是 Apple 平台开发的主要语言，常用于 iOS、macOS、watchOS 和 visionOS 应用开发。对已经熟悉 Kotlin 的开发者来说，Swift 的入门难点通常不在“变量、函数、条件判断”这些基础语法，而在几组容易误判的概念：Optional、值类型、协议、闭包、错误处理和并发模型。\n这篇文章不按零基础教程展开，而是从 Kotlin 开发者的视角，梳理 Swift 中最值得优先掌握的基础能力。\n为什么 Kotlin 开发者学 Swift 不难 Kotlin 和 Swift 都是现代静态类型语言，很多设计目标相似：\n都支持类型推断 都强调空值安全 都有 lambda / closure 都支持泛型 都有扩展能力 都适合写简洁的业务代码 例如，Kotlin 中的 val、var：\nval name = \u0026#34;Tom\u0026#34; var age = 18 age = 19 Swift 中对应的是 let、var：\nlet name = \u0026#34;Tom\u0026#34; var age = 18 age = 19 从语法观感上看，两者差异不大。但 Swift 更强调值类型、协议组合和编译期约束，这些地方需要单独适应。\n语法对照速查 下面这张表可以作为初学 Swift 时的快速参照。\nKotlin Swift 说明 val let 不可重新赋值 var var 可以重新赋值 String? String? 可空 / 可选值 null nil 空值 ?: ?? 空值默认值 fun func 函数声明 interface protocol 能力约束 class class 引用类型 data class struct 只能粗略类比，语义不同 lambda closure 可传递代码块 suspend async 异步函数 try/catch do/try/catch 错误处理 Dispatchers.Main MainActor 只能类比，机制不同 这张表只能帮助建立直觉，不能完全等价迁移。Swift 中有些概念和 Kotlin 看起来相似，但底层语义不同。\n",
+  "keywords": [
+    "Swift", "Kotlin", "iOS", "并发"
+  ],
+  "articleBody": "Swift 是 Apple 平台开发的主要语言，常用于 iOS、macOS、watchOS 和 visionOS 应用开发。对已经熟悉 Kotlin 的开发者来说，Swift 的入门难点通常不在“变量、函数、条件判断”这些基础语法，而在几组容易误判的概念：Optional、值类型、协议、闭包、错误处理和并发模型。\n这篇文章不按零基础教程展开，而是从 Kotlin 开发者的视角，梳理 Swift 中最值得优先掌握的基础能力。\n为什么 Kotlin 开发者学 Swift 不难 Kotlin 和 Swift 都是现代静态类型语言，很多设计目标相似：\n都支持类型推断 都强调空值安全 都有 lambda / closure 都支持泛型 都有扩展能力 都适合写简洁的业务代码 例如，Kotlin 中的 val、var：\nval name = \"Tom\" var age = 18 age = 19 Swift 中对应的是 let、var：\nlet name = \"Tom\" var age = 18 age = 19 从语法观感上看，两者差异不大。但 Swift 更强调值类型、协议组合和编译期约束，这些地方需要单独适应。\n语法对照速查 下面这张表可以作为初学 Swift 时的快速参照。\nKotlin Swift 说明 val let 不可重新赋值 var var 可以重新赋值 String? String? 可空 / 可选值 null nil 空值 ?: ?? 空值默认值 fun func 函数声明 interface protocol 能力约束 class class 引用类型 data class struct 只能粗略类比，语义不同 lambda closure 可传递代码块 suspend async 异步函数 try/catch do/try/catch 错误处理 Dispatchers.Main MainActor 只能类比，机制不同 这张表只能帮助建立直觉，不能完全等价迁移。Swift 中有些概念和 Kotlin 看起来相似，但底层语义不同。\n变量、类型与 Optional Swift 支持类型推断：\nlet title = \"Swift\" let count = 10 let enabled = true 也可以显式声明类型：\nlet title: String = \"Swift\" let count: Int = 10 let price: Double = 19.9 let enabled: Bool = true 数组和字典的写法如下：\nlet names: [String] = [\"Tom\", \"Jerry\"] let scores: [String: Int] = [ \"Tom\": 90, \"Jerry\": 85 ] 1. Optional 类似 Kotlin nullable Swift 的 Optional 和 Kotlin 的 nullable 类型很像。\nSwift：\nvar nickname: String? = nil nickname = \"Alice\" Kotlin：\nvar nickname: String? = null nickname = \"Alice\" Swift 中不能直接把 String? 当成 String 使用，需要先解包。\nif let name = nickname { print(name) } 这和 Kotlin 的安全调用不完全一样，但目标类似，都是为了避免空值崩溃。\nnickname?.let { name -\u003e println(name) } 2. guard let 更适合提前退出 iOS 项目中经常使用 guard let 处理必要参数。\nfunc printNickname(_ nickname: String?) { guard let name = nickname else { return } print(name) } 它适合表达“如果没有这个值，后面的逻辑就不应该继续执行”。\n3. 不要滥用强制解包 Swift 可以用 ! 强制解包：\nprint(nickname!) 但如果 nickname 实际是 nil，程序会直接崩溃。对 Kotlin 开发者来说，可以把它理解成一种比 !! 更需要谨慎的写法。\n入门阶段建议优先使用：\nif let name = nickname { print(name) } let displayName = nickname ?? \"Guest\" 函数与参数标签 Swift 使用 func 声明函数。\nfunc add(_ a: Int, _ b: Int) -\u003e Int { return a + b } let result = add(1, 2) 这里的 _ 表示调用时省略外部参数名。\n如果不写 _，调用时需要带参数名：\nfunc greet(name: String, age: Int) { print(\"\\(name), \\(age)\") } greet(name: \"Tom\", age: 18) 这是 Swift 和 Kotlin 差异比较明显的地方。Swift 很重视调用点的可读性，所以参数标签是 API 设计的一部分。\n比如：\nfunc move(from start: Int, to end: Int) { print(\"move from \\(start) to \\(end)\") } move(from: 1, to: 10) 调用代码读起来接近自然语言。写 Swift API 时，不只要考虑函数内部怎么实现，也要考虑调用时是否清楚。\nstruct、class 与值语义 Swift 中 struct 和 class 都可以定义属性和方法，但语义不同。\nstruct 是值类型 class 是引用类型 class 支持继承 struct 不支持继承 Swift 标准库中的 String、Array、Dictionary 都是结构体 struct User { let id: Int var name: String } var user1 = User(id: 1, name: \"Tom\") var user2 = user1 user2.name = \"Jerry\" print(user1.name) // Tom print(user2.name) // Jerry user2 修改后不会影响 user1。\nclass 则不同：\nclass Counter { var value = 0 } let c1 = Counter() let c2 = c1 c2.value = 10 print(c1.value) // 10 c1 和 c2 指向同一个对象。\n对 Kotlin 开发者来说，最容易踩的坑是把 Swift struct 简单等同于 Kotlin data class。它们都适合表达数据，但 Swift struct 是值类型，这会影响赋值、传参和状态更新。\n实际 iOS 开发中可以先遵循这个判断：\n数据模型优先用 struct 配置、状态快照优先用 struct 需要共享状态时考虑 class 需要继承或引用生命周期时考虑 class protocol、extension 与泛型 Swift 的 protocol 类似 Kotlin 的 interface，用于定义一组能力。\nprotocol IdentifiableItem { var id: Int { get } } struct Article: IdentifiableItem { let id: Int let title: String } extension 可以给已有类型添加能力。\nextension String { var isNotEmptyText: Bool { return !isEmpty } } let name = \"Swift\" print(name.isNotEmptyText) 这和 Kotlin extension function 很接近：\nfun String.isNotEmptyText(): Boolean { return this.isNotEmpty() } Swift 的协议和扩展经常组合使用。比如可以给所有符合某个协议的类型提供默认实现：\nprotocol Displayable { var title: String { get } func displayText() -\u003e String } extension Displayable { func displayText() -\u003e String { return \"Title: \\(title)\" } } struct Book: Displayable { let title: String } let book = Book(title: \"Swift Guide\") print(book.displayText()) 泛型用于编写和具体类型无关的代码：\nfunc first\u003cT\u003e(_ items: [T]) -\u003e T? { return items.first } let name = first([\"Tom\", \"Jerry\"]) let number = first([1, 2, 3]) 泛型也可以加协议约束：\nfunc printTitle\u003cT: Displayable\u003e(_ value: T) { print(value.title) } SwiftUI 中会大量出现协议、泛型和扩展。入门时不必急着完全理解所有类型推导，先能读懂“某个类型需要满足某个协议”就够了。\n闭包：SwiftUI 和异步代码的基础 Swift 的闭包类似 Kotlin lambda，可以作为参数传递。\nlet numbers = [1, 2, 3] let doubled = numbers.map { value in value * 2 } 可以简写为：\nlet doubled = numbers.map { $0 * 2 } 过滤数组：\nlet evenNumbers = numbers.filter { $0 % 2 == 0 } 排序：\nlet sorted = numbers.sorted { a, b in a \u003e b } Swift 里有一个很常见的写法叫尾随闭包。比如：\nperformRequest { print(\"finished\") } 如果函数最后一个参数是闭包，就可以把闭包写在括号外面。这种写法在 SwiftUI 中极其常见：\nButton(\"Load\") { print(\"button tapped\") } 这里的点击事件就是一个闭包。\n错误处理：throws、try、do-catch Swift 使用 throws 声明可能抛出错误的函数。\nenum NetworkError: Error { case invalidURL case emptyData } func request() throws -\u003e String { throw NetworkError.invalidURL } 调用时使用 try：\ndo { let data = try request() print(data) } catch { print(\"request failed: \\(error)\") } 如果不关心具体错误，可以用 try?：\nlet data = try? request() try? 会把返回值转成 Optional。如果函数抛错，结果就是 nil。\n这很方便，但不要滥用。调试网络请求、文件读写、JSON 解析时，优先使用 do-catch，否则错误原因会被隐藏。\n并发：async/await、Task、MainActor Swift 现代并发的核心是 async/await。\nfunc loadUser() async throws -\u003e User { return User(id: 1, name: \"Tom\") } 调用异步函数时需要 await：\nTask { do { let user = try await loadUser() print(user.name) } catch { print(error) } } Task 常用于从同步上下文进入异步上下文，例如按钮点击后发起网络请求。\nfunc onTapLoadButton() { Task { let user = try await loadUser() print(user) } } MainActor 用于隔离需要在主线程执行的代码。UI 状态更新通常应该在 MainActor 上进行。\n@MainActor final class UserViewModel: ObservableObject { @Published var name = \"\" func load() async { name = \"Tom\" } } 如果用 Kotlin 类比，可以粗略理解为：MainActor 和 Dispatchers.Main 都和主线程 UI 更新有关。但 MainActor 是 Swift 并发模型中的 actor 隔离机制，不只是线程切换工具。\n入门阶段先记住三点：\n耗时操作适合放进异步函数 调用异步函数时使用 await 更新 UI 状态时注意 MainActor 一个贯穿示例 下面用一个简单的用户加载场景，把 struct、Optional、protocol、async throws 和 MainActor 串起来。\n先定义模型：\nstruct User { let id: Int let name: String let nickname: String? } 定义一个协议，表示具备加载用户的能力：\nprotocol UserLoading { func loadUser(id: Int) async throws -\u003e User } 实现一个服务：\nstruct UserService: UserLoading { func loadUser(id: Int) async throws -\u003e User { return User(id: id, name: \"Tom\", nickname: nil) } } 定义 ViewModel：\n@MainActor final class UserViewModel: ObservableObject { @Published var displayName = \"\" @Published var errorMessage: String? private let service: UserLoading init(service: UserLoading = UserService()) { self.service = service } func load() { Task { do { let user = try await service.loadUser(id: 1) displayName = user.nickname ?? user.name } catch { errorMessage = \"加载用户失败\" } } } } 这个例子里有几个 Swift 常见点：\nUser 用 struct 表达数据 nickname 用 String? 表达可能为空 UserLoading 用 protocol 抽象能力 loadUser 用 async throws 表达异步且可能失败 UserViewModel 用 @MainActor 约束 UI 状态更新 ?? 用于处理 Optional 默认值 这类代码结构在 iOS 项目中很常见。\nSwift 与 SwiftUI 的关系 Swift 是语言，SwiftUI 是用 Swift 构建的声明式 UI 框架。二者不是同一个层面的东西。\nSwiftUI 代码看起来很简洁：\nstruct ContentView: View { var body: some View { VStack { Text(\"Hello\") Button(\"Tap\") { print(\"Tapped\") } } } } 但这段代码背后同时涉及：\nstruct：视图通常是值类型 protocol：View 是协议 some View：不透明返回类型 闭包：VStack {} 和 Button {} 都使用闭包 声明式 UI：界面由状态推导出来 所以 SwiftUI 不建议塞进 Swift 基础文章里详细讲。更合理的安排是：\nSwift 基础文章讲语言能力 SwiftUI 文章讲 View、状态、布局、列表、导航和生命周期 SwiftUI 文章中再解释这些语言能力如何服务于声明式 UI 换句话说，Swift 是地基，SwiftUI 是建在这个地基上的 UI 框架。\nKotlin 开发者常见误区 1. 把 Optional 当普通值用 看到 String? 时，要立刻意识到它不是 String。先处理空值，再进入业务逻辑。\n2. 滥用强制解包 value! 很像是在告诉编译器“相信我”。但运行时一旦是 nil，就会崩溃。除非非常确定，否则不要用它解决编译错误。\n3. 把 struct 当成 data class Swift struct 是值类型。它可以表达数据，但不等同于 Kotlin data class。赋值、传参和状态更新时要注意复制语义。\n4. 忽略参数标签 Swift 的参数标签会影响调用点的可读性。不要只从函数内部看 API，也要看调用代码是否清楚。\n5. 用 try? 吞掉错误 try? 很方便，但会丢失错误原因。调试阶段和关键业务逻辑里，优先使用 do-catch。\n6. 把 MainActor 简单理解成主线程工具 MainActor 和主线程 UI 更新有关，但它属于 Swift 并发隔离模型。后续深入并发时，需要把它当成 actor 机制的一部分理解。\n推荐学习路线 如果已经有 Kotlin 经验，可以按下面顺序学习 Swift：\n熟悉 let、var、基础类型和字符串插值 重点理解 Optional、if let、guard let、?? 掌握函数参数标签 区分 struct 与 class 学习 protocol、extension 和泛型约束 熟悉闭包、尾随闭包和 $0 学会 throws、try、do-catch 学习 async/await、Task、MainActor 再进入 SwiftUI，用一个小 App 串联这些语法 官方资料可以优先看：\nThe Swift Programming Language Develop in Swift 小结 Kotlin 开发者学习 Swift，真正需要转换的是语言习惯，而不是从零理解编程概念。\n优先掌握几条主线就够了：用 Optional 处理空值，用 struct 表达值类型数据，用 protocol 和 extension 组织能力，用闭包传递行为，用 throws 表达失败，用 async/await 和 MainActor 处理异步与 UI 状态。\nSwiftUI 建议单独成文。Swift 基础文章负责把语言特性讲清楚，SwiftUI 文章再解释这些特性如何组合成声明式 UI。\n",
+  "wordCount" : "1149",
+  "inLanguage": "en",
+  "datePublished": "2026-07-08T11:58:58+08:00",
+  "dateModified": "2026-07-08T11:58:58+08:00",
+  "author":[{
+    "@type": "Person",
+    "name": "夏天的小西瓜"
+  }],
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "/posts/ios/swift_basic_for_kotlin_developers/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "缥缈夏鸢",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "/favicon.ico"
+    }
+  }
+}
+</script>
+</head>
+
+<body class="" id="top">
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.body.classList.add('dark');
+    } else if (localStorage.getItem("pref-theme") === "light") {
+        document.body.classList.remove('dark')
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.body.classList.add('dark');
+    }
+
+</script>
+
+<header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="/" accesskey="h" title="缥缈夏鸢 (Alt + H)">缥缈夏鸢</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" accesskey="t" title="(Alt + T)">
+                    <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu">
+            <li>
+                <a href="/" title="首页">
+                    <span>首页</span>
+                </a>
+            </li>
+            <li>
+                <a href="/posts/" title="文章">
+                    <span>文章</span>
+                </a>
+            </li>
+            <li>
+                <a href="/categories/" title="分类">
+                    <span>分类</span>
+                </a>
+            </li>
+            <li>
+                <a href="/tags/" title="标签">
+                    <span>标签</span>
+                </a>
+            </li>
+            <li>
+                <a href="/archives/" title="归档">
+                    <span>归档</span>
+                </a>
+            </li>
+            <li>
+                <a href="/search/" title="搜索">
+                    <span>搜索</span>
+                </a>
+            </li>
+            <li>
+                <a href="/about/" title="关于">
+                    <span>关于</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <div class="breadcrumbs"><a href="/">Home</a>&nbsp;»&nbsp;<a href="/posts/">Posts</a></div>
+    <h1 class="post-title entry-hint-parent">
+      面向Kotlin开发者的Swift基础入门
+    </h1>
+    <div class="post-meta"><span title='2026-07-08 11:58:58 +0800 CST'>July 8, 2026</span>&nbsp;·&nbsp;6 min&nbsp;·&nbsp;1149 words&nbsp;·&nbsp;夏天的小西瓜
+
+</div>
+  </header> <aside id="toc-container" class="toc-container wide">
+    <div class="toc">
+        <details  open>
+            <summary accesskey="c" title="(Alt + C)">
+                <span class="details">Table of Contents</span>
+            </summary>
+
+            <div class="inner"><ul>
+                    <li>
+                        <a href="#%e4%b8%ba%e4%bb%80%e4%b9%88-kotlin-%e5%bc%80%e5%8f%91%e8%80%85%e5%ad%a6-swift-%e4%b8%8d%e9%9a%be" aria-label="为什么 Kotlin 开发者学 Swift 不难">为什么 Kotlin 开发者学 Swift 不难</a></li>
+                    <li>
+                        <a href="#%e8%af%ad%e6%b3%95%e5%af%b9%e7%85%a7%e9%80%9f%e6%9f%a5" aria-label="语法对照速查">语法对照速查</a></li>
+                    <li>
+                        <a href="#%e5%8f%98%e9%87%8f%e7%b1%bb%e5%9e%8b%e4%b8%8e-optional" aria-label="变量、类型与 Optional">变量、类型与 Optional</a><ul>
+                            
+                    <li>
+                        <a href="#1-optional-%e7%b1%bb%e4%bc%bc-kotlin-nullable" aria-label="1. Optional 类似 Kotlin nullable">1. Optional 类似 Kotlin nullable</a></li>
+                    <li>
+                        <a href="#2-guard-let-%e6%9b%b4%e9%80%82%e5%90%88%e6%8f%90%e5%89%8d%e9%80%80%e5%87%ba" aria-label="2. guard let 更适合提前退出">2. guard let 更适合提前退出</a></li>
+                    <li>
+                        <a href="#3-%e4%b8%8d%e8%a6%81%e6%bb%a5%e7%94%a8%e5%bc%ba%e5%88%b6%e8%a7%a3%e5%8c%85" aria-label="3. 不要滥用强制解包">3. 不要滥用强制解包</a></li></ul>
+                    </li>
+                    <li>
+                        <a href="#%e5%87%bd%e6%95%b0%e4%b8%8e%e5%8f%82%e6%95%b0%e6%a0%87%e7%ad%be" aria-label="函数与参数标签">函数与参数标签</a></li>
+                    <li>
+                        <a href="#structclass-%e4%b8%8e%e5%80%bc%e8%af%ad%e4%b9%89" aria-label="struct、class 与值语义">struct、class 与值语义</a></li>
+                    <li>
+                        <a href="#protocolextension-%e4%b8%8e%e6%b3%9b%e5%9e%8b" aria-label="protocol、extension 与泛型">protocol、extension 与泛型</a></li>
+                    <li>
+                        <a href="#%e9%97%ad%e5%8c%85swiftui-%e5%92%8c%e5%bc%82%e6%ad%a5%e4%bb%a3%e7%a0%81%e7%9a%84%e5%9f%ba%e7%a1%80" aria-label="闭包：SwiftUI 和异步代码的基础">闭包：SwiftUI 和异步代码的基础</a></li>
+                    <li>
+                        <a href="#%e9%94%99%e8%af%af%e5%a4%84%e7%90%86throwstrydo-catch" aria-label="错误处理：throws、try、do-catch">错误处理：throws、try、do-catch</a></li>
+                    <li>
+                        <a href="#%e5%b9%b6%e5%8f%91asyncawaittaskmainactor" aria-label="并发：async/await、Task、MainActor">并发：async/await、Task、MainActor</a></li>
+                    <li>
+                        <a href="#%e4%b8%80%e4%b8%aa%e8%b4%af%e7%a9%bf%e7%a4%ba%e4%be%8b" aria-label="一个贯穿示例">一个贯穿示例</a></li>
+                    <li>
+                        <a href="#swift-%e4%b8%8e-swiftui-%e7%9a%84%e5%85%b3%e7%b3%bb" aria-label="Swift 与 SwiftUI 的关系">Swift 与 SwiftUI 的关系</a></li>
+                    <li>
+                        <a href="#kotlin-%e5%bc%80%e5%8f%91%e8%80%85%e5%b8%b8%e8%a7%81%e8%af%af%e5%8c%ba" aria-label="Kotlin 开发者常见误区">Kotlin 开发者常见误区</a><ul>
+                            
+                    <li>
+                        <a href="#1-%e6%8a%8a-optional-%e5%bd%93%e6%99%ae%e9%80%9a%e5%80%bc%e7%94%a8" aria-label="1. 把 Optional 当普通值用">1. 把 Optional 当普通值用</a></li>
+                    <li>
+                        <a href="#2-%e6%bb%a5%e7%94%a8%e5%bc%ba%e5%88%b6%e8%a7%a3%e5%8c%85" aria-label="2. 滥用强制解包">2. 滥用强制解包</a></li>
+                    <li>
+                        <a href="#3-%e6%8a%8a-struct-%e5%bd%93%e6%88%90-data-class" aria-label="3. 把 struct 当成 data class">3. 把 struct 当成 data class</a></li>
+                    <li>
+                        <a href="#4-%e5%bf%bd%e7%95%a5%e5%8f%82%e6%95%b0%e6%a0%87%e7%ad%be" aria-label="4. 忽略参数标签">4. 忽略参数标签</a></li>
+                    <li>
+                        <a href="#5-%e7%94%a8-try-%e5%90%9e%e6%8e%89%e9%94%99%e8%af%af" aria-label="5. 用 try? 吞掉错误">5. 用 try? 吞掉错误</a></li>
+                    <li>
+                        <a href="#6-%e6%8a%8a-mainactor-%e7%ae%80%e5%8d%95%e7%90%86%e8%a7%a3%e6%88%90%e4%b8%bb%e7%ba%bf%e7%a8%8b%e5%b7%a5%e5%85%b7" aria-label="6. 把 MainActor 简单理解成主线程工具">6. 把 MainActor 简单理解成主线程工具</a></li></ul>
+                    </li>
+                    <li>
+                        <a href="#%e6%8e%a8%e8%8d%90%e5%ad%a6%e4%b9%a0%e8%b7%af%e7%ba%bf" aria-label="推荐学习路线">推荐学习路线</a></li>
+                    <li>
+                        <a href="#%e5%b0%8f%e7%bb%93" aria-label="小结">小结</a>
+                    </li>
+                </ul>
+            </div>
+        </details>
+    </div>
+</aside>
+<script>
+    let activeElement;
+    let elements;
+    window.addEventListener('DOMContentLoaded', function (event) {
+        checkTocPosition();
+
+        elements = document.querySelectorAll('h1[id],h2[id],h3[id],h4[id],h5[id],h6[id]');
+         
+         activeElement = elements[0];
+         const id = encodeURI(activeElement.getAttribute('id')).toLowerCase();
+         document.querySelector(`.inner ul li a[href="#${id}"]`).classList.add('active');
+     }, false);
+
+    window.addEventListener('resize', function(event) {
+        checkTocPosition();
+    }, false);
+
+    window.addEventListener('scroll', () => {
+        
+        activeElement = Array.from(elements).find((element) => {
+            if ((getOffsetTop(element) - window.pageYOffset) > 0 && 
+                (getOffsetTop(element) - window.pageYOffset) < window.innerHeight/2) {
+                return element;
+            }
+        }) || activeElement
+
+        elements.forEach(element => {
+             const id = encodeURI(element.getAttribute('id')).toLowerCase();
+             if (element === activeElement){
+                 document.querySelector(`.inner ul li a[href="#${id}"]`).classList.add('active');
+             } else {
+                 document.querySelector(`.inner ul li a[href="#${id}"]`).classList.remove('active');
+             }
+         })
+     }, false);
+
+    const main = parseInt(getComputedStyle(document.body).getPropertyValue('--article-width'), 10);
+    const toc = parseInt(getComputedStyle(document.body).getPropertyValue('--toc-width'), 10);
+    const gap = parseInt(getComputedStyle(document.body).getPropertyValue('--gap'), 10);
+
+    function checkTocPosition() {
+        const width = document.body.scrollWidth;
+
+        if (width - main - (toc * 2) - (gap * 4) > 0) {
+            document.getElementById("toc-container").classList.add("wide");
+        } else {
+            document.getElementById("toc-container").classList.remove("wide");
+        }
+    }
+
+    function getOffsetTop(element) {
+        if (!element.getClientRects().length) {
+            return 0;
+        }
+        let rect = element.getBoundingClientRect();
+        let win = element.ownerDocument.defaultView;
+        return rect.top + win.pageYOffset;   
+    }
+</script>
+
+  <div class="post-content"><p>Swift 是 Apple 平台开发的主要语言，常用于 iOS、macOS、watchOS 和 visionOS 应用开发。对已经熟悉 Kotlin 的开发者来说，Swift 的入门难点通常不在“变量、函数、条件判断”这些基础语法，而在几组容易误判的概念：<code>Optional</code>、值类型、协议、闭包、错误处理和并发模型。</p>
+<p>这篇文章不按零基础教程展开，而是从 Kotlin 开发者的视角，梳理 Swift 中最值得优先掌握的基础能力。</p>
+<h2 id="为什么-kotlin-开发者学-swift-不难">为什么 Kotlin 开发者学 Swift 不难<a hidden class="anchor" aria-hidden="true" href="#为什么-kotlin-开发者学-swift-不难">#</a></h2>
+<p>Kotlin 和 Swift 都是现代静态类型语言，很多设计目标相似：</p>
+<ul>
+<li>都支持类型推断</li>
+<li>都强调空值安全</li>
+<li>都有 lambda / closure</li>
+<li>都支持泛型</li>
+<li>都有扩展能力</li>
+<li>都适合写简洁的业务代码</li>
+</ul>
+<p>例如，Kotlin 中的 <code>val</code>、<code>var</code>：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-kotlin" data-lang="kotlin"><span class="line"><span class="cl"><span class="k">val</span> <span class="py">name</span> <span class="p">=</span> <span class="s2">&#34;Tom&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="k">var</span> <span class="py">age</span> <span class="p">=</span> <span class="m">18</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">age</span> <span class="p">=</span> <span class="m">19</span>
+</span></span></code></pre></div><p>Swift 中对应的是 <code>let</code>、<code>var</code>：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-swift" data-lang="swift"><span class="line"><span class="cl"><span class="kd">let</span> <span class="nv">name</span> <span class="p">=</span> <span class="s">&#34;Tom&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="kd">var</span> <span class="nv">age</span> <span class="p">=</span> <span class="mi">18</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">age</span> <span class="p">=</span> <span class="mi">19</span>
+</span></span></code></pre></div><p>从语法观感上看，两者差异不大。但 Swift 更强调值类型、协议组合和编译期约束，这些地方需要单独适应。</p>
+<h2 id="语法对照速查">语法对照速查<a hidden class="anchor" aria-hidden="true" href="#语法对照速查">#</a></h2>
+<p>下面这张表可以作为初学 Swift 时的快速参照。</p>
+<table>
+  <thead>
+      <tr>
+          <th>Kotlin</th>
+          <th>Swift</th>
+          <th>说明</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>val</code></td>
+          <td><code>let</code></td>
+          <td>不可重新赋值</td>
+      </tr>
+      <tr>
+          <td><code>var</code></td>
+          <td><code>var</code></td>
+          <td>可以重新赋值</td>
+      </tr>
+      <tr>
+          <td><code>String?</code></td>
+          <td><code>String?</code></td>
+          <td>可空 / 可选值</td>
+      </tr>
+      <tr>
+          <td><code>null</code></td>
+          <td><code>nil</code></td>
+          <td>空值</td>
+      </tr>
+      <tr>
+          <td><code>?:</code></td>
+          <td><code>??</code></td>
+          <td>空值默认值</td>
+      </tr>
+      <tr>
+          <td><code>fun</code></td>
+          <td><code>func</code></td>
+          <td>函数声明</td>
+      </tr>
+      <tr>
+          <td><code>interface</code></td>
+          <td><code>protocol</code></td>
+          <td>能力约束</td>
+      </tr>
+      <tr>
+          <td><code>class</code></td>
+          <td><code>class</code></td>
+          <td>引用类型</td>
+      </tr>
+      <tr>
+          <td><code>data class</code></td>
+          <td><code>struct</code></td>
+          <td>只能粗略类比，语义不同</td>
+      </tr>
+      <tr>
+          <td>lambda</td>
+          <td>closure</td>
+          <td>可传递代码块</td>
+      </tr>
+      <tr>
+          <td><code>suspend</code></td>
+          <td><code>async</code></td>
+          <td>异步函数</td>
+      </tr>
+      <tr>
+          <td><code>try/catch</code></td>
+          <td><code>do/try/catch</code></td>
+          <td>错误处理</td>
+      </tr>
+      <tr>
+          <td><code>Dispatchers.Main</code></td>
+          <td><code>MainActor</code></td>
+          <td>只能类比，机制不同</td>
+      </tr>
+  </tbody>
+</table>
+<p>这张表只能帮助建立直觉，不能完全等价迁移。Swift 中有些概念和 Kotlin 看起来相似，但底层语义不同。</p>
+<h2 id="变量类型与-optional">变量、类型与 Optional<a hidden class="anchor" aria-hidden="true" href="#变量类型与-optional">#</a></h2>
+<p>Swift 支持类型推断：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-swift" data-lang="swift"><span class="line"><span class="cl"><span class="kd">let</span> <span class="nv">title</span> <span class="p">=</span> <span class="s">&#34;Swift&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="kd">let</span> <span class="nv">count</span> <span class="p">=</span> <span class="mi">10</span>
+</span></span><span class="line"><span class="cl"><span class="kd">let</span> <span class="nv">enabled</span> <span class="p">=</span> <span class="kc">true</span>
+</span></span></code></pre></div><p>也可以显式声明类型：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-swift" data-lang="swift"><span class="line"><span class="cl"><span class="kd">let</span> <span class="nv">title</span><span class="p">:</span> <span class="nb">String</span> <span class="p">=</span> <span class="s">&#34;Swift&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="kd">let</span> <span class="nv">count</span><span class="p">:</span> <span class="nb">Int</span> <span class="p">=</span> <span class="mi">10</span>
+</span></span><span class="line"><span class="cl"><span class="kd">let</span> <span class="nv">price</span><span class="p">:</span> <span class="nb">Double</span> <span class="p">=</span> <span class="mf">19.9</span>
+</span></span><span class="line"><span class="cl"><span class="kd">let</span> <span class="nv">enabled</span><span class="p">:</span> <span class="nb">Bool</span> <span class="p">=</span> <span class="kc">true</span>
+</span></span></code></pre></div><p>数组和字典的写法如下：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-swift" data-lang="swift"><span class="line"><span class="cl"><span class="kd">let</span> <span class="nv">names</span><span class="p">:</span> <span class="p">[</span><span class="nb">String</span><span class="p">]</span> <span class="p">=</span> <span class="p">[</span><span class="s">&#34;Tom&#34;</span><span class="p">,</span> <span class="s">&#34;Jerry&#34;</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl"><span class="kd">let</span> <span class="nv">scores</span><span class="p">:</span> <span class="p">[</span><span class="nb">String</span><span class="p">:</span> <span class="nb">Int</span><span class="p">]</span> <span class="p">=</span> <span class="p">[</span>
+</span></span><span class="line"><span class="cl">    <span class="s">&#34;Tom&#34;</span><span class="p">:</span> <span class="mi">90</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="s">&#34;Jerry&#34;</span><span class="p">:</span> <span class="mi">85</span>
+</span></span><span class="line"><span class="cl"><span class="p">]</span>
+</span></span></code></pre></div><h3 id="1-optional-类似-kotlin-nullable">1. Optional 类似 Kotlin nullable<a hidden class="anchor" aria-hidden="true" href="#1-optional-类似-kotlin-nullable">#</a></h3>
+<p>Swift 的 <code>Optional</code> 和 Kotlin 的 nullable 类型很像。</p>
+<p>Swift：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-swift" data-lang="swift"><span class="line"><span class="cl"><span class="kd">var</span> <span class="nv">nickname</span><span class="p">:</span> <span class="nb">String</span><span class="p">?</span> <span class="p">=</span> <span class="kc">nil</span>
+</span></span><span class="line"><span class="cl"><span class="n">nickname</span> <span class="p">=</span> <span class="s">&#34;Alice&#34;</span>
+</span></span></code></pre></div><p>Kotlin：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-kotlin" data-lang="kotlin"><span class="line"><span class="cl"><span class="k">var</span> <span class="py">nickname</span><span class="p">:</span> <span class="n">String</span><span class="p">?</span> <span class="p">=</span> <span class="k">null</span>
+</span></span><span class="line"><span class="cl"><span class="n">nickname</span> <span class="p">=</span> <span class="s2">&#34;Alice&#34;</span>
+</span></span></code></pre></div><p>Swift 中不能直接把 <code>String?</code> 当成 <code>String</code> 使用，需要先解包。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-swift" data-lang="swift"><span class="line"><span class="cl"><span class="k">if</span> <span class="kd">let</span> <span class="nv">name</span> <span class="p">=</span> <span class="n">nickname</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="bp">print</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>这和 Kotlin 的安全调用不完全一样，但目标类似，都是为了避免空值崩溃。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-kotlin" data-lang="kotlin"><span class="line"><span class="cl"><span class="n">nickname</span><span class="o">?.</span><span class="n">let</span> <span class="p">{</span> <span class="n">name</span> <span class="o">-&gt;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">println</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><h3 id="2-guard-let-更适合提前退出">2. guard let 更适合提前退出<a hidden class="anchor" aria-hidden="true" href="#2-guard-let-更适合提前退出">#</a></h3>
+<p>iOS 项目中经常使用 <code>guard let</code> 处理必要参数。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-swift" data-lang="swift"><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">printNickname</span><span class="p">(</span><span class="kc">_</span> <span class="n">nickname</span><span class="p">:</span> <span class="nb">String</span><span class="p">?)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">guard</span> <span class="kd">let</span> <span class="nv">name</span> <span class="p">=</span> <span class="n">nickname</span> <span class="k">else</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="bp">print</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>它适合表达“如果没有这个值，后面的逻辑就不应该继续执行”。</p>
+<h3 id="3-不要滥用强制解包">3. 不要滥用强制解包<a hidden class="anchor" aria-hidden="true" href="#3-不要滥用强制解包">#</a></h3>
+<p>Swift 可以用 <code>!</code> 强制解包：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-swift" data-lang="swift"><span class="line"><span class="cl"><span class="bp">print</span><span class="p">(</span><span class="n">nickname</span><span class="p">!)</span>
+</span></span></code></pre></div><p>但如果 <code>nickname</code> 实际是 <code>nil</code>，程序会直接崩溃。对 Kotlin 开发者来说，可以把它理解成一种比 <code>!!</code> 更需要谨慎的写法。</p>
+<p>入门阶段建议优先使用：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-swift" data-lang="swift"><span class="line"><span class="cl"><span class="k">if</span> <span class="kd">let</span> <span class="nv">name</span> <span class="p">=</span> <span class="n">nickname</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="bp">print</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">let</span> <span class="nv">displayName</span> <span class="p">=</span> <span class="n">nickname</span> <span class="p">??</span> <span class="s">&#34;Guest&#34;</span>
+</span></span></code></pre></div><h2 id="函数与参数标签">函数与参数标签<a hidden class="anchor" aria-hidden="true" href="#函数与参数标签">#</a></h2>
+<p>Swift 使用 <code>func</code> 声明函数。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-swift" data-lang="swift"><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">add</span><span class="p">(</span><span class="kc">_</span> <span class="n">a</span><span class="p">:</span> <span class="nb">Int</span><span class="p">,</span> <span class="kc">_</span> <span class="n">b</span><span class="p">:</span> <span class="nb">Int</span><span class="p">)</span> <span class="p">-&gt;</span> <span class="nb">Int</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="n">a</span> <span class="o">+</span> <span class="n">b</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">let</span> <span class="nv">result</span> <span class="p">=</span> <span class="n">add</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+</span></span></code></pre></div><p>这里的 <code>_</code> 表示调用时省略外部参数名。</p>
+<p>如果不写 <code>_</code>，调用时需要带参数名：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-swift" data-lang="swift"><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">greet</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">String</span><span class="p">,</span> <span class="n">age</span><span class="p">:</span> <span class="nb">Int</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="bp">print</span><span class="p">(</span><span class="s">&#34;</span><span class="si">\(</span><span class="n">name</span><span class="si">)</span><span class="s">, </span><span class="si">\(</span><span class="n">age</span><span class="si">)</span><span class="s">&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">greet</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="s">&#34;Tom&#34;</span><span class="p">,</span> <span class="n">age</span><span class="p">:</span> <span class="mi">18</span><span class="p">)</span>
+</span></span></code></pre></div><p>这是 Swift 和 Kotlin 差异比较明显的地方。Swift 很重视调用点的可读性，所以参数标签是 API 设计的一部分。</p>
+<p>比如：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-swift" data-lang="swift"><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">move</span><span class="p">(</span><span class="n">from</span> <span class="n">start</span><span class="p">:</span> <span class="nb">Int</span><span class="p">,</span> <span class="n">to</span> <span class="n">end</span><span class="p">:</span> <span class="nb">Int</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="bp">print</span><span class="p">(</span><span class="s">&#34;move from </span><span class="si">\(</span><span class="n">start</span><span class="si">)</span><span class="s"> to </span><span class="si">\(</span><span class="n">end</span><span class="si">)</span><span class="s">&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">move</span><span class="p">(</span><span class="n">from</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="n">to</span><span class="p">:</span> <span class="mi">10</span><span class="p">)</span>
+</span></span></code></pre></div><p>调用代码读起来接近自然语言。写 Swift API 时，不只要考虑函数内部怎么实现，也要考虑调用时是否清楚。</p>
+<h2 id="structclass-与值语义">struct、class 与值语义<a hidden class="anchor" aria-hidden="true" href="#structclass-与值语义">#</a></h2>
+<p>Swift 中 <code>struct</code> 和 <code>class</code> 都可以定义属性和方法，但语义不同。</p>
+<ul>
+<li><code>struct</code> 是值类型</li>
+<li><code>class</code> 是引用类型</li>
+<li><code>class</code> 支持继承</li>
+<li><code>struct</code> 不支持继承</li>
+<li>Swift 标准库中的 <code>String</code>、<code>Array</code>、<code>Dictionary</code> 都是结构体</li>
+</ul>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-swift" data-lang="swift"><span class="line"><span class="cl"><span class="kd">struct</span> <span class="nc">User</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">let</span> <span class="nv">id</span><span class="p">:</span> <span class="nb">Int</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">var</span> <span class="nv">name</span><span class="p">:</span> <span class="nb">String</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">var</span> <span class="nv">user1</span> <span class="p">=</span> <span class="n">User</span><span class="p">(</span><span class="n">id</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="s">&#34;Tom&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="kd">var</span> <span class="nv">user2</span> <span class="p">=</span> <span class="n">user1</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">user2</span><span class="p">.</span><span class="n">name</span> <span class="p">=</span> <span class="s">&#34;Jerry&#34;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="bp">print</span><span class="p">(</span><span class="n">user1</span><span class="p">.</span><span class="n">name</span><span class="p">)</span> <span class="c1">// Tom</span>
+</span></span><span class="line"><span class="cl"><span class="bp">print</span><span class="p">(</span><span class="n">user2</span><span class="p">.</span><span class="n">name</span><span class="p">)</span> <span class="c1">// Jerry</span>
+</span></span></code></pre></div><p><code>user2</code> 修改后不会影响 <code>user1</code>。</p>
+<p><code>class</code> 则不同：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-swift" data-lang="swift"><span class="line"><span class="cl"><span class="kd">class</span> <span class="nc">Counter</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">var</span> <span class="nv">value</span> <span class="p">=</span> <span class="mi">0</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">let</span> <span class="nv">c1</span> <span class="p">=</span> <span class="n">Counter</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl"><span class="kd">let</span> <span class="nv">c2</span> <span class="p">=</span> <span class="n">c1</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">c2</span><span class="p">.</span><span class="n">value</span> <span class="p">=</span> <span class="mi">10</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="bp">print</span><span class="p">(</span><span class="n">c1</span><span class="p">.</span><span class="n">value</span><span class="p">)</span> <span class="c1">// 10</span>
+</span></span></code></pre></div><p><code>c1</code> 和 <code>c2</code> 指向同一个对象。</p>
+<p>对 Kotlin 开发者来说，最容易踩的坑是把 Swift <code>struct</code> 简单等同于 Kotlin <code>data class</code>。它们都适合表达数据，但 Swift <code>struct</code> 是值类型，这会影响赋值、传参和状态更新。</p>
+<p>实际 iOS 开发中可以先遵循这个判断：</p>
+<ul>
+<li>数据模型优先用 <code>struct</code></li>
+<li>配置、状态快照优先用 <code>struct</code></li>
+<li>需要共享状态时考虑 <code>class</code></li>
+<li>需要继承或引用生命周期时考虑 <code>class</code></li>
+</ul>
+<h2 id="protocolextension-与泛型">protocol、extension 与泛型<a hidden class="anchor" aria-hidden="true" href="#protocolextension-与泛型">#</a></h2>
+<p>Swift 的 <code>protocol</code> 类似 Kotlin 的 <code>interface</code>，用于定义一组能力。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-swift" data-lang="swift"><span class="line"><span class="cl"><span class="kd">protocol</span> <span class="nc">IdentifiableItem</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">var</span> <span class="nv">id</span><span class="p">:</span> <span class="nb">Int</span> <span class="p">{</span> <span class="kr">get</span> <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">struct</span> <span class="nc">Article</span><span class="p">:</span> <span class="n">IdentifiableItem</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">let</span> <span class="nv">id</span><span class="p">:</span> <span class="nb">Int</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">let</span> <span class="nv">title</span><span class="p">:</span> <span class="nb">String</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p><code>extension</code> 可以给已有类型添加能力。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-swift" data-lang="swift"><span class="line"><span class="cl"><span class="kd">extension</span> <span class="nc">String</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">var</span> <span class="nv">isNotEmptyText</span><span class="p">:</span> <span class="nb">Bool</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="o">!</span><span class="bp">isEmpty</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">let</span> <span class="nv">name</span> <span class="p">=</span> <span class="s">&#34;Swift&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="bp">print</span><span class="p">(</span><span class="n">name</span><span class="p">.</span><span class="n">isNotEmptyText</span><span class="p">)</span>
+</span></span></code></pre></div><p>这和 Kotlin extension function 很接近：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-kotlin" data-lang="kotlin"><span class="line"><span class="cl"><span class="k">fun</span> <span class="nf">String</span><span class="p">.</span><span class="n">isNotEmptyText</span><span class="p">():</span> <span class="n">Boolean</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="k">this</span><span class="p">.</span><span class="n">isNotEmpty</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>Swift 的协议和扩展经常组合使用。比如可以给所有符合某个协议的类型提供默认实现：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-swift" data-lang="swift"><span class="line"><span class="cl"><span class="kd">protocol</span> <span class="nc">Displayable</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">var</span> <span class="nv">title</span><span class="p">:</span> <span class="nb">String</span> <span class="p">{</span> <span class="kr">get</span> <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">func</span> <span class="nf">displayText</span><span class="p">()</span> <span class="p">-&gt;</span> <span class="nb">String</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">extension</span> <span class="nc">Displayable</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">func</span> <span class="nf">displayText</span><span class="p">()</span> <span class="p">-&gt;</span> <span class="nb">String</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="s">&#34;Title: </span><span class="si">\(</span><span class="n">title</span><span class="si">)</span><span class="s">&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">struct</span> <span class="nc">Book</span><span class="p">:</span> <span class="n">Displayable</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">let</span> <span class="nv">title</span><span class="p">:</span> <span class="nb">String</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">let</span> <span class="nv">book</span> <span class="p">=</span> <span class="n">Book</span><span class="p">(</span><span class="n">title</span><span class="p">:</span> <span class="s">&#34;Swift Guide&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="bp">print</span><span class="p">(</span><span class="n">book</span><span class="p">.</span><span class="n">displayText</span><span class="p">())</span>
+</span></span></code></pre></div><p>泛型用于编写和具体类型无关的代码：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-swift" data-lang="swift"><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">first</span><span class="p">&lt;</span><span class="n">T</span><span class="p">&gt;(</span><span class="kc">_</span> <span class="n">items</span><span class="p">:</span> <span class="p">[</span><span class="n">T</span><span class="p">])</span> <span class="p">-&gt;</span> <span class="n">T</span><span class="p">?</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="n">items</span><span class="p">.</span><span class="bp">first</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">let</span> <span class="nv">name</span> <span class="p">=</span> <span class="bp">first</span><span class="p">([</span><span class="s">&#34;Tom&#34;</span><span class="p">,</span> <span class="s">&#34;Jerry&#34;</span><span class="p">])</span>
+</span></span><span class="line"><span class="cl"><span class="kd">let</span> <span class="nv">number</span> <span class="p">=</span> <span class="bp">first</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>
+</span></span></code></pre></div><p>泛型也可以加协议约束：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-swift" data-lang="swift"><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">printTitle</span><span class="p">&lt;</span><span class="n">T</span><span class="p">:</span> <span class="n">Displayable</span><span class="p">&gt;(</span><span class="kc">_</span> <span class="n">value</span><span class="p">:</span> <span class="n">T</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="bp">print</span><span class="p">(</span><span class="n">value</span><span class="p">.</span><span class="n">title</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>SwiftUI 中会大量出现协议、泛型和扩展。入门时不必急着完全理解所有类型推导，先能读懂“某个类型需要满足某个协议”就够了。</p>
+<h2 id="闭包swiftui-和异步代码的基础">闭包：SwiftUI 和异步代码的基础<a hidden class="anchor" aria-hidden="true" href="#闭包swiftui-和异步代码的基础">#</a></h2>
+<p>Swift 的闭包类似 Kotlin lambda，可以作为参数传递。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-swift" data-lang="swift"><span class="line"><span class="cl"><span class="kd">let</span> <span class="nv">numbers</span> <span class="p">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">let</span> <span class="nv">doubled</span> <span class="p">=</span> <span class="n">numbers</span><span class="p">.</span><span class="bp">map</span> <span class="p">{</span> <span class="n">value</span> <span class="k">in</span>
+</span></span><span class="line"><span class="cl">    <span class="n">value</span> <span class="o">*</span> <span class="mi">2</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>可以简写为：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-swift" data-lang="swift"><span class="line"><span class="cl"><span class="kd">let</span> <span class="nv">doubled</span> <span class="p">=</span> <span class="n">numbers</span><span class="p">.</span><span class="bp">map</span> <span class="p">{</span> <span class="nv">$0</span> <span class="o">*</span> <span class="mi">2</span> <span class="p">}</span>
+</span></span></code></pre></div><p>过滤数组：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-swift" data-lang="swift"><span class="line"><span class="cl"><span class="kd">let</span> <span class="nv">evenNumbers</span> <span class="p">=</span> <span class="n">numbers</span><span class="p">.</span><span class="bp">filter</span> <span class="p">{</span> <span class="nv">$0</span> <span class="o">%</span> <span class="mi">2</span> <span class="p">==</span> <span class="mi">0</span> <span class="p">}</span>
+</span></span></code></pre></div><p>排序：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-swift" data-lang="swift"><span class="line"><span class="cl"><span class="kd">let</span> <span class="nv">sorted</span> <span class="p">=</span> <span class="n">numbers</span><span class="p">.</span><span class="bp">sorted</span> <span class="p">{</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="k">in</span>
+</span></span><span class="line"><span class="cl">    <span class="n">a</span> <span class="o">&gt;</span> <span class="n">b</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>Swift 里有一个很常见的写法叫尾随闭包。比如：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-swift" data-lang="swift"><span class="line"><span class="cl"><span class="n">performRequest</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="bp">print</span><span class="p">(</span><span class="s">&#34;finished&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>如果函数最后一个参数是闭包，就可以把闭包写在括号外面。这种写法在 SwiftUI 中极其常见：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-swift" data-lang="swift"><span class="line"><span class="cl"><span class="n">Button</span><span class="p">(</span><span class="s">&#34;Load&#34;</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="bp">print</span><span class="p">(</span><span class="s">&#34;button tapped&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>这里的点击事件就是一个闭包。</p>
+<h2 id="错误处理throwstrydo-catch">错误处理：throws、try、do-catch<a hidden class="anchor" aria-hidden="true" href="#错误处理throwstrydo-catch">#</a></h2>
+<p>Swift 使用 <code>throws</code> 声明可能抛出错误的函数。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-swift" data-lang="swift"><span class="line"><span class="cl"><span class="kd">enum</span> <span class="nc">NetworkError</span><span class="p">:</span> <span class="n">Error</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">case</span> <span class="n">invalidURL</span>
+</span></span><span class="line"><span class="cl">    <span class="k">case</span> <span class="n">emptyData</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">request</span><span class="p">()</span> <span class="kr">throws</span> <span class="p">-&gt;</span> <span class="nb">String</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">throw</span> <span class="n">NetworkError</span><span class="p">.</span><span class="n">invalidURL</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>调用时使用 <code>try</code>：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-swift" data-lang="swift"><span class="line"><span class="cl"><span class="k">do</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">let</span> <span class="nv">data</span> <span class="p">=</span> <span class="k">try</span> <span class="n">request</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">    <span class="bp">print</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span> <span class="k">catch</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="bp">print</span><span class="p">(</span><span class="s">&#34;request failed: </span><span class="si">\(</span><span class="n">error</span><span class="si">)</span><span class="s">&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>如果不关心具体错误，可以用 <code>try?</code>：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-swift" data-lang="swift"><span class="line"><span class="cl"><span class="kd">let</span> <span class="nv">data</span> <span class="p">=</span> <span class="k">try</span><span class="p">?</span> <span class="n">request</span><span class="p">()</span>
+</span></span></code></pre></div><p><code>try?</code> 会把返回值转成 Optional。如果函数抛错，结果就是 <code>nil</code>。</p>
+<p>这很方便，但不要滥用。调试网络请求、文件读写、JSON 解析时，优先使用 <code>do-catch</code>，否则错误原因会被隐藏。</p>
+<h2 id="并发asyncawaittaskmainactor">并发：async/await、Task、MainActor<a hidden class="anchor" aria-hidden="true" href="#并发asyncawaittaskmainactor">#</a></h2>
+<p>Swift 现代并发的核心是 <code>async/await</code>。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-swift" data-lang="swift"><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">loadUser</span><span class="p">()</span> <span class="n">async</span> <span class="kr">throws</span> <span class="p">-&gt;</span> <span class="n">User</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="n">User</span><span class="p">(</span><span class="n">id</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="s">&#34;Tom&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>调用异步函数时需要 <code>await</code>：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-swift" data-lang="swift"><span class="line"><span class="cl"><span class="n">Task</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">do</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="kd">let</span> <span class="nv">user</span> <span class="p">=</span> <span class="k">try</span> <span class="n">await</span> <span class="n">loadUser</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">        <span class="bp">print</span><span class="p">(</span><span class="n">user</span><span class="p">.</span><span class="n">name</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span> <span class="k">catch</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="bp">print</span><span class="p">(</span><span class="n">error</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p><code>Task</code> 常用于从同步上下文进入异步上下文，例如按钮点击后发起网络请求。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-swift" data-lang="swift"><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">onTapLoadButton</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">Task</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="kd">let</span> <span class="nv">user</span> <span class="p">=</span> <span class="k">try</span> <span class="n">await</span> <span class="n">loadUser</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">        <span class="bp">print</span><span class="p">(</span><span class="n">user</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p><code>MainActor</code> 用于隔离需要在主线程执行的代码。UI 状态更新通常应该在 <code>MainActor</code> 上进行。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-swift" data-lang="swift"><span class="line"><span class="cl"><span class="p">@</span><span class="n">MainActor</span>
+</span></span><span class="line"><span class="cl"><span class="kr">final</span> <span class="kd">class</span> <span class="nc">UserViewModel</span><span class="p">:</span> <span class="n">ObservableObject</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="p">@</span><span class="n">Published</span> <span class="kd">var</span> <span class="nv">name</span> <span class="p">=</span> <span class="s">&#34;&#34;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kd">func</span> <span class="nf">load</span><span class="p">()</span> <span class="n">async</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">name</span> <span class="p">=</span> <span class="s">&#34;Tom&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>如果用 Kotlin 类比，可以粗略理解为：<code>MainActor</code> 和 <code>Dispatchers.Main</code> 都和主线程 UI 更新有关。但 <code>MainActor</code> 是 Swift 并发模型中的 actor 隔离机制，不只是线程切换工具。</p>
+<p>入门阶段先记住三点：</p>
+<ul>
+<li>耗时操作适合放进异步函数</li>
+<li>调用异步函数时使用 <code>await</code></li>
+<li>更新 UI 状态时注意 <code>MainActor</code></li>
+</ul>
+<h2 id="一个贯穿示例">一个贯穿示例<a hidden class="anchor" aria-hidden="true" href="#一个贯穿示例">#</a></h2>
+<p>下面用一个简单的用户加载场景，把 <code>struct</code>、<code>Optional</code>、<code>protocol</code>、<code>async throws</code> 和 <code>MainActor</code> 串起来。</p>
+<p>先定义模型：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-swift" data-lang="swift"><span class="line"><span class="cl"><span class="kd">struct</span> <span class="nc">User</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">let</span> <span class="nv">id</span><span class="p">:</span> <span class="nb">Int</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">let</span> <span class="nv">name</span><span class="p">:</span> <span class="nb">String</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">let</span> <span class="nv">nickname</span><span class="p">:</span> <span class="nb">String</span><span class="p">?</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>定义一个协议，表示具备加载用户的能力：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-swift" data-lang="swift"><span class="line"><span class="cl"><span class="kd">protocol</span> <span class="nc">UserLoading</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">func</span> <span class="nf">loadUser</span><span class="p">(</span><span class="n">id</span><span class="p">:</span> <span class="nb">Int</span><span class="p">)</span> <span class="n">async</span> <span class="kr">throws</span> <span class="p">-&gt;</span> <span class="n">User</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>实现一个服务：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-swift" data-lang="swift"><span class="line"><span class="cl"><span class="kd">struct</span> <span class="nc">UserService</span><span class="p">:</span> <span class="n">UserLoading</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">func</span> <span class="nf">loadUser</span><span class="p">(</span><span class="n">id</span><span class="p">:</span> <span class="nb">Int</span><span class="p">)</span> <span class="n">async</span> <span class="kr">throws</span> <span class="p">-&gt;</span> <span class="n">User</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="n">User</span><span class="p">(</span><span class="n">id</span><span class="p">:</span> <span class="n">id</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="s">&#34;Tom&#34;</span><span class="p">,</span> <span class="n">nickname</span><span class="p">:</span> <span class="kc">nil</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>定义 ViewModel：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-swift" data-lang="swift"><span class="line"><span class="cl"><span class="p">@</span><span class="n">MainActor</span>
+</span></span><span class="line"><span class="cl"><span class="kr">final</span> <span class="kd">class</span> <span class="nc">UserViewModel</span><span class="p">:</span> <span class="n">ObservableObject</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="p">@</span><span class="n">Published</span> <span class="kd">var</span> <span class="nv">displayName</span> <span class="p">=</span> <span class="s">&#34;&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">@</span><span class="n">Published</span> <span class="kd">var</span> <span class="nv">errorMessage</span><span class="p">:</span> <span class="nb">String</span><span class="p">?</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="kd">let</span> <span class="nv">service</span><span class="p">:</span> <span class="n">UserLoading</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kd">init</span><span class="p">(</span><span class="n">service</span><span class="p">:</span> <span class="n">UserLoading</span> <span class="p">=</span> <span class="n">UserService</span><span class="p">())</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="kc">self</span><span class="p">.</span><span class="n">service</span> <span class="p">=</span> <span class="n">service</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kd">func</span> <span class="nf">load</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">Task</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="k">do</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                <span class="kd">let</span> <span class="nv">user</span> <span class="p">=</span> <span class="k">try</span> <span class="n">await</span> <span class="n">service</span><span class="p">.</span><span class="n">loadUser</span><span class="p">(</span><span class="n">id</span><span class="p">:</span> <span class="mi">1</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">                <span class="n">displayName</span> <span class="p">=</span> <span class="n">user</span><span class="p">.</span><span class="n">nickname</span> <span class="p">??</span> <span class="n">user</span><span class="p">.</span><span class="n">name</span>
+</span></span><span class="line"><span class="cl">            <span class="p">}</span> <span class="k">catch</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                <span class="n">errorMessage</span> <span class="p">=</span> <span class="s">&#34;加载用户失败&#34;</span>
+</span></span><span class="line"><span class="cl">            <span class="p">}</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>这个例子里有几个 Swift 常见点：</p>
+<ul>
+<li><code>User</code> 用 <code>struct</code> 表达数据</li>
+<li><code>nickname</code> 用 <code>String?</code> 表达可能为空</li>
+<li><code>UserLoading</code> 用 <code>protocol</code> 抽象能力</li>
+<li><code>loadUser</code> 用 <code>async throws</code> 表达异步且可能失败</li>
+<li><code>UserViewModel</code> 用 <code>@MainActor</code> 约束 UI 状态更新</li>
+<li><code>??</code> 用于处理 Optional 默认值</li>
+</ul>
+<p>这类代码结构在 iOS 项目中很常见。</p>
+<h2 id="swift-与-swiftui-的关系">Swift 与 SwiftUI 的关系<a hidden class="anchor" aria-hidden="true" href="#swift-与-swiftui-的关系">#</a></h2>
+<p>Swift 是语言，SwiftUI 是用 Swift 构建的声明式 UI 框架。二者不是同一个层面的东西。</p>
+<p>SwiftUI 代码看起来很简洁：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-swift" data-lang="swift"><span class="line"><span class="cl"><span class="kd">struct</span> <span class="nc">ContentView</span><span class="p">:</span> <span class="n">View</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">var</span> <span class="nv">body</span><span class="p">:</span> <span class="n">some</span> <span class="n">View</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">VStack</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">Text</span><span class="p">(</span><span class="s">&#34;Hello&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">            <span class="n">Button</span><span class="p">(</span><span class="s">&#34;Tap&#34;</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                <span class="bp">print</span><span class="p">(</span><span class="s">&#34;Tapped&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">            <span class="p">}</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>但这段代码背后同时涉及：</p>
+<ul>
+<li><code>struct</code>：视图通常是值类型</li>
+<li><code>protocol</code>：<code>View</code> 是协议</li>
+<li><code>some View</code>：不透明返回类型</li>
+<li>闭包：<code>VStack {}</code> 和 <code>Button {}</code> 都使用闭包</li>
+<li>声明式 UI：界面由状态推导出来</li>
+</ul>
+<p>所以 SwiftUI 不建议塞进 Swift 基础文章里详细讲。更合理的安排是：</p>
+<ul>
+<li>Swift 基础文章讲语言能力</li>
+<li>SwiftUI 文章讲 <code>View</code>、状态、布局、列表、导航和生命周期</li>
+<li>SwiftUI 文章中再解释这些语言能力如何服务于声明式 UI</li>
+</ul>
+<p>换句话说，Swift 是地基，SwiftUI 是建在这个地基上的 UI 框架。</p>
+<h2 id="kotlin-开发者常见误区">Kotlin 开发者常见误区<a hidden class="anchor" aria-hidden="true" href="#kotlin-开发者常见误区">#</a></h2>
+<h3 id="1-把-optional-当普通值用">1. 把 Optional 当普通值用<a hidden class="anchor" aria-hidden="true" href="#1-把-optional-当普通值用">#</a></h3>
+<p>看到 <code>String?</code> 时，要立刻意识到它不是 <code>String</code>。先处理空值，再进入业务逻辑。</p>
+<h3 id="2-滥用强制解包">2. 滥用强制解包<a hidden class="anchor" aria-hidden="true" href="#2-滥用强制解包">#</a></h3>
+<p><code>value!</code> 很像是在告诉编译器“相信我”。但运行时一旦是 <code>nil</code>，就会崩溃。除非非常确定，否则不要用它解决编译错误。</p>
+<h3 id="3-把-struct-当成-data-class">3. 把 struct 当成 data class<a hidden class="anchor" aria-hidden="true" href="#3-把-struct-当成-data-class">#</a></h3>
+<p>Swift <code>struct</code> 是值类型。它可以表达数据，但不等同于 Kotlin <code>data class</code>。赋值、传参和状态更新时要注意复制语义。</p>
+<h3 id="4-忽略参数标签">4. 忽略参数标签<a hidden class="anchor" aria-hidden="true" href="#4-忽略参数标签">#</a></h3>
+<p>Swift 的参数标签会影响调用点的可读性。不要只从函数内部看 API，也要看调用代码是否清楚。</p>
+<h3 id="5-用-try-吞掉错误">5. 用 try? 吞掉错误<a hidden class="anchor" aria-hidden="true" href="#5-用-try-吞掉错误">#</a></h3>
+<p><code>try?</code> 很方便，但会丢失错误原因。调试阶段和关键业务逻辑里，优先使用 <code>do-catch</code>。</p>
+<h3 id="6-把-mainactor-简单理解成主线程工具">6. 把 MainActor 简单理解成主线程工具<a hidden class="anchor" aria-hidden="true" href="#6-把-mainactor-简单理解成主线程工具">#</a></h3>
+<p><code>MainActor</code> 和主线程 UI 更新有关，但它属于 Swift 并发隔离模型。后续深入并发时，需要把它当成 actor 机制的一部分理解。</p>
+<h2 id="推荐学习路线">推荐学习路线<a hidden class="anchor" aria-hidden="true" href="#推荐学习路线">#</a></h2>
+<p>如果已经有 Kotlin 经验，可以按下面顺序学习 Swift：</p>
+<ol>
+<li>熟悉 <code>let</code>、<code>var</code>、基础类型和字符串插值</li>
+<li>重点理解 <code>Optional</code>、<code>if let</code>、<code>guard let</code>、<code>??</code></li>
+<li>掌握函数参数标签</li>
+<li>区分 <code>struct</code> 与 <code>class</code></li>
+<li>学习 <code>protocol</code>、<code>extension</code> 和泛型约束</li>
+<li>熟悉闭包、尾随闭包和 <code>$0</code></li>
+<li>学会 <code>throws</code>、<code>try</code>、<code>do-catch</code></li>
+<li>学习 <code>async/await</code>、<code>Task</code>、<code>MainActor</code></li>
+<li>再进入 SwiftUI，用一个小 App 串联这些语法</li>
+</ol>
+<p>官方资料可以优先看：</p>
+<ul>
+<li><a href="https://docs.swift.org/swift-book/documentation/the-swift-programming-language/">The Swift Programming Language</a></li>
+<li><a href="https://developer.apple.com/tutorials/develop-in-swift">Develop in Swift</a></li>
+</ul>
+<h2 id="小结">小结<a hidden class="anchor" aria-hidden="true" href="#小结">#</a></h2>
+<p>Kotlin 开发者学习 Swift，真正需要转换的是语言习惯，而不是从零理解编程概念。</p>
+<p>优先掌握几条主线就够了：用 <code>Optional</code> 处理空值，用 <code>struct</code> 表达值类型数据，用 <code>protocol</code> 和 <code>extension</code> 组织能力，用闭包传递行为，用 <code>throws</code> 表达失败，用 <code>async/await</code> 和 <code>MainActor</code> 处理异步与 UI 状态。</p>
+<p>SwiftUI 建议单独成文。Swift 基础文章负责把语言特性讲清楚，SwiftUI 文章再解释这些特性如何组合成声明式 UI。</p>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="/tags/swift/">Swift</a></li>
+      <li><a href="/tags/kotlin/">Kotlin</a></li>
+      <li><a href="/tags/ios/">IOS</a></li>
+      <li><a href="/tags/%E5%B9%B6%E5%8F%91/">并发</a></li>
+    </ul>
+<nav class="paginav">
+  <a class="prev" href="/posts/ios/swiftui_state_driven_ui/">
+    <span class="title">« Prev</span>
+    <br>
+    <span>SwiftUI基础入门：从状态驱动界面开始</span>
+  </a>
+  <a class="next" href="/posts/ios/ios_development_learning_route/">
+    <span class="title">Next »</span>
+    <br>
+    <span>iOS开发入门总览：开发与学习路线</span>
+  </a>
+</nav>
+
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2026 <a href="/">缥缈夏鸢</a></span> · 
+
+    <span>
+        Powered by
+        <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+        <path d="M12 6H0l6-6z" />
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu')
+    if (menu) {
+        menu.scrollLeft = localStorage.getItem("menu-scroll-position");
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        if (document.body.className.includes("dark")) {
+            document.body.classList.remove('dark');
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            document.body.classList.add('dark');
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerHTML = 'copy';
+
+        function copyingDone() {
+            copybutton.innerHTML = 'copied!';
+            setTimeout(() => {
+                copybutton.innerHTML = 'copy';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+</body>
+
+</html>

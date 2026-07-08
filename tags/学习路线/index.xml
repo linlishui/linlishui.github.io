@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>学习路线 on 缥缈夏鸢</title>
+    <link>/tags/%E5%AD%A6%E4%B9%A0%E8%B7%AF%E7%BA%BF/</link>
+    <description>Recent content in 学习路线 on 缥缈夏鸢</description>
+    <generator>Hugo -- 0.138.0</generator>
+    <language>en-us</language>
+    <lastBuildDate>Tue, 07 Jul 2026 14:37:51 +0800</lastBuildDate>
+    <atom:link href="/tags/%E5%AD%A6%E4%B9%A0%E8%B7%AF%E7%BA%BF/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>iOS开发入门总览：开发与学习路线</title>
+      <link>/posts/ios/ios_development_learning_route/</link>
+      <pubDate>Tue, 07 Jul 2026 14:37:51 +0800</pubDate>
+      <guid>/posts/ios/ios_development_learning_route/</guid>
+      <description>&lt;p&gt;iOS 开发入门最容易遇到的问题，不是某一个 API 难，而是知识点分散：Swift、SwiftUI、UIKit、Xcode、网络、数据存储、调试、签名、上架，每一块都能展开很深。&lt;/p&gt;
+&lt;p&gt;如果没有路线，很容易在语法、UI 框架和工程配置之间来回跳，学了很多零散概念，却迟迟做不出一个完整 App。&lt;/p&gt;
+&lt;p&gt;这篇文章先做总览，目标是回答四个问题：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;iOS 开发主要由哪些部分组成&lt;/li&gt;
+&lt;li&gt;初学者应该按什么顺序学习&lt;/li&gt;
+&lt;li&gt;每个阶段应该做到什么程度再进入下一步&lt;/li&gt;
+&lt;li&gt;最适合入门的练习项目应该怎么安排&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;ios-开发包括什么&#34;&gt;iOS 开发包括什么&lt;/h2&gt;
+&lt;p&gt;iOS 开发不是只会 Swift 语法就够了。一个可运行、可维护的 App，通常会涉及下面几类能力。&lt;/p&gt;
+&lt;h3 id=&#34;1-语言基础&#34;&gt;1. 语言基础&lt;/h3&gt;
+&lt;p&gt;Swift 是当前 Apple 平台开发的主要语言。入门阶段需要优先掌握：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;let&lt;/code&gt;、&lt;code&gt;var&lt;/code&gt; 和基础类型&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;Optional&lt;/code&gt; 和空值处理&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;struct&lt;/code&gt; 与 &lt;code&gt;class&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;函数、闭包、协议、泛型&lt;/li&gt;
+&lt;li&gt;错误处理&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;async/await&lt;/code&gt;、&lt;code&gt;Task&lt;/code&gt;、&lt;code&gt;MainActor&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;如果已经有 Kotlin、Java 或 TypeScript 经验，可以重点关注 Swift 和这些语言在空值、值类型、协议和并发上的差异，而不是从变量和条件判断重新学起。&lt;/p&gt;
+&lt;h3 id=&#34;2-ui-框架&#34;&gt;2. UI 框架&lt;/h3&gt;
+&lt;p&gt;iOS UI 开发主要会遇到两套框架：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;SwiftUI：声明式 UI 框架，适合新项目和入门学习&lt;/li&gt;
+&lt;li&gt;UIKit：传统命令式 UI 框架，大量存量项目仍在使用&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;建议入门阶段优先学习 SwiftUI。SwiftUI 更容易帮助初学者理解“状态驱动界面”：状态变化后，界面自动根据状态重新计算。&lt;/p&gt;
+&lt;p&gt;但 UIKit 不能完全跳过。实际工作中，经常会遇到 UIKit 项目、UIKit 组件，或者 SwiftUI 与 UIKit 混用的场景。&lt;/p&gt;
+&lt;h3 id=&#34;3-工程工具&#34;&gt;3. 工程工具&lt;/h3&gt;
+&lt;p&gt;Xcode 是 iOS 开发的主要 IDE。至少需要熟悉：&lt;/p&gt;</description>
+    </item>
+  </channel>
+</rss>

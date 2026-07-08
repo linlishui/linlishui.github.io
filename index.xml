@@ -6,8 +6,233 @@
     <description>Recent content on 缥缈夏鸢</description>
     <generator>Hugo -- 0.138.0</generator>
     <language>en-us</language>
-    <lastBuildDate>Tue, 30 Jun 2026 16:08:33 +0800</lastBuildDate>
+    <lastBuildDate>Wed, 08 Jul 2026 14:20:30 +0800</lastBuildDate>
     <atom:link href="/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>SwiftUI列表与导航基础</title>
+      <link>/posts/ios/swiftui_list_navigation_basic/</link>
+      <pubDate>Wed, 08 Jul 2026 14:20:30 +0800</pubDate>
+      <guid>/posts/ios/swiftui_list_navigation_basic/</guid>
+      <description>&lt;p&gt;上一篇 SwiftUI 文章重点讲“状态驱动界面”。这篇继续往实际页面推进，聚焦两个最常见的能力：列表和导航。&lt;/p&gt;
+&lt;p&gt;大多数 App 都离不开这类页面：展示一组数据，点击某一项进入详情页。SwiftUI 中对应的核心组件是 &lt;code&gt;List&lt;/code&gt;、&lt;code&gt;ForEach&lt;/code&gt;、&lt;code&gt;NavigationStack&lt;/code&gt; 和 &lt;code&gt;NavigationLink&lt;/code&gt;。&lt;/p&gt;
+&lt;p&gt;这篇文章的目标不是罗列所有 API，而是写清楚一条常见数据流：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-text&#34; data-lang=&#34;text&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;ViewModel 加载数据 -&amp;gt; View 根据状态切换 UI -&amp;gt; List 渲染数据 -&amp;gt; NavigationLink 进入详情
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;数据模型与稳定-id&#34;&gt;数据模型与稳定 id&lt;/h2&gt;
+&lt;p&gt;列表页面首先需要一个数据模型。比如文章列表：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-swift&#34; data-lang=&#34;swift&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;kd&#34;&gt;struct&lt;/span&gt; &lt;span class=&#34;nc&#34;&gt;Article&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;Identifiable&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;nb&#34;&gt;Hashable&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;kd&#34;&gt;let&lt;/span&gt; &lt;span class=&#34;nv&#34;&gt;id&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;UUID&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;kd&#34;&gt;let&lt;/span&gt; &lt;span class=&#34;nv&#34;&gt;title&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;nb&#34;&gt;String&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;kd&#34;&gt;let&lt;/span&gt; &lt;span class=&#34;nv&#34;&gt;summary&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;nb&#34;&gt;String&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;kd&#34;&gt;let&lt;/span&gt; &lt;span class=&#34;nv&#34;&gt;author&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;nb&#34;&gt;String&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;这里同时遵守了两个协议：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;Identifiable&lt;/code&gt;：让 &lt;code&gt;List&lt;/code&gt; 能识别每一项&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;Hashable&lt;/code&gt;：后面做基于值的导航时会用到&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;code&gt;Identifiable&lt;/code&gt; 很重要。SwiftUI 需要通过稳定的 &lt;code&gt;id&lt;/code&gt; 判断哪些行被新增、删除或更新。&lt;/p&gt;
+&lt;p&gt;如果数据来自服务端，通常应该直接使用服务端返回的业务 id：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-swift&#34; data-lang=&#34;swift&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;kd&#34;&gt;struct&lt;/span&gt; &lt;span class=&#34;nc&#34;&gt;Article&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;Identifiable&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;nb&#34;&gt;Hashable&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;kd&#34;&gt;let&lt;/span&gt; &lt;span class=&#34;nv&#34;&gt;id&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;nb&#34;&gt;String&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;kd&#34;&gt;let&lt;/span&gt; &lt;span class=&#34;nv&#34;&gt;title&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;nb&#34;&gt;String&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;kd&#34;&gt;let&lt;/span&gt; &lt;span class=&#34;nv&#34;&gt;summary&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;nb&#34;&gt;String&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;不要随手用数组下标当作长期稳定 id。插入、删除、排序后，下标会变化，容易导致列表刷新异常。&lt;/p&gt;
+&lt;h2 id=&#34;用-list-展示集合数据&#34;&gt;用 List 展示集合数据&lt;/h2&gt;
+&lt;p&gt;一个最小列表可以这样写：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-swift&#34; data-lang=&#34;swift&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;kd&#34;&gt;struct&lt;/span&gt; &lt;span class=&#34;nc&#34;&gt;ArticleListView&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;View&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;kd&#34;&gt;let&lt;/span&gt; &lt;span class=&#34;nv&#34;&gt;articles&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;[&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;Article&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;]&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;kd&#34;&gt;var&lt;/span&gt; &lt;span class=&#34;nv&#34;&gt;body&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;some&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;View&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;n&#34;&gt;List&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;articles&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;article&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;in&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;            &lt;span class=&#34;n&#34;&gt;Text&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;article&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;title&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;这段代码表达的是：对 &lt;code&gt;articles&lt;/code&gt; 中的每个元素生成一行 View。&lt;/p&gt;
+&lt;p&gt;如果列表结构很简单，&lt;code&gt;List(items) { item in ... }&lt;/code&gt; 就够了。&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>SwiftUI基础入门：从状态驱动界面开始</title>
+      <link>/posts/ios/swiftui_state_driven_ui/</link>
+      <pubDate>Wed, 08 Jul 2026 14:16:54 +0800</pubDate>
+      <guid>/posts/ios/swiftui_state_driven_ui/</guid>
+      <description>&lt;p&gt;SwiftUI 是 Apple 提供的声明式 UI 框架。和 UIKit 里手动创建控件、修改属性、维护页面层级不同，SwiftUI 更强调“界面是状态的函数”：状态变了，界面自动重新计算并刷新。&lt;/p&gt;
+&lt;p&gt;如果已经有 Kotlin、Android 或 Compose 经验，可以把 SwiftUI 先理解为 Apple 平台上的声明式 UI 方案。它和 Jetpack Compose 很像，都不是简单的 XML 或 View 替代品，而是一套围绕状态、组合和数据流设计的 UI 编程模型。&lt;/p&gt;
+&lt;h2 id=&#34;swiftui-解决什么问题&#34;&gt;SwiftUI 解决什么问题&lt;/h2&gt;
+&lt;p&gt;在 UIKit 中，常见写法是先拿到控件，再手动更新控件状态。&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-swift&#34; data-lang=&#34;swift&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;n&#34;&gt;label&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;text&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;user&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;name&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;n&#34;&gt;button&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;isEnabled&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;!&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;isLoading&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;n&#34;&gt;loadingView&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;isHidden&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;!&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;isLoading&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;这种方式本身没有问题，但页面复杂后，状态和 UI 很容易分散在多个地方。比如加载中、加载成功、加载失败、空列表、按钮是否可点，都需要开发者手动维护。&lt;/p&gt;
+&lt;p&gt;SwiftUI 的思路是反过来：先描述不同状态下界面应该长什么样，然后让框架根据状态变化刷新界面。&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-swift&#34; data-lang=&#34;swift&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;kd&#34;&gt;struct&lt;/span&gt; &lt;span class=&#34;nc&#34;&gt;ContentView&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;View&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;p&#34;&gt;@&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;State&lt;/span&gt; &lt;span class=&#34;kd&#34;&gt;private&lt;/span&gt; &lt;span class=&#34;kd&#34;&gt;var&lt;/span&gt; &lt;span class=&#34;nv&#34;&gt;isLoading&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;kc&#34;&gt;false&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;kd&#34;&gt;var&lt;/span&gt; &lt;span class=&#34;nv&#34;&gt;body&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;some&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;View&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;n&#34;&gt;VStack&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;            &lt;span class=&#34;k&#34;&gt;if&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;isLoading&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;                &lt;span class=&#34;n&#34;&gt;ProgressView&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;()&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;            &lt;span class=&#34;p&#34;&gt;}&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;else&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;                &lt;span class=&#34;n&#34;&gt;Text&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;加载完成&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;            &lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;            &lt;span class=&#34;n&#34;&gt;Button&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;加载&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;                &lt;span class=&#34;n&#34;&gt;isLoading&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;kc&#34;&gt;true&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;            &lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;这里没有手动隐藏 &lt;code&gt;ProgressView&lt;/code&gt;，也没有手动修改 &lt;code&gt;Text&lt;/code&gt;。只要 &lt;code&gt;isLoading&lt;/code&gt; 变化，&lt;code&gt;body&lt;/code&gt; 会重新计算，界面会随之更新。&lt;/p&gt;
+&lt;h2 id=&#34;view-是什么&#34;&gt;View 是什么&lt;/h2&gt;
+&lt;p&gt;SwiftUI 中的页面和组件通常是一个 &lt;code&gt;struct&lt;/code&gt;，并且遵守 &lt;code&gt;View&lt;/code&gt; 协议。&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>面向Kotlin开发者的Swift基础入门</title>
+      <link>/posts/ios/swift_basic_for_kotlin_developers/</link>
+      <pubDate>Wed, 08 Jul 2026 11:58:58 +0800</pubDate>
+      <guid>/posts/ios/swift_basic_for_kotlin_developers/</guid>
+      <description>&lt;p&gt;Swift 是 Apple 平台开发的主要语言，常用于 iOS、macOS、watchOS 和 visionOS 应用开发。对已经熟悉 Kotlin 的开发者来说，Swift 的入门难点通常不在“变量、函数、条件判断”这些基础语法，而在几组容易误判的概念：&lt;code&gt;Optional&lt;/code&gt;、值类型、协议、闭包、错误处理和并发模型。&lt;/p&gt;
+&lt;p&gt;这篇文章不按零基础教程展开，而是从 Kotlin 开发者的视角，梳理 Swift 中最值得优先掌握的基础能力。&lt;/p&gt;
+&lt;h2 id=&#34;为什么-kotlin-开发者学-swift-不难&#34;&gt;为什么 Kotlin 开发者学 Swift 不难&lt;/h2&gt;
+&lt;p&gt;Kotlin 和 Swift 都是现代静态类型语言，很多设计目标相似：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;都支持类型推断&lt;/li&gt;
+&lt;li&gt;都强调空值安全&lt;/li&gt;
+&lt;li&gt;都有 lambda / closure&lt;/li&gt;
+&lt;li&gt;都支持泛型&lt;/li&gt;
+&lt;li&gt;都有扩展能力&lt;/li&gt;
+&lt;li&gt;都适合写简洁的业务代码&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;例如，Kotlin 中的 &lt;code&gt;val&lt;/code&gt;、&lt;code&gt;var&lt;/code&gt;：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-kotlin&#34; data-lang=&#34;kotlin&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;k&#34;&gt;val&lt;/span&gt; &lt;span class=&#34;py&#34;&gt;name&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;Tom&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;k&#34;&gt;var&lt;/span&gt; &lt;span class=&#34;py&#34;&gt;age&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;m&#34;&gt;18&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;n&#34;&gt;age&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;m&#34;&gt;19&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Swift 中对应的是 &lt;code&gt;let&lt;/code&gt;、&lt;code&gt;var&lt;/code&gt;：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-swift&#34; data-lang=&#34;swift&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;kd&#34;&gt;let&lt;/span&gt; &lt;span class=&#34;nv&#34;&gt;name&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;s&#34;&gt;&amp;#34;Tom&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;kd&#34;&gt;var&lt;/span&gt; &lt;span class=&#34;nv&#34;&gt;age&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;18&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;n&#34;&gt;age&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;19&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;从语法观感上看，两者差异不大。但 Swift 更强调值类型、协议组合和编译期约束，这些地方需要单独适应。&lt;/p&gt;
+&lt;h2 id=&#34;语法对照速查&#34;&gt;语法对照速查&lt;/h2&gt;
+&lt;p&gt;下面这张表可以作为初学 Swift 时的快速参照。&lt;/p&gt;
+&lt;table&gt;
+  &lt;thead&gt;
+      &lt;tr&gt;
+          &lt;th&gt;Kotlin&lt;/th&gt;
+          &lt;th&gt;Swift&lt;/th&gt;
+          &lt;th&gt;说明&lt;/th&gt;
+      &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;val&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;&lt;code&gt;let&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;不可重新赋值&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;var&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;&lt;code&gt;var&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;可以重新赋值&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;String?&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;&lt;code&gt;String?&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;可空 / 可选值&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;null&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;&lt;code&gt;nil&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;空值&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;?:&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;&lt;code&gt;??&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;空值默认值&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;fun&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;&lt;code&gt;func&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;函数声明&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;interface&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;&lt;code&gt;protocol&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;能力约束&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;class&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;&lt;code&gt;class&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;引用类型&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;data class&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;&lt;code&gt;struct&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;只能粗略类比，语义不同&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;lambda&lt;/td&gt;
+          &lt;td&gt;closure&lt;/td&gt;
+          &lt;td&gt;可传递代码块&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;suspend&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;&lt;code&gt;async&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;异步函数&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;try/catch&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;&lt;code&gt;do/try/catch&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;错误处理&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;Dispatchers.Main&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;&lt;code&gt;MainActor&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;只能类比，机制不同&lt;/td&gt;
+      &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;这张表只能帮助建立直觉，不能完全等价迁移。Swift 中有些概念和 Kotlin 看起来相似，但底层语义不同。&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>iOS开发入门总览：开发与学习路线</title>
+      <link>/posts/ios/ios_development_learning_route/</link>
+      <pubDate>Tue, 07 Jul 2026 14:37:51 +0800</pubDate>
+      <guid>/posts/ios/ios_development_learning_route/</guid>
+      <description>&lt;p&gt;iOS 开发入门最容易遇到的问题，不是某一个 API 难，而是知识点分散：Swift、SwiftUI、UIKit、Xcode、网络、数据存储、调试、签名、上架，每一块都能展开很深。&lt;/p&gt;
+&lt;p&gt;如果没有路线，很容易在语法、UI 框架和工程配置之间来回跳，学了很多零散概念，却迟迟做不出一个完整 App。&lt;/p&gt;
+&lt;p&gt;这篇文章先做总览，目标是回答四个问题：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;iOS 开发主要由哪些部分组成&lt;/li&gt;
+&lt;li&gt;初学者应该按什么顺序学习&lt;/li&gt;
+&lt;li&gt;每个阶段应该做到什么程度再进入下一步&lt;/li&gt;
+&lt;li&gt;最适合入门的练习项目应该怎么安排&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;ios-开发包括什么&#34;&gt;iOS 开发包括什么&lt;/h2&gt;
+&lt;p&gt;iOS 开发不是只会 Swift 语法就够了。一个可运行、可维护的 App，通常会涉及下面几类能力。&lt;/p&gt;
+&lt;h3 id=&#34;1-语言基础&#34;&gt;1. 语言基础&lt;/h3&gt;
+&lt;p&gt;Swift 是当前 Apple 平台开发的主要语言。入门阶段需要优先掌握：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;let&lt;/code&gt;、&lt;code&gt;var&lt;/code&gt; 和基础类型&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;Optional&lt;/code&gt; 和空值处理&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;struct&lt;/code&gt; 与 &lt;code&gt;class&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;函数、闭包、协议、泛型&lt;/li&gt;
+&lt;li&gt;错误处理&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;async/await&lt;/code&gt;、&lt;code&gt;Task&lt;/code&gt;、&lt;code&gt;MainActor&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;如果已经有 Kotlin、Java 或 TypeScript 经验，可以重点关注 Swift 和这些语言在空值、值类型、协议和并发上的差异，而不是从变量和条件判断重新学起。&lt;/p&gt;
+&lt;h3 id=&#34;2-ui-框架&#34;&gt;2. UI 框架&lt;/h3&gt;
+&lt;p&gt;iOS UI 开发主要会遇到两套框架：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;SwiftUI：声明式 UI 框架，适合新项目和入门学习&lt;/li&gt;
+&lt;li&gt;UIKit：传统命令式 UI 框架，大量存量项目仍在使用&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;建议入门阶段优先学习 SwiftUI。SwiftUI 更容易帮助初学者理解“状态驱动界面”：状态变化后，界面自动根据状态重新计算。&lt;/p&gt;
+&lt;p&gt;但 UIKit 不能完全跳过。实际工作中，经常会遇到 UIKit 项目、UIKit 组件，或者 SwiftUI 与 UIKit 混用的场景。&lt;/p&gt;
+&lt;h3 id=&#34;3-工程工具&#34;&gt;3. 工程工具&lt;/h3&gt;
+&lt;p&gt;Xcode 是 iOS 开发的主要 IDE。至少需要熟悉：&lt;/p&gt;</description>
+    </item>
     <item>
       <title>Mac环境下iTerm2使用指南</title>
       <link>/posts/tools/iterm2_on_mac/</link>

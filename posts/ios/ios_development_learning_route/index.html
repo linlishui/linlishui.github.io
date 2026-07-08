@@ -1,0 +1,1013 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>iOS开发入门总览：开发与学习路线 | 缥缈夏鸢</title>
+<meta name="keywords" content="iOS, Swift, SwiftUI, 学习路线">
+<meta name="description" content="iOS 开发入门最容易遇到的问题，不是某一个 API 难，而是知识点分散：Swift、SwiftUI、UIKit、Xcode、网络、数据存储、调试、签名、上架，每一块都能展开很深。
+如果没有路线，很容易在语法、UI 框架和工程配置之间来回跳，学了很多零散概念，却迟迟做不出一个完整 App。
+这篇文章先做总览，目标是回答四个问题：
+
+iOS 开发主要由哪些部分组成
+初学者应该按什么顺序学习
+每个阶段应该做到什么程度再进入下一步
+最适合入门的练习项目应该怎么安排
+
+iOS 开发包括什么
+iOS 开发不是只会 Swift 语法就够了。一个可运行、可维护的 App，通常会涉及下面几类能力。
+1. 语言基础
+Swift 是当前 Apple 平台开发的主要语言。入门阶段需要优先掌握：
+
+let、var 和基础类型
+Optional 和空值处理
+struct 与 class
+函数、闭包、协议、泛型
+错误处理
+async/await、Task、MainActor
+
+如果已经有 Kotlin、Java 或 TypeScript 经验，可以重点关注 Swift 和这些语言在空值、值类型、协议和并发上的差异，而不是从变量和条件判断重新学起。
+2. UI 框架
+iOS UI 开发主要会遇到两套框架：
+
+SwiftUI：声明式 UI 框架，适合新项目和入门学习
+UIKit：传统命令式 UI 框架，大量存量项目仍在使用
+
+建议入门阶段优先学习 SwiftUI。SwiftUI 更容易帮助初学者理解“状态驱动界面”：状态变化后，界面自动根据状态重新计算。
+但 UIKit 不能完全跳过。实际工作中，经常会遇到 UIKit 项目、UIKit 组件，或者 SwiftUI 与 UIKit 混用的场景。
+3. 工程工具
+Xcode 是 iOS 开发的主要 IDE。至少需要熟悉：">
+<meta name="author" content="夏天的小西瓜">
+<link rel="canonical" href="/posts/ios/ios_development_learning_route/">
+<meta name="google-site-verification" content="XYZabc">
+<meta name="msvalidate.01" content="XYZabc">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.44278f16c6e7e77192a15a0565fb5b0f220c56128442fcfa6937b4d84456ecf0.css" integrity="sha256-RCePFsbn53GSoVoFZftbDyIMVhKEQvz6aTe02ERW7PA=" rel="preload stylesheet" as="style">
+<link rel="icon" href="/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="mask-icon" href="/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="en" href="/posts/ios/ios_development_learning_route/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-track {
+                background: 0 0;
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-thumb {
+                border-color: var(--theme);
+            }
+        }
+
+    </style>
+</noscript><script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+<script>
+
+const config = {
+    startOnLoad: true,
+    theme: "base",
+    themeVariables: {
+        primaryColor: "#f8fafc",
+        primaryTextColor: "#111827",
+        primaryBorderColor: "#6b7280",
+        lineColor: "#6b7280",
+        secondaryColor: "#eef2ff",
+        secondaryTextColor: "#111827",
+        secondaryBorderColor: "#6b7280",
+        tertiaryColor: "#f1f5f9",
+        tertiaryTextColor: "#111827",
+        tertiaryBorderColor: "#6b7280",
+        edgeLabelBackground: "#f8fafc",
+        clusterBkg: "#f8fafc",
+        clusterBorder: "#6b7280",
+        noteBkgColor: "#fef3c7",
+        noteTextColor: "#111827",
+        noteBorderColor: "#6b7280"
+    },
+    flowchart: {
+        useMaxWidth: false,
+        htmlLabels: true
+    }
+};
+mermaid.initialize(config);
+
+
+window.onload = () => {
+    window.mermaid.init(undefined, document.querySelectorAll('.language-mermaid'));
+}
+</script>
+<meta property="og:url" content="/posts/ios/ios_development_learning_route/">
+  <meta property="og:site_name" content="缥缈夏鸢">
+  <meta property="og:title" content="iOS开发入门总览：开发与学习路线">
+  <meta property="og:description" content="iOS 开发入门最容易遇到的问题，不是某一个 API 难，而是知识点分散：Swift、SwiftUI、UIKit、Xcode、网络、数据存储、调试、签名、上架，每一块都能展开很深。
+如果没有路线，很容易在语法、UI 框架和工程配置之间来回跳，学了很多零散概念，却迟迟做不出一个完整 App。
+这篇文章先做总览，目标是回答四个问题：
+iOS 开发主要由哪些部分组成 初学者应该按什么顺序学习 每个阶段应该做到什么程度再进入下一步 最适合入门的练习项目应该怎么安排 iOS 开发包括什么 iOS 开发不是只会 Swift 语法就够了。一个可运行、可维护的 App，通常会涉及下面几类能力。
+1. 语言基础 Swift 是当前 Apple 平台开发的主要语言。入门阶段需要优先掌握：
+let、var 和基础类型 Optional 和空值处理 struct 与 class 函数、闭包、协议、泛型 错误处理 async/await、Task、MainActor 如果已经有 Kotlin、Java 或 TypeScript 经验，可以重点关注 Swift 和这些语言在空值、值类型、协议和并发上的差异，而不是从变量和条件判断重新学起。
+2. UI 框架 iOS UI 开发主要会遇到两套框架：
+SwiftUI：声明式 UI 框架，适合新项目和入门学习 UIKit：传统命令式 UI 框架，大量存量项目仍在使用 建议入门阶段优先学习 SwiftUI。SwiftUI 更容易帮助初学者理解“状态驱动界面”：状态变化后，界面自动根据状态重新计算。
+但 UIKit 不能完全跳过。实际工作中，经常会遇到 UIKit 项目、UIKit 组件，或者 SwiftUI 与 UIKit 混用的场景。
+3. 工程工具 Xcode 是 iOS 开发的主要 IDE。至少需要熟悉：">
+  <meta property="og:locale" content="en-us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2026-07-07T14:37:51+08:00">
+    <meta property="article:modified_time" content="2026-07-07T14:37:51+08:00">
+    <meta property="article:tag" content="IOS">
+    <meta property="article:tag" content="Swift">
+    <meta property="article:tag" content="SwiftUI">
+    <meta property="article:tag" content="学习路线">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="iOS开发入门总览：开发与学习路线">
+<meta name="twitter:description" content="iOS 开发入门最容易遇到的问题，不是某一个 API 难，而是知识点分散：Swift、SwiftUI、UIKit、Xcode、网络、数据存储、调试、签名、上架，每一块都能展开很深。
+如果没有路线，很容易在语法、UI 框架和工程配置之间来回跳，学了很多零散概念，却迟迟做不出一个完整 App。
+这篇文章先做总览，目标是回答四个问题：
+
+iOS 开发主要由哪些部分组成
+初学者应该按什么顺序学习
+每个阶段应该做到什么程度再进入下一步
+最适合入门的练习项目应该怎么安排
+
+iOS 开发包括什么
+iOS 开发不是只会 Swift 语法就够了。一个可运行、可维护的 App，通常会涉及下面几类能力。
+1. 语言基础
+Swift 是当前 Apple 平台开发的主要语言。入门阶段需要优先掌握：
+
+let、var 和基础类型
+Optional 和空值处理
+struct 与 class
+函数、闭包、协议、泛型
+错误处理
+async/await、Task、MainActor
+
+如果已经有 Kotlin、Java 或 TypeScript 经验，可以重点关注 Swift 和这些语言在空值、值类型、协议和并发上的差异，而不是从变量和条件判断重新学起。
+2. UI 框架
+iOS UI 开发主要会遇到两套框架：
+
+SwiftUI：声明式 UI 框架，适合新项目和入门学习
+UIKit：传统命令式 UI 框架，大量存量项目仍在使用
+
+建议入门阶段优先学习 SwiftUI。SwiftUI 更容易帮助初学者理解“状态驱动界面”：状态变化后，界面自动根据状态重新计算。
+但 UIKit 不能完全跳过。实际工作中，经常会遇到 UIKit 项目、UIKit 组件，或者 SwiftUI 与 UIKit 混用的场景。
+3. 工程工具
+Xcode 是 iOS 开发的主要 IDE。至少需要熟悉：">
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Posts",
+      "item": "/posts/"
+    }
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "iOS开发入门总览：开发与学习路线",
+      "item": "/posts/ios/ios_development_learning_route/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "iOS开发入门总览：开发与学习路线",
+  "name": "iOS开发入门总览：开发与学习路线",
+  "description": "iOS 开发入门最容易遇到的问题，不是某一个 API 难，而是知识点分散：Swift、SwiftUI、UIKit、Xcode、网络、数据存储、调试、签名、上架，每一块都能展开很深。\n如果没有路线，很容易在语法、UI 框架和工程配置之间来回跳，学了很多零散概念，却迟迟做不出一个完整 App。\n这篇文章先做总览，目标是回答四个问题：\niOS 开发主要由哪些部分组成 初学者应该按什么顺序学习 每个阶段应该做到什么程度再进入下一步 最适合入门的练习项目应该怎么安排 iOS 开发包括什么 iOS 开发不是只会 Swift 语法就够了。一个可运行、可维护的 App，通常会涉及下面几类能力。\n1. 语言基础 Swift 是当前 Apple 平台开发的主要语言。入门阶段需要优先掌握：\nlet、var 和基础类型 Optional 和空值处理 struct 与 class 函数、闭包、协议、泛型 错误处理 async/await、Task、MainActor 如果已经有 Kotlin、Java 或 TypeScript 经验，可以重点关注 Swift 和这些语言在空值、值类型、协议和并发上的差异，而不是从变量和条件判断重新学起。\n2. UI 框架 iOS UI 开发主要会遇到两套框架：\nSwiftUI：声明式 UI 框架，适合新项目和入门学习 UIKit：传统命令式 UI 框架，大量存量项目仍在使用 建议入门阶段优先学习 SwiftUI。SwiftUI 更容易帮助初学者理解“状态驱动界面”：状态变化后，界面自动根据状态重新计算。\n但 UIKit 不能完全跳过。实际工作中，经常会遇到 UIKit 项目、UIKit 组件，或者 SwiftUI 与 UIKit 混用的场景。\n3. 工程工具 Xcode 是 iOS 开发的主要 IDE。至少需要熟悉：\n",
+  "keywords": [
+    "iOS", "Swift", "SwiftUI", "学习路线"
+  ],
+  "articleBody": "iOS 开发入门最容易遇到的问题，不是某一个 API 难，而是知识点分散：Swift、SwiftUI、UIKit、Xcode、网络、数据存储、调试、签名、上架，每一块都能展开很深。\n如果没有路线，很容易在语法、UI 框架和工程配置之间来回跳，学了很多零散概念，却迟迟做不出一个完整 App。\n这篇文章先做总览，目标是回答四个问题：\niOS 开发主要由哪些部分组成 初学者应该按什么顺序学习 每个阶段应该做到什么程度再进入下一步 最适合入门的练习项目应该怎么安排 iOS 开发包括什么 iOS 开发不是只会 Swift 语法就够了。一个可运行、可维护的 App，通常会涉及下面几类能力。\n1. 语言基础 Swift 是当前 Apple 平台开发的主要语言。入门阶段需要优先掌握：\nlet、var 和基础类型 Optional 和空值处理 struct 与 class 函数、闭包、协议、泛型 错误处理 async/await、Task、MainActor 如果已经有 Kotlin、Java 或 TypeScript 经验，可以重点关注 Swift 和这些语言在空值、值类型、协议和并发上的差异，而不是从变量和条件判断重新学起。\n2. UI 框架 iOS UI 开发主要会遇到两套框架：\nSwiftUI：声明式 UI 框架，适合新项目和入门学习 UIKit：传统命令式 UI 框架，大量存量项目仍在使用 建议入门阶段优先学习 SwiftUI。SwiftUI 更容易帮助初学者理解“状态驱动界面”：状态变化后，界面自动根据状态重新计算。\n但 UIKit 不能完全跳过。实际工作中，经常会遇到 UIKit 项目、UIKit 组件，或者 SwiftUI 与 UIKit 混用的场景。\n3. 工程工具 Xcode 是 iOS 开发的主要 IDE。至少需要熟悉：\n创建项目 使用模拟器运行 App 真机调试 断点调试 查看控制台日志 管理资源文件 配置 Bundle Identifier 了解 Debug 和 Release 构建 入门阶段不必一开始深挖所有工程配置，但要能独立把 App 跑起来、调试问题，并知道错误信息在哪里看。\n4. 常见 App 能力 一个稍微完整的 App 通常会包含：\n页面导航 列表展示 表单输入 网络请求 JSON 解析 本地数据存储 图片加载 权限申请 空状态、加载状态、错误状态 这些能力比单个语法点更接近真实开发。学习时应该尽早用小项目把它们串起来。\n推荐学习顺序 入门路线可以按下面顺序推进：\nSwift 基础 -\u003e SwiftUI 基础 -\u003e 列表、导航和状态管理 -\u003e 网络请求和数据解析 -\u003e 本地存储 -\u003e UIKit 基础 -\u003e 调试、性能和发布 这个顺序的核心思路是：先能写出界面，再能加载数据，再能保存数据，最后补工程化和存量项目能力。\n可以把它拆成三条主线：\n语言线：Swift 语法、类型系统、错误处理、并发 UI 线：SwiftUI 状态、布局、列表、导航，再补 UIKit 工程线：Xcode、调试、网络、存储、签名、发布 学习时不要把三条线完全割裂。更好的节奏是：语言学一点，马上在 UI 页面里用起来；页面能跑后，再加网络和本地存储；功能完整后，再补调试、性能和发布。\n阶段完成标准 为了避免一直停留在“还没学完”的状态，可以给每个阶段设一个完成标准。\n阶段 重点 完成标准 Swift 基础 语法、Optional、闭包、协议、并发 能读懂常见 ViewModel 和异步请求代码 SwiftUI 基础 View、布局、状态、Binding 能写出表单、计数器、简单状态切换页面 列表与导航 List、NavigationStack、详情页 能写出列表页并点击进入详情 网络与解析 URLSession、Codable、错误处理 能从接口加载数据并展示加载/错误/空状态 本地存储 UserDefaults、文件、SwiftData/Core Data 能保存用户偏好或一组本地记录 UIKit 基础 UIViewController、UIView、Auto Layout 能读懂老项目的页面结构和生命周期 调试与发布 断点、日志、签名、TestFlight 能定位常见崩溃，并把 App 发给测试用户 这张表不是考试大纲，而是判断“该不该继续往下学”的参考。入门阶段不需要每一项都学到很深，但每一项都应该有一个能跑起来的最小实践。\n第一阶段：Swift 基础 第一阶段的目标不是把 Swift 语言所有细节都学完，而是能读懂和写出常见 iOS 代码。\n优先掌握这些内容：\n变量与常量 基础集合类型 Optional 函数和参数标签 struct、class protocol、extension 闭包 错误处理 Swift 并发基础 例如，一个简单模型可以这样写：\nstruct User { let id: Int let name: String let nickname: String? } 一个异步加载函数可以这样写：\nfunc loadUser() async throws -\u003e User { return User(id: 1, name: \"Tom\", nickname: nil) } 到这个阶段结束时，至少应该能理解下面这类代码：\nTask { do { let user = try await loadUser() print(user.nickname ?? user.name) } catch { print(error) } } 如果这些代码还能明显卡住，建议先不要急着深入 SwiftUI。SwiftUI 大量依赖闭包、协议、泛型和属性包装器，语言基础不稳时会比较吃力。\n这一阶段的产出物可以很小：写几个模型、几个函数、一个模拟网络请求的 ViewModel。重点是能把数据、失败和异步流程表达清楚。\n第二阶段：SwiftUI 基础 SwiftUI 是入门 iOS UI 开发的合适起点。学习重点不是记住所有组件，而是理解状态如何驱动界面。\n优先掌握：\nView 和 body VStack、HStack、ZStack modifier @State @Binding List NavigationStack .task 一个最小的状态驱动界面：\nstruct CounterView: View { @State private var count = 0 var body: some View { VStack { Text(\"Count: \\(count)\") Button(\"加一\") { count += 1 } } } } 这段代码的重点是：不要手动找到某个控件再修改它，而是修改 count，让界面根据状态自动刷新。\n到这个阶段结束时，应该能独立写出：\n一个表单页面 一个列表页面 一个列表到详情的跳转 加载中、空状态、错误状态切换 这时不必追求页面多漂亮。更重要的是状态归属清楚：哪些状态属于当前 View，哪些应该放到 ViewModel，哪些通过 @Binding 传给子 View。\n第三阶段：网络请求和数据解析 真实 App 通常需要从服务端加载数据。Swift 中可以使用 URLSession 发起请求，使用 Codable 解析 JSON。\n一个模型可以这样定义：\nstruct Article: Identifiable, Codable { let id: Int let title: String let summary: String } 网络请求可以先理解成三个步骤：\n构造 URL -\u003e 发起请求 -\u003e 解析 JSON 示例：\nfunc loadArticles() async throws -\u003e [Article] { let url = URL(string: \"https://example.com/articles\")! let (data, _) = try await URLSession.shared.data(from: url) return try JSONDecoder().decode([Article].self, from: data) } 入门阶段更重要的是学会处理页面状态：\n请求开始：显示加载中 请求成功：展示列表 请求失败：展示错误 数据为空：展示空状态 不要只关注“请求能不能发出去”，还要关注失败时界面是否可理解、可恢复。\n这一阶段建议把前面写过的文章列表 App 从假数据改成接口数据。即使接口只是一个本地 mock 服务，也比一直写静态数组更接近真实开发。\n第四阶段：本地数据存储 本地存储可以按复杂度分层学习：\nUserDefaults：保存简单配置，例如开关、登录状态、用户偏好 文件存储：保存文本、图片、缓存文件 SwiftData / Core Data：保存结构化业务数据 入门阶段可以先从 UserDefaults 开始：\nUserDefaults.standard.set(true, forKey: \"hasSeenGuide\") let hasSeenGuide = UserDefaults.standard.bool(forKey: \"hasSeenGuide\") 但不要把复杂业务数据都塞进 UserDefaults。它适合保存少量简单值，不适合充当数据库。\n当 App 开始需要保存列表、记录、关系型数据时，再学习 SwiftData 或 Core Data。\n学习存储时要注意边界：能临时保存不等于设计好了数据层。入门阶段先掌握读取、写入、更新、删除，再考虑数据迁移、同步和缓存策略。\n第五阶段：UIKit 基础 即使新项目可以优先使用 SwiftUI，UIKit 仍然值得学习。\n至少需要了解：\nUIViewController UIView UITableView UICollectionView Auto Layout UIKit 生命周期 SwiftUI 和 UIKit 混用 UIKit 的学习目标不是马上重写所有 SwiftUI 页面，而是为了能读懂存量项目、接入 UIKit 组件，并理解 iOS UI 体系的底层惯性。\n如果工作中接触的是老项目，UIKit 的优先级应该提前。\nSwiftUI 和 UIKit 并不是非此即彼。实际项目里可能会用 SwiftUI 写新页面，同时嵌入 UIKit 控件；也可能在 UIKit 项目里局部引入 SwiftUI。入门时先用 SwiftUI 建立 UI 思路，再补 UIKit，会更容易形成完整视角。\n第六阶段：调试、性能和发布 能写功能之后，还需要学会把问题定位出来。\n调试阶段重点掌握：\n断点 控制台日志 查看网络错误 查看崩溃堆栈 理解主线程和后台任务 性能阶段可以逐步学习：\n列表卡顿 图片过大 主线程阻塞 内存泄漏 Instruments 基础使用 发布阶段需要了解：\nBundle Identifier 证书和签名 App Icon 启动图 TestFlight App Store 审核 这些内容不适合放在第一天学习，但当你准备把 App 发给别人安装时，它们就会变得非常具体。\n这里的关键不是一次性掌握所有发布细节，而是建立基本排查路径：代码是否执行、状态是否变化、请求是否成功、主线程是否阻塞、签名配置是否正确。\n一个可执行的学习节奏 如果每天能投入 1 到 2 小时，可以按 4 到 8 周安排：\n时间 目标 产出 第 1 周 Swift 基础和 Xcode 基础 能运行项目，写出基础模型和简单函数 第 2 周 SwiftUI 布局和状态 写出计数器、表单、简单设置页 第 3 周 列表和导航 写出文章列表和详情页 第 4 周 网络请求和错误状态 列表数据改为异步加载 第 5 周 本地存储 Todo 或打卡数据可以保存 第 6 周 UIKit 基础和混用 能读懂 UIViewController，理解生命周期 第 7-8 周 调试、整理和发布体验 处理崩溃、完善图标、尝试 TestFlight 这个节奏不是硬性要求。如果你已经有移动端经验，可以压缩 Swift 和 UI 基础时间；如果是第一次接触客户端开发，可以把每个阶段拆成两周。\n推荐练习项目 学习 iOS 最好用小项目推进。建议按下面顺序做。\n1. Todo App 目标是练习：\nSwiftUI 表单 @State List 增删改 本地状态管理 做到能添加任务、完成任务、删除任务即可。验收标准是：关闭 App 后再打开，任务数据仍然存在。\n2. 文章列表 App 目标是练习：\n列表展示 导航到详情 加载状态 空状态和错误状态 ViewModel 可以先用本地假数据，再替换成网络数据。验收标准是：至少有加载中、空列表、加载失败和正常列表四种状态。\n3. 天气或 GitHub 搜索 App 目标是练习：\n网络请求 JSON 解析 搜索输入 异步加载 错误处理 这类项目能帮助你把 Swift 并发和 SwiftUI 状态管理串起来。\n验收标准是：输入关键词后触发请求，请求失败时能给出明确错误提示，而不是让页面停在空白状态。\n4. 记账或习惯打卡 App 目标是练习：\n本地数据存储 表单输入 列表筛选 统计展示 数据编辑 做到这一步，已经接近可以独立完成一个小型 App。验收标准是：能新增、编辑、删除记录，并能按时间或类型查看历史数据。\n常见误区 1. 一开始就深挖所有语法细节 Swift 语言很丰富，但入门阶段不需要把所有高级特性一次学完。先掌握能支撑 App 开发的主干，再在项目中补细节。\n2. 只看教程，不写 App iOS 开发的很多问题只有写页面时才会遇到，比如状态放在哪里、请求什么时候发、错误怎么展示、导航怎么组织。只看教程很难形成判断。\n3. 完全跳过 UIKit SwiftUI 是很好的入门起点，但 UIKit 仍然大量存在。完全不懂 UIKit，会影响阅读老项目和处理混合场景。\n4. 忽略调试能力 初学阶段不要只追求把代码写出来。能看懂报错、会打断点、能定位崩溃，比多记几个组件更重要。\n5. 过早追求架构 MVVM、模块化、依赖注入都很重要，但太早追求完整架构会拖慢入门。先写出一个清晰的小 App，再逐步抽离 ViewModel、Service 和数据层。\n6. 只在模拟器上验证 模拟器很方便，但真机上的权限、网络、性能、键盘、安全区域和签名问题更接近真实环境。至少在阶段性项目完成后，用真机跑一遍。\n建议阅读顺序 如果按本博客已有文章学习，可以先按这个顺序读：\n《面向Kotlin开发者的Swift基础入门》 《SwiftUI基础入门：从状态驱动界面开始》 《SwiftUI列表与导航基础》 本文作为总览反复回看，用来判断下一步该补哪块能力 后续可以继续补充这些主题：\nSwift 网络请求与 Codable SwiftUI 表单与输入校验 SwiftUI 分页加载和搜索 SwiftData 入门 UIKit 基础 iOS 调试与发布流程 如果是第一次进入这个系列，建议先读本文，再按上面的顺序进入具体文章。总览负责建立地图，专题文章负责补细节。\n小结 iOS 入门可以先抓住一条主线：用 Swift 表达数据和逻辑，用 SwiftUI 构建界面，用状态驱动页面变化，再逐步补网络、本地存储、UIKit、调试和发布。\n不要把学习路线设计成“先学完所有知识再做 App”。更实际的方式是每学一块，就用一个小项目验证它。能写出 Todo、文章列表、网络搜索和本地存储 App 后，再回头补架构、性能和发布流程，会更容易形成完整理解。\n",
+  "wordCount" : "668",
+  "inLanguage": "en",
+  "datePublished": "2026-07-07T14:37:51+08:00",
+  "dateModified": "2026-07-07T14:37:51+08:00",
+  "author":[{
+    "@type": "Person",
+    "name": "夏天的小西瓜"
+  }],
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "/posts/ios/ios_development_learning_route/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "缥缈夏鸢",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "/favicon.ico"
+    }
+  }
+}
+</script>
+</head>
+
+<body class="" id="top">
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.body.classList.add('dark');
+    } else if (localStorage.getItem("pref-theme") === "light") {
+        document.body.classList.remove('dark')
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.body.classList.add('dark');
+    }
+
+</script>
+
+<header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="/" accesskey="h" title="缥缈夏鸢 (Alt + H)">缥缈夏鸢</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" accesskey="t" title="(Alt + T)">
+                    <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu">
+            <li>
+                <a href="/" title="首页">
+                    <span>首页</span>
+                </a>
+            </li>
+            <li>
+                <a href="/posts/" title="文章">
+                    <span>文章</span>
+                </a>
+            </li>
+            <li>
+                <a href="/categories/" title="分类">
+                    <span>分类</span>
+                </a>
+            </li>
+            <li>
+                <a href="/tags/" title="标签">
+                    <span>标签</span>
+                </a>
+            </li>
+            <li>
+                <a href="/archives/" title="归档">
+                    <span>归档</span>
+                </a>
+            </li>
+            <li>
+                <a href="/search/" title="搜索">
+                    <span>搜索</span>
+                </a>
+            </li>
+            <li>
+                <a href="/about/" title="关于">
+                    <span>关于</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <div class="breadcrumbs"><a href="/">Home</a>&nbsp;»&nbsp;<a href="/posts/">Posts</a></div>
+    <h1 class="post-title entry-hint-parent">
+      iOS开发入门总览：开发与学习路线
+    </h1>
+    <div class="post-meta"><span title='2026-07-07 14:37:51 +0800 CST'>July 7, 2026</span>&nbsp;·&nbsp;4 min&nbsp;·&nbsp;668 words&nbsp;·&nbsp;夏天的小西瓜
+
+</div>
+  </header> <aside id="toc-container" class="toc-container wide">
+    <div class="toc">
+        <details  open>
+            <summary accesskey="c" title="(Alt + C)">
+                <span class="details">Table of Contents</span>
+            </summary>
+
+            <div class="inner"><ul>
+                    <li>
+                        <a href="#ios-%e5%bc%80%e5%8f%91%e5%8c%85%e6%8b%ac%e4%bb%80%e4%b9%88" aria-label="iOS 开发包括什么">iOS 开发包括什么</a><ul>
+                            
+                    <li>
+                        <a href="#1-%e8%af%ad%e8%a8%80%e5%9f%ba%e7%a1%80" aria-label="1. 语言基础">1. 语言基础</a></li>
+                    <li>
+                        <a href="#2-ui-%e6%a1%86%e6%9e%b6" aria-label="2. UI 框架">2. UI 框架</a></li>
+                    <li>
+                        <a href="#3-%e5%b7%a5%e7%a8%8b%e5%b7%a5%e5%85%b7" aria-label="3. 工程工具">3. 工程工具</a></li>
+                    <li>
+                        <a href="#4-%e5%b8%b8%e8%a7%81-app-%e8%83%bd%e5%8a%9b" aria-label="4. 常见 App 能力">4. 常见 App 能力</a></li></ul>
+                    </li>
+                    <li>
+                        <a href="#%e6%8e%a8%e8%8d%90%e5%ad%a6%e4%b9%a0%e9%a1%ba%e5%ba%8f" aria-label="推荐学习顺序">推荐学习顺序</a></li>
+                    <li>
+                        <a href="#%e9%98%b6%e6%ae%b5%e5%ae%8c%e6%88%90%e6%a0%87%e5%87%86" aria-label="阶段完成标准">阶段完成标准</a></li>
+                    <li>
+                        <a href="#%e7%ac%ac%e4%b8%80%e9%98%b6%e6%ae%b5swift-%e5%9f%ba%e7%a1%80" aria-label="第一阶段：Swift 基础">第一阶段：Swift 基础</a></li>
+                    <li>
+                        <a href="#%e7%ac%ac%e4%ba%8c%e9%98%b6%e6%ae%b5swiftui-%e5%9f%ba%e7%a1%80" aria-label="第二阶段：SwiftUI 基础">第二阶段：SwiftUI 基础</a></li>
+                    <li>
+                        <a href="#%e7%ac%ac%e4%b8%89%e9%98%b6%e6%ae%b5%e7%bd%91%e7%bb%9c%e8%af%b7%e6%b1%82%e5%92%8c%e6%95%b0%e6%8d%ae%e8%a7%a3%e6%9e%90" aria-label="第三阶段：网络请求和数据解析">第三阶段：网络请求和数据解析</a></li>
+                    <li>
+                        <a href="#%e7%ac%ac%e5%9b%9b%e9%98%b6%e6%ae%b5%e6%9c%ac%e5%9c%b0%e6%95%b0%e6%8d%ae%e5%ad%98%e5%82%a8" aria-label="第四阶段：本地数据存储">第四阶段：本地数据存储</a></li>
+                    <li>
+                        <a href="#%e7%ac%ac%e4%ba%94%e9%98%b6%e6%ae%b5uikit-%e5%9f%ba%e7%a1%80" aria-label="第五阶段：UIKit 基础">第五阶段：UIKit 基础</a></li>
+                    <li>
+                        <a href="#%e7%ac%ac%e5%85%ad%e9%98%b6%e6%ae%b5%e8%b0%83%e8%af%95%e6%80%a7%e8%83%bd%e5%92%8c%e5%8f%91%e5%b8%83" aria-label="第六阶段：调试、性能和发布">第六阶段：调试、性能和发布</a></li>
+                    <li>
+                        <a href="#%e4%b8%80%e4%b8%aa%e5%8f%af%e6%89%a7%e8%a1%8c%e7%9a%84%e5%ad%a6%e4%b9%a0%e8%8a%82%e5%a5%8f" aria-label="一个可执行的学习节奏">一个可执行的学习节奏</a></li>
+                    <li>
+                        <a href="#%e6%8e%a8%e8%8d%90%e7%bb%83%e4%b9%a0%e9%a1%b9%e7%9b%ae" aria-label="推荐练习项目">推荐练习项目</a><ul>
+                            
+                    <li>
+                        <a href="#1-todo-app" aria-label="1. Todo App">1. Todo App</a></li>
+                    <li>
+                        <a href="#2-%e6%96%87%e7%ab%a0%e5%88%97%e8%a1%a8-app" aria-label="2. 文章列表 App">2. 文章列表 App</a></li>
+                    <li>
+                        <a href="#3-%e5%a4%a9%e6%b0%94%e6%88%96-github-%e6%90%9c%e7%b4%a2-app" aria-label="3. 天气或 GitHub 搜索 App">3. 天气或 GitHub 搜索 App</a></li>
+                    <li>
+                        <a href="#4-%e8%ae%b0%e8%b4%a6%e6%88%96%e4%b9%a0%e6%83%af%e6%89%93%e5%8d%a1-app" aria-label="4. 记账或习惯打卡 App">4. 记账或习惯打卡 App</a></li></ul>
+                    </li>
+                    <li>
+                        <a href="#%e5%b8%b8%e8%a7%81%e8%af%af%e5%8c%ba" aria-label="常见误区">常见误区</a><ul>
+                            
+                    <li>
+                        <a href="#1-%e4%b8%80%e5%bc%80%e5%a7%8b%e5%b0%b1%e6%b7%b1%e6%8c%96%e6%89%80%e6%9c%89%e8%af%ad%e6%b3%95%e7%bb%86%e8%8a%82" aria-label="1. 一开始就深挖所有语法细节">1. 一开始就深挖所有语法细节</a></li>
+                    <li>
+                        <a href="#2-%e5%8f%aa%e7%9c%8b%e6%95%99%e7%a8%8b%e4%b8%8d%e5%86%99-app" aria-label="2. 只看教程，不写 App">2. 只看教程，不写 App</a></li>
+                    <li>
+                        <a href="#3-%e5%ae%8c%e5%85%a8%e8%b7%b3%e8%bf%87-uikit" aria-label="3. 完全跳过 UIKit">3. 完全跳过 UIKit</a></li>
+                    <li>
+                        <a href="#4-%e5%bf%bd%e7%95%a5%e8%b0%83%e8%af%95%e8%83%bd%e5%8a%9b" aria-label="4. 忽略调试能力">4. 忽略调试能力</a></li>
+                    <li>
+                        <a href="#5-%e8%bf%87%e6%97%a9%e8%bf%bd%e6%b1%82%e6%9e%b6%e6%9e%84" aria-label="5. 过早追求架构">5. 过早追求架构</a></li>
+                    <li>
+                        <a href="#6-%e5%8f%aa%e5%9c%a8%e6%a8%a1%e6%8b%9f%e5%99%a8%e4%b8%8a%e9%aa%8c%e8%af%81" aria-label="6. 只在模拟器上验证">6. 只在模拟器上验证</a></li></ul>
+                    </li>
+                    <li>
+                        <a href="#%e5%bb%ba%e8%ae%ae%e9%98%85%e8%af%bb%e9%a1%ba%e5%ba%8f" aria-label="建议阅读顺序">建议阅读顺序</a></li>
+                    <li>
+                        <a href="#%e5%b0%8f%e7%bb%93" aria-label="小结">小结</a>
+                    </li>
+                </ul>
+            </div>
+        </details>
+    </div>
+</aside>
+<script>
+    let activeElement;
+    let elements;
+    window.addEventListener('DOMContentLoaded', function (event) {
+        checkTocPosition();
+
+        elements = document.querySelectorAll('h1[id],h2[id],h3[id],h4[id],h5[id],h6[id]');
+         
+         activeElement = elements[0];
+         const id = encodeURI(activeElement.getAttribute('id')).toLowerCase();
+         document.querySelector(`.inner ul li a[href="#${id}"]`).classList.add('active');
+     }, false);
+
+    window.addEventListener('resize', function(event) {
+        checkTocPosition();
+    }, false);
+
+    window.addEventListener('scroll', () => {
+        
+        activeElement = Array.from(elements).find((element) => {
+            if ((getOffsetTop(element) - window.pageYOffset) > 0 && 
+                (getOffsetTop(element) - window.pageYOffset) < window.innerHeight/2) {
+                return element;
+            }
+        }) || activeElement
+
+        elements.forEach(element => {
+             const id = encodeURI(element.getAttribute('id')).toLowerCase();
+             if (element === activeElement){
+                 document.querySelector(`.inner ul li a[href="#${id}"]`).classList.add('active');
+             } else {
+                 document.querySelector(`.inner ul li a[href="#${id}"]`).classList.remove('active');
+             }
+         })
+     }, false);
+
+    const main = parseInt(getComputedStyle(document.body).getPropertyValue('--article-width'), 10);
+    const toc = parseInt(getComputedStyle(document.body).getPropertyValue('--toc-width'), 10);
+    const gap = parseInt(getComputedStyle(document.body).getPropertyValue('--gap'), 10);
+
+    function checkTocPosition() {
+        const width = document.body.scrollWidth;
+
+        if (width - main - (toc * 2) - (gap * 4) > 0) {
+            document.getElementById("toc-container").classList.add("wide");
+        } else {
+            document.getElementById("toc-container").classList.remove("wide");
+        }
+    }
+
+    function getOffsetTop(element) {
+        if (!element.getClientRects().length) {
+            return 0;
+        }
+        let rect = element.getBoundingClientRect();
+        let win = element.ownerDocument.defaultView;
+        return rect.top + win.pageYOffset;   
+    }
+</script>
+
+  <div class="post-content"><p>iOS 开发入门最容易遇到的问题，不是某一个 API 难，而是知识点分散：Swift、SwiftUI、UIKit、Xcode、网络、数据存储、调试、签名、上架，每一块都能展开很深。</p>
+<p>如果没有路线，很容易在语法、UI 框架和工程配置之间来回跳，学了很多零散概念，却迟迟做不出一个完整 App。</p>
+<p>这篇文章先做总览，目标是回答四个问题：</p>
+<ul>
+<li>iOS 开发主要由哪些部分组成</li>
+<li>初学者应该按什么顺序学习</li>
+<li>每个阶段应该做到什么程度再进入下一步</li>
+<li>最适合入门的练习项目应该怎么安排</li>
+</ul>
+<h2 id="ios-开发包括什么">iOS 开发包括什么<a hidden class="anchor" aria-hidden="true" href="#ios-开发包括什么">#</a></h2>
+<p>iOS 开发不是只会 Swift 语法就够了。一个可运行、可维护的 App，通常会涉及下面几类能力。</p>
+<h3 id="1-语言基础">1. 语言基础<a hidden class="anchor" aria-hidden="true" href="#1-语言基础">#</a></h3>
+<p>Swift 是当前 Apple 平台开发的主要语言。入门阶段需要优先掌握：</p>
+<ul>
+<li><code>let</code>、<code>var</code> 和基础类型</li>
+<li><code>Optional</code> 和空值处理</li>
+<li><code>struct</code> 与 <code>class</code></li>
+<li>函数、闭包、协议、泛型</li>
+<li>错误处理</li>
+<li><code>async/await</code>、<code>Task</code>、<code>MainActor</code></li>
+</ul>
+<p>如果已经有 Kotlin、Java 或 TypeScript 经验，可以重点关注 Swift 和这些语言在空值、值类型、协议和并发上的差异，而不是从变量和条件判断重新学起。</p>
+<h3 id="2-ui-框架">2. UI 框架<a hidden class="anchor" aria-hidden="true" href="#2-ui-框架">#</a></h3>
+<p>iOS UI 开发主要会遇到两套框架：</p>
+<ul>
+<li>SwiftUI：声明式 UI 框架，适合新项目和入门学习</li>
+<li>UIKit：传统命令式 UI 框架，大量存量项目仍在使用</li>
+</ul>
+<p>建议入门阶段优先学习 SwiftUI。SwiftUI 更容易帮助初学者理解“状态驱动界面”：状态变化后，界面自动根据状态重新计算。</p>
+<p>但 UIKit 不能完全跳过。实际工作中，经常会遇到 UIKit 项目、UIKit 组件，或者 SwiftUI 与 UIKit 混用的场景。</p>
+<h3 id="3-工程工具">3. 工程工具<a hidden class="anchor" aria-hidden="true" href="#3-工程工具">#</a></h3>
+<p>Xcode 是 iOS 开发的主要 IDE。至少需要熟悉：</p>
+<ul>
+<li>创建项目</li>
+<li>使用模拟器运行 App</li>
+<li>真机调试</li>
+<li>断点调试</li>
+<li>查看控制台日志</li>
+<li>管理资源文件</li>
+<li>配置 Bundle Identifier</li>
+<li>了解 Debug 和 Release 构建</li>
+</ul>
+<p>入门阶段不必一开始深挖所有工程配置，但要能独立把 App 跑起来、调试问题，并知道错误信息在哪里看。</p>
+<h3 id="4-常见-app-能力">4. 常见 App 能力<a hidden class="anchor" aria-hidden="true" href="#4-常见-app-能力">#</a></h3>
+<p>一个稍微完整的 App 通常会包含：</p>
+<ul>
+<li>页面导航</li>
+<li>列表展示</li>
+<li>表单输入</li>
+<li>网络请求</li>
+<li>JSON 解析</li>
+<li>本地数据存储</li>
+<li>图片加载</li>
+<li>权限申请</li>
+<li>空状态、加载状态、错误状态</li>
+</ul>
+<p>这些能力比单个语法点更接近真实开发。学习时应该尽早用小项目把它们串起来。</p>
+<h2 id="推荐学习顺序">推荐学习顺序<a hidden class="anchor" aria-hidden="true" href="#推荐学习顺序">#</a></h2>
+<p>入门路线可以按下面顺序推进：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="cl">Swift 基础
+</span></span><span class="line"><span class="cl">-&gt; SwiftUI 基础
+</span></span><span class="line"><span class="cl">-&gt; 列表、导航和状态管理
+</span></span><span class="line"><span class="cl">-&gt; 网络请求和数据解析
+</span></span><span class="line"><span class="cl">-&gt; 本地存储
+</span></span><span class="line"><span class="cl">-&gt; UIKit 基础
+</span></span><span class="line"><span class="cl">-&gt; 调试、性能和发布
+</span></span></code></pre></div><p>这个顺序的核心思路是：先能写出界面，再能加载数据，再能保存数据，最后补工程化和存量项目能力。</p>
+<p>可以把它拆成三条主线：</p>
+<ul>
+<li>语言线：Swift 语法、类型系统、错误处理、并发</li>
+<li>UI 线：SwiftUI 状态、布局、列表、导航，再补 UIKit</li>
+<li>工程线：Xcode、调试、网络、存储、签名、发布</li>
+</ul>
+<p>学习时不要把三条线完全割裂。更好的节奏是：语言学一点，马上在 UI 页面里用起来；页面能跑后，再加网络和本地存储；功能完整后，再补调试、性能和发布。</p>
+<h2 id="阶段完成标准">阶段完成标准<a hidden class="anchor" aria-hidden="true" href="#阶段完成标准">#</a></h2>
+<p>为了避免一直停留在“还没学完”的状态，可以给每个阶段设一个完成标准。</p>
+<table>
+  <thead>
+      <tr>
+          <th>阶段</th>
+          <th>重点</th>
+          <th>完成标准</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>Swift 基础</td>
+          <td>语法、Optional、闭包、协议、并发</td>
+          <td>能读懂常见 ViewModel 和异步请求代码</td>
+      </tr>
+      <tr>
+          <td>SwiftUI 基础</td>
+          <td>View、布局、状态、Binding</td>
+          <td>能写出表单、计数器、简单状态切换页面</td>
+      </tr>
+      <tr>
+          <td>列表与导航</td>
+          <td>List、NavigationStack、详情页</td>
+          <td>能写出列表页并点击进入详情</td>
+      </tr>
+      <tr>
+          <td>网络与解析</td>
+          <td>URLSession、Codable、错误处理</td>
+          <td>能从接口加载数据并展示加载/错误/空状态</td>
+      </tr>
+      <tr>
+          <td>本地存储</td>
+          <td>UserDefaults、文件、SwiftData/Core Data</td>
+          <td>能保存用户偏好或一组本地记录</td>
+      </tr>
+      <tr>
+          <td>UIKit 基础</td>
+          <td>UIViewController、UIView、Auto Layout</td>
+          <td>能读懂老项目的页面结构和生命周期</td>
+      </tr>
+      <tr>
+          <td>调试与发布</td>
+          <td>断点、日志、签名、TestFlight</td>
+          <td>能定位常见崩溃，并把 App 发给测试用户</td>
+      </tr>
+  </tbody>
+</table>
+<p>这张表不是考试大纲，而是判断“该不该继续往下学”的参考。入门阶段不需要每一项都学到很深，但每一项都应该有一个能跑起来的最小实践。</p>
+<h2 id="第一阶段swift-基础">第一阶段：Swift 基础<a hidden class="anchor" aria-hidden="true" href="#第一阶段swift-基础">#</a></h2>
+<p>第一阶段的目标不是把 Swift 语言所有细节都学完，而是能读懂和写出常见 iOS 代码。</p>
+<p>优先掌握这些内容：</p>
+<ul>
+<li>变量与常量</li>
+<li>基础集合类型</li>
+<li><code>Optional</code></li>
+<li>函数和参数标签</li>
+<li><code>struct</code>、<code>class</code></li>
+<li><code>protocol</code>、<code>extension</code></li>
+<li>闭包</li>
+<li>错误处理</li>
+<li>Swift 并发基础</li>
+</ul>
+<p>例如，一个简单模型可以这样写：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-swift" data-lang="swift"><span class="line"><span class="cl"><span class="kd">struct</span> <span class="nc">User</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">let</span> <span class="nv">id</span><span class="p">:</span> <span class="nb">Int</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">let</span> <span class="nv">name</span><span class="p">:</span> <span class="nb">String</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">let</span> <span class="nv">nickname</span><span class="p">:</span> <span class="nb">String</span><span class="p">?</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>一个异步加载函数可以这样写：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-swift" data-lang="swift"><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">loadUser</span><span class="p">()</span> <span class="n">async</span> <span class="kr">throws</span> <span class="p">-&gt;</span> <span class="n">User</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="n">User</span><span class="p">(</span><span class="n">id</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="s">&#34;Tom&#34;</span><span class="p">,</span> <span class="n">nickname</span><span class="p">:</span> <span class="kc">nil</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>到这个阶段结束时，至少应该能理解下面这类代码：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-swift" data-lang="swift"><span class="line"><span class="cl"><span class="n">Task</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">do</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="kd">let</span> <span class="nv">user</span> <span class="p">=</span> <span class="k">try</span> <span class="n">await</span> <span class="n">loadUser</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">        <span class="bp">print</span><span class="p">(</span><span class="n">user</span><span class="p">.</span><span class="n">nickname</span> <span class="p">??</span> <span class="n">user</span><span class="p">.</span><span class="n">name</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span> <span class="k">catch</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="bp">print</span><span class="p">(</span><span class="n">error</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>如果这些代码还能明显卡住，建议先不要急着深入 SwiftUI。SwiftUI 大量依赖闭包、协议、泛型和属性包装器，语言基础不稳时会比较吃力。</p>
+<p>这一阶段的产出物可以很小：写几个模型、几个函数、一个模拟网络请求的 ViewModel。重点是能把数据、失败和异步流程表达清楚。</p>
+<h2 id="第二阶段swiftui-基础">第二阶段：SwiftUI 基础<a hidden class="anchor" aria-hidden="true" href="#第二阶段swiftui-基础">#</a></h2>
+<p>SwiftUI 是入门 iOS UI 开发的合适起点。学习重点不是记住所有组件，而是理解状态如何驱动界面。</p>
+<p>优先掌握：</p>
+<ul>
+<li><code>View</code> 和 <code>body</code></li>
+<li><code>VStack</code>、<code>HStack</code>、<code>ZStack</code></li>
+<li>modifier</li>
+<li><code>@State</code></li>
+<li><code>@Binding</code></li>
+<li><code>List</code></li>
+<li><code>NavigationStack</code></li>
+<li><code>.task</code></li>
+</ul>
+<p>一个最小的状态驱动界面：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-swift" data-lang="swift"><span class="line"><span class="cl"><span class="kd">struct</span> <span class="nc">CounterView</span><span class="p">:</span> <span class="n">View</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="p">@</span><span class="n">State</span> <span class="kd">private</span> <span class="kd">var</span> <span class="nv">count</span> <span class="p">=</span> <span class="mi">0</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kd">var</span> <span class="nv">body</span><span class="p">:</span> <span class="n">some</span> <span class="n">View</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">VStack</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">Text</span><span class="p">(</span><span class="s">&#34;Count: </span><span class="si">\(</span><span class="bp">count</span><span class="si">)</span><span class="s">&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">            <span class="n">Button</span><span class="p">(</span><span class="s">&#34;加一&#34;</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                <span class="bp">count</span> <span class="o">+=</span> <span class="mi">1</span>
+</span></span><span class="line"><span class="cl">            <span class="p">}</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>这段代码的重点是：不要手动找到某个控件再修改它，而是修改 <code>count</code>，让界面根据状态自动刷新。</p>
+<p>到这个阶段结束时，应该能独立写出：</p>
+<ul>
+<li>一个表单页面</li>
+<li>一个列表页面</li>
+<li>一个列表到详情的跳转</li>
+<li>加载中、空状态、错误状态切换</li>
+</ul>
+<p>这时不必追求页面多漂亮。更重要的是状态归属清楚：哪些状态属于当前 View，哪些应该放到 ViewModel，哪些通过 <code>@Binding</code> 传给子 View。</p>
+<h2 id="第三阶段网络请求和数据解析">第三阶段：网络请求和数据解析<a hidden class="anchor" aria-hidden="true" href="#第三阶段网络请求和数据解析">#</a></h2>
+<p>真实 App 通常需要从服务端加载数据。Swift 中可以使用 <code>URLSession</code> 发起请求，使用 <code>Codable</code> 解析 JSON。</p>
+<p>一个模型可以这样定义：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-swift" data-lang="swift"><span class="line"><span class="cl"><span class="kd">struct</span> <span class="nc">Article</span><span class="p">:</span> <span class="n">Identifiable</span><span class="p">,</span> <span class="n">Codable</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">let</span> <span class="nv">id</span><span class="p">:</span> <span class="nb">Int</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">let</span> <span class="nv">title</span><span class="p">:</span> <span class="nb">String</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">let</span> <span class="nv">summary</span><span class="p">:</span> <span class="nb">String</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>网络请求可以先理解成三个步骤：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="cl">构造 URL -&gt; 发起请求 -&gt; 解析 JSON
+</span></span></code></pre></div><p>示例：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-swift" data-lang="swift"><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">loadArticles</span><span class="p">()</span> <span class="n">async</span> <span class="kr">throws</span> <span class="p">-&gt;</span> <span class="p">[</span><span class="n">Article</span><span class="p">]</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">let</span> <span class="nv">url</span> <span class="p">=</span> <span class="n">URL</span><span class="p">(</span><span class="n">string</span><span class="p">:</span> <span class="s">&#34;https://example.com/articles&#34;</span><span class="p">)</span><span class="o">!</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">let</span> <span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="kc">_</span><span class="p">)</span> <span class="p">=</span> <span class="k">try</span> <span class="n">await</span> <span class="n">URLSession</span><span class="p">.</span><span class="n">shared</span><span class="p">.</span><span class="n">data</span><span class="p">(</span><span class="n">from</span><span class="p">:</span> <span class="n">url</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="k">try</span> <span class="n">JSONDecoder</span><span class="p">().</span><span class="n">decode</span><span class="p">([</span><span class="n">Article</span><span class="p">].</span><span class="kc">self</span><span class="p">,</span> <span class="n">from</span><span class="p">:</span> <span class="n">data</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>入门阶段更重要的是学会处理页面状态：</p>
+<ul>
+<li>请求开始：显示加载中</li>
+<li>请求成功：展示列表</li>
+<li>请求失败：展示错误</li>
+<li>数据为空：展示空状态</li>
+</ul>
+<p>不要只关注“请求能不能发出去”，还要关注失败时界面是否可理解、可恢复。</p>
+<p>这一阶段建议把前面写过的文章列表 App 从假数据改成接口数据。即使接口只是一个本地 mock 服务，也比一直写静态数组更接近真实开发。</p>
+<h2 id="第四阶段本地数据存储">第四阶段：本地数据存储<a hidden class="anchor" aria-hidden="true" href="#第四阶段本地数据存储">#</a></h2>
+<p>本地存储可以按复杂度分层学习：</p>
+<ul>
+<li><code>UserDefaults</code>：保存简单配置，例如开关、登录状态、用户偏好</li>
+<li>文件存储：保存文本、图片、缓存文件</li>
+<li>SwiftData / Core Data：保存结构化业务数据</li>
+</ul>
+<p>入门阶段可以先从 <code>UserDefaults</code> 开始：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-swift" data-lang="swift"><span class="line"><span class="cl"><span class="n">UserDefaults</span><span class="p">.</span><span class="n">standard</span><span class="p">.</span><span class="kr">set</span><span class="p">(</span><span class="kc">true</span><span class="p">,</span> <span class="n">forKey</span><span class="p">:</span> <span class="s">&#34;hasSeenGuide&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="kd">let</span> <span class="nv">hasSeenGuide</span> <span class="p">=</span> <span class="n">UserDefaults</span><span class="p">.</span><span class="n">standard</span><span class="p">.</span><span class="n">bool</span><span class="p">(</span><span class="n">forKey</span><span class="p">:</span> <span class="s">&#34;hasSeenGuide&#34;</span><span class="p">)</span>
+</span></span></code></pre></div><p>但不要把复杂业务数据都塞进 <code>UserDefaults</code>。它适合保存少量简单值，不适合充当数据库。</p>
+<p>当 App 开始需要保存列表、记录、关系型数据时，再学习 SwiftData 或 Core Data。</p>
+<p>学习存储时要注意边界：能临时保存不等于设计好了数据层。入门阶段先掌握读取、写入、更新、删除，再考虑数据迁移、同步和缓存策略。</p>
+<h2 id="第五阶段uikit-基础">第五阶段：UIKit 基础<a hidden class="anchor" aria-hidden="true" href="#第五阶段uikit-基础">#</a></h2>
+<p>即使新项目可以优先使用 SwiftUI，UIKit 仍然值得学习。</p>
+<p>至少需要了解：</p>
+<ul>
+<li><code>UIViewController</code></li>
+<li><code>UIView</code></li>
+<li><code>UITableView</code></li>
+<li><code>UICollectionView</code></li>
+<li>Auto Layout</li>
+<li>UIKit 生命周期</li>
+<li>SwiftUI 和 UIKit 混用</li>
+</ul>
+<p>UIKit 的学习目标不是马上重写所有 SwiftUI 页面，而是为了能读懂存量项目、接入 UIKit 组件，并理解 iOS UI 体系的底层惯性。</p>
+<p>如果工作中接触的是老项目，UIKit 的优先级应该提前。</p>
+<p>SwiftUI 和 UIKit 并不是非此即彼。实际项目里可能会用 SwiftUI 写新页面，同时嵌入 UIKit 控件；也可能在 UIKit 项目里局部引入 SwiftUI。入门时先用 SwiftUI 建立 UI 思路，再补 UIKit，会更容易形成完整视角。</p>
+<h2 id="第六阶段调试性能和发布">第六阶段：调试、性能和发布<a hidden class="anchor" aria-hidden="true" href="#第六阶段调试性能和发布">#</a></h2>
+<p>能写功能之后，还需要学会把问题定位出来。</p>
+<p>调试阶段重点掌握：</p>
+<ul>
+<li>断点</li>
+<li>控制台日志</li>
+<li>查看网络错误</li>
+<li>查看崩溃堆栈</li>
+<li>理解主线程和后台任务</li>
+</ul>
+<p>性能阶段可以逐步学习：</p>
+<ul>
+<li>列表卡顿</li>
+<li>图片过大</li>
+<li>主线程阻塞</li>
+<li>内存泄漏</li>
+<li>Instruments 基础使用</li>
+</ul>
+<p>发布阶段需要了解：</p>
+<ul>
+<li>Bundle Identifier</li>
+<li>证书和签名</li>
+<li>App Icon</li>
+<li>启动图</li>
+<li>TestFlight</li>
+<li>App Store 审核</li>
+</ul>
+<p>这些内容不适合放在第一天学习，但当你准备把 App 发给别人安装时，它们就会变得非常具体。</p>
+<p>这里的关键不是一次性掌握所有发布细节，而是建立基本排查路径：代码是否执行、状态是否变化、请求是否成功、主线程是否阻塞、签名配置是否正确。</p>
+<h2 id="一个可执行的学习节奏">一个可执行的学习节奏<a hidden class="anchor" aria-hidden="true" href="#一个可执行的学习节奏">#</a></h2>
+<p>如果每天能投入 1 到 2 小时，可以按 4 到 8 周安排：</p>
+<table>
+  <thead>
+      <tr>
+          <th>时间</th>
+          <th>目标</th>
+          <th>产出</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>第 1 周</td>
+          <td>Swift 基础和 Xcode 基础</td>
+          <td>能运行项目，写出基础模型和简单函数</td>
+      </tr>
+      <tr>
+          <td>第 2 周</td>
+          <td>SwiftUI 布局和状态</td>
+          <td>写出计数器、表单、简单设置页</td>
+      </tr>
+      <tr>
+          <td>第 3 周</td>
+          <td>列表和导航</td>
+          <td>写出文章列表和详情页</td>
+      </tr>
+      <tr>
+          <td>第 4 周</td>
+          <td>网络请求和错误状态</td>
+          <td>列表数据改为异步加载</td>
+      </tr>
+      <tr>
+          <td>第 5 周</td>
+          <td>本地存储</td>
+          <td>Todo 或打卡数据可以保存</td>
+      </tr>
+      <tr>
+          <td>第 6 周</td>
+          <td>UIKit 基础和混用</td>
+          <td>能读懂 <code>UIViewController</code>，理解生命周期</td>
+      </tr>
+      <tr>
+          <td>第 7-8 周</td>
+          <td>调试、整理和发布体验</td>
+          <td>处理崩溃、完善图标、尝试 TestFlight</td>
+      </tr>
+  </tbody>
+</table>
+<p>这个节奏不是硬性要求。如果你已经有移动端经验，可以压缩 Swift 和 UI 基础时间；如果是第一次接触客户端开发，可以把每个阶段拆成两周。</p>
+<h2 id="推荐练习项目">推荐练习项目<a hidden class="anchor" aria-hidden="true" href="#推荐练习项目">#</a></h2>
+<p>学习 iOS 最好用小项目推进。建议按下面顺序做。</p>
+<h3 id="1-todo-app">1. Todo App<a hidden class="anchor" aria-hidden="true" href="#1-todo-app">#</a></h3>
+<p>目标是练习：</p>
+<ul>
+<li>SwiftUI 表单</li>
+<li><code>@State</code></li>
+<li><code>List</code></li>
+<li>增删改</li>
+<li>本地状态管理</li>
+</ul>
+<p>做到能添加任务、完成任务、删除任务即可。验收标准是：关闭 App 后再打开，任务数据仍然存在。</p>
+<h3 id="2-文章列表-app">2. 文章列表 App<a hidden class="anchor" aria-hidden="true" href="#2-文章列表-app">#</a></h3>
+<p>目标是练习：</p>
+<ul>
+<li>列表展示</li>
+<li>导航到详情</li>
+<li>加载状态</li>
+<li>空状态和错误状态</li>
+<li>ViewModel</li>
+</ul>
+<p>可以先用本地假数据，再替换成网络数据。验收标准是：至少有加载中、空列表、加载失败和正常列表四种状态。</p>
+<h3 id="3-天气或-github-搜索-app">3. 天气或 GitHub 搜索 App<a hidden class="anchor" aria-hidden="true" href="#3-天气或-github-搜索-app">#</a></h3>
+<p>目标是练习：</p>
+<ul>
+<li>网络请求</li>
+<li>JSON 解析</li>
+<li>搜索输入</li>
+<li>异步加载</li>
+<li>错误处理</li>
+</ul>
+<p>这类项目能帮助你把 Swift 并发和 SwiftUI 状态管理串起来。</p>
+<p>验收标准是：输入关键词后触发请求，请求失败时能给出明确错误提示，而不是让页面停在空白状态。</p>
+<h3 id="4-记账或习惯打卡-app">4. 记账或习惯打卡 App<a hidden class="anchor" aria-hidden="true" href="#4-记账或习惯打卡-app">#</a></h3>
+<p>目标是练习：</p>
+<ul>
+<li>本地数据存储</li>
+<li>表单输入</li>
+<li>列表筛选</li>
+<li>统计展示</li>
+<li>数据编辑</li>
+</ul>
+<p>做到这一步，已经接近可以独立完成一个小型 App。验收标准是：能新增、编辑、删除记录，并能按时间或类型查看历史数据。</p>
+<h2 id="常见误区">常见误区<a hidden class="anchor" aria-hidden="true" href="#常见误区">#</a></h2>
+<h3 id="1-一开始就深挖所有语法细节">1. 一开始就深挖所有语法细节<a hidden class="anchor" aria-hidden="true" href="#1-一开始就深挖所有语法细节">#</a></h3>
+<p>Swift 语言很丰富，但入门阶段不需要把所有高级特性一次学完。先掌握能支撑 App 开发的主干，再在项目中补细节。</p>
+<h3 id="2-只看教程不写-app">2. 只看教程，不写 App<a hidden class="anchor" aria-hidden="true" href="#2-只看教程不写-app">#</a></h3>
+<p>iOS 开发的很多问题只有写页面时才会遇到，比如状态放在哪里、请求什么时候发、错误怎么展示、导航怎么组织。只看教程很难形成判断。</p>
+<h3 id="3-完全跳过-uikit">3. 完全跳过 UIKit<a hidden class="anchor" aria-hidden="true" href="#3-完全跳过-uikit">#</a></h3>
+<p>SwiftUI 是很好的入门起点，但 UIKit 仍然大量存在。完全不懂 UIKit，会影响阅读老项目和处理混合场景。</p>
+<h3 id="4-忽略调试能力">4. 忽略调试能力<a hidden class="anchor" aria-hidden="true" href="#4-忽略调试能力">#</a></h3>
+<p>初学阶段不要只追求把代码写出来。能看懂报错、会打断点、能定位崩溃，比多记几个组件更重要。</p>
+<h3 id="5-过早追求架构">5. 过早追求架构<a hidden class="anchor" aria-hidden="true" href="#5-过早追求架构">#</a></h3>
+<p>MVVM、模块化、依赖注入都很重要，但太早追求完整架构会拖慢入门。先写出一个清晰的小 App，再逐步抽离 ViewModel、Service 和数据层。</p>
+<h3 id="6-只在模拟器上验证">6. 只在模拟器上验证<a hidden class="anchor" aria-hidden="true" href="#6-只在模拟器上验证">#</a></h3>
+<p>模拟器很方便，但真机上的权限、网络、性能、键盘、安全区域和签名问题更接近真实环境。至少在阶段性项目完成后，用真机跑一遍。</p>
+<h2 id="建议阅读顺序">建议阅读顺序<a hidden class="anchor" aria-hidden="true" href="#建议阅读顺序">#</a></h2>
+<p>如果按本博客已有文章学习，可以先按这个顺序读：</p>
+<ol>
+<li>《面向Kotlin开发者的Swift基础入门》</li>
+<li>《SwiftUI基础入门：从状态驱动界面开始》</li>
+<li>《SwiftUI列表与导航基础》</li>
+<li>本文作为总览反复回看，用来判断下一步该补哪块能力</li>
+</ol>
+<p>后续可以继续补充这些主题：</p>
+<ul>
+<li>Swift 网络请求与 Codable</li>
+<li>SwiftUI 表单与输入校验</li>
+<li>SwiftUI 分页加载和搜索</li>
+<li>SwiftData 入门</li>
+<li>UIKit 基础</li>
+<li>iOS 调试与发布流程</li>
+</ul>
+<p>如果是第一次进入这个系列，建议先读本文，再按上面的顺序进入具体文章。总览负责建立地图，专题文章负责补细节。</p>
+<h2 id="小结">小结<a hidden class="anchor" aria-hidden="true" href="#小结">#</a></h2>
+<p>iOS 入门可以先抓住一条主线：用 Swift 表达数据和逻辑，用 SwiftUI 构建界面，用状态驱动页面变化，再逐步补网络、本地存储、UIKit、调试和发布。</p>
+<p>不要把学习路线设计成“先学完所有知识再做 App”。更实际的方式是每学一块，就用一个小项目验证它。能写出 Todo、文章列表、网络搜索和本地存储 App 后，再回头补架构、性能和发布流程，会更容易形成完整理解。</p>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="/tags/ios/">IOS</a></li>
+      <li><a href="/tags/swift/">Swift</a></li>
+      <li><a href="/tags/swiftui/">SwiftUI</a></li>
+      <li><a href="/tags/%E5%AD%A6%E4%B9%A0%E8%B7%AF%E7%BA%BF/">学习路线</a></li>
+    </ul>
+<nav class="paginav">
+  <a class="prev" href="/posts/ios/swift_basic_for_kotlin_developers/">
+    <span class="title">« Prev</span>
+    <br>
+    <span>面向Kotlin开发者的Swift基础入门</span>
+  </a>
+  <a class="next" href="/posts/tools/iterm2_on_mac/">
+    <span class="title">Next »</span>
+    <br>
+    <span>Mac环境下iTerm2使用指南</span>
+  </a>
+</nav>
+
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2026 <a href="/">缥缈夏鸢</a></span> · 
+
+    <span>
+        Powered by
+        <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+        <path d="M12 6H0l6-6z" />
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu')
+    if (menu) {
+        menu.scrollLeft = localStorage.getItem("menu-scroll-position");
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        if (document.body.className.includes("dark")) {
+            document.body.classList.remove('dark');
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            document.body.classList.add('dark');
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerHTML = 'copy';
+
+        function copyingDone() {
+            copybutton.innerHTML = 'copied!';
+            setTimeout(() => {
+                copybutton.innerHTML = 'copy';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+</body>
+
+</html>
