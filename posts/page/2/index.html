@@ -398,6 +398,29 @@ CREATE TABLE users ( id INT PRIMARY KEY AUTO_INCREMENT, name VARCHAR(50) NOT NUL
 
 <article class="post-entry"> 
   <header class="entry-header">
+    <h2 class="entry-hint-parent">TypeScript进阶用法
+    </h2>
+  </header>
+  <div class="entry-content">
+    <p>上一篇入门文章已经覆盖了基础类型、函数、对象、interface、type、联合类型和可空处理。继续往下学 TypeScript，重点不是记更多语法，而是学会把类型用在真实代码里：接口响应、状态结构、异步结果和公共函数都应该有清晰的类型边界。
+模块导入与文件引用 TypeScript 支持用 export 暴露变量、函数或类型，再用 import 在其他文件中引用：
+// user.ts export type User = { id: number; name: string; }; export function getUserName(user: User): string { return user.name; } // main.ts import { getUserName, type User } from &#34;./user&#34;; const user: User = { id: 1, name: &#34;Tom&#34;, }; console.log(getUserName(user)); 和 Kotlin 按包名导入不同，TypeScript 默认更多是按文件路径导入。&#34;./user&#34; 表示同级目录下的 user.ts，通常可以省略 .ts 后缀。
+如果只引用类型，推荐使用 import type：
+import type { User } from &#34;./user&#34;; 大型项目里也常见路径别名，例如 @/models/user，但这需要在 tsconfig.json 里配置 baseUrl 和 paths。
+泛型是什么 泛型可以简单理解成：把类型也作为参数传进去。
+它解决的核心问题是：代码逻辑可以复用，但类型信息不能丢。
+function wrap&lt;T&gt;(value: T): T[] { return [value]; } const names = wrap(&#34;hello&#34;); // string[] const ids = wrap(100); // number[] 如果不用泛型，很容易退回到 any：
+function wrap(value: any): any[] { return [value]; } 这段代码虽然能运行，但调用方拿不到准确类型提示。
+泛型最常见的使用场景是接口响应：
+type ApiResponse&lt;T&gt; = { code: number; message: string; data: T; }; type User = { id: number; name: string; }; const response: ApiResponse&lt;User&gt; = { code: 0, message: &#34;ok&#34;, data: { id: 1, name: &#34;Tom&#34;, }, }; 可以先记住一句话：泛型不是为了把类型写复杂，而是为了保留“输入、输出、数据结构之间的类型关系”。
+...</p>
+  </div>
+  <footer class="entry-footer"><span title='2026-04-09 20:10:00 +0800 CST'>April 9, 2026</span>&nbsp;·&nbsp;4 min&nbsp;·&nbsp;701 words&nbsp;·&nbsp;夏天的小西瓜</footer>
+  <a class="entry-link" aria-label="post link to TypeScript进阶用法" href="/posts/typescript/typescript_advanced/"></a>
+</article>
+
+<article class="post-entry"> 
+  <header class="entry-header">
     <h2 class="entry-hint-parent">TypeScript基础用法
     </h2>
   </header>
@@ -422,23 +445,6 @@ undefined 更像“没提供” null 更像“有这个位置，但现在为空�
   </div>
   <footer class="entry-footer"><span title='2026-04-09 19:10:00 +0800 CST'>April 9, 2026</span>&nbsp;·&nbsp;4 min&nbsp;·&nbsp;787 words&nbsp;·&nbsp;夏天的小西瓜</footer>
   <a class="entry-link" aria-label="post link to TypeScript基础用法" href="/posts/typescript/typescript_intro/"></a>
-</article>
-
-<article class="post-entry"> 
-  <header class="entry-header">
-    <h2 class="entry-hint-parent">字节码技术入门
-    </h2>
-  </header>
-  <div class="entry-content">
-    <p> 本文档介绍 Android 开发中的字节码操作技术，包括字节码基础、Javassist、ASM 框架的使用。
-字节码基础知识 1. 什么是字节码 Java 字节码（Bytecode）是 Java 源代码编译后的中间表示形式，存储在 .class 文件中。JVM（Java Virtual Machine）执行的就是字节码，而不是源代码。
-特点:
-平台无关性：Write Once, Run Anywhere 介于高级语言和机器码之间 可被工具读取、修改、生成 2. Class 文件结构 一个 .class 文件的基本结构：
-ClassFile { u4 magic; // 魔数 0xCAFEBABE u2 minor_version; // 次版本号 u2 major_version; // 主版本号 u2 constant_pool_count; // 常量池计数 cp_info constant_pool[]; // 常量池 u2 access_flags; // 访问标志 u2 this_class; // 当前类 u2 super_class; // 父类 u2 interfaces_count; // 接口计数 u2 interfaces[]; // 接口表 u2 fields_count; // 字段计数 field_info fields[]; // 字段表 u2 methods_count; // 方法计数 method_info methods[]; // 方法表 u2 attributes_count; // 属性计数 attribute_info attributes[]; // 属性表 } 3. 常用字节码指令 指令 说明 示例 aload_0 加载局部变量表第 0 个引用到栈顶 加载 this invokespecial 调用实例初始化方法、私有方法 构造函数调用 invokevirtual 调用实例方法（虚方法） 普通方法调用 invokestatic 调用静态方法 Math.max() invokeinterface 调用接口方法 接口方法调用 return 从方法返回 void void 方法结束 areturn 从方法返回引用类型 返回对象 getfield 获取实例字段值 obj.field putfield 设置实例字段值 obj.field = value getstatic 获取静态字段值 Class.STATIC_FIELD putstatic 设置静态字段值 Class.STATIC_FIELD = value new 创建对象实例 new Object() 4. 方法描述符 方法描述符用于描述方法的参数和返回值类型：
-...</p>
-  </div>
-  <footer class="entry-footer"><span title='2026-01-15 14:41:00 +0800 CST'>January 15, 2026</span>&nbsp;·&nbsp;9 min&nbsp;·&nbsp;1850 words&nbsp;·&nbsp;夏天的小西瓜</footer>
-  <a class="entry-link" aria-label="post link to 字节码技术入门" href="/posts/jvm/bytecode_guide/"></a>
 </article>
 <footer class="page-footer">
   <nav class="pagination">

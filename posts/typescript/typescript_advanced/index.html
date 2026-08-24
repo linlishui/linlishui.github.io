@@ -169,8 +169,8 @@ type ApiResponse&lt;T&gt; = { code: number; message: string; data: T; }; type Us
   <meta property="og:locale" content="en-us">
   <meta property="og:type" content="article">
     <meta property="article:section" content="posts">
-    <meta property="article:published_time" content="2026-07-29T14:16:33+08:00">
-    <meta property="article:modified_time" content="2026-07-29T14:16:33+08:00">
+    <meta property="article:published_time" content="2026-04-09T20:10:00+08:00">
+    <meta property="article:modified_time" content="2026-04-09T20:10:00+08:00">
     <meta property="article:tag" content="TypeScript">
     <meta property="article:tag" content="泛型">
     <meta property="article:tag" content="工具类型">
@@ -269,11 +269,11 @@ const response: ApiResponse&lt;User&gt; = {
   "keywords": [
     "TypeScript", "泛型", "工具类型", "异步"
   ],
-  "articleBody": "上一篇入门文章已经覆盖了基础类型、函数、对象、interface、type、联合类型和可空处理。继续往下学 TypeScript，重点不是记更多语法，而是学会把类型用在真实代码里：接口响应、状态结构、异步结果和公共函数都应该有清晰的类型边界。\n模块导入与文件引用 TypeScript 支持用 export 暴露变量、函数或类型，再用 import 在其他文件中引用：\n// user.ts export type User = { id: number; name: string; }; export function getUserName(user: User): string { return user.name; } // main.ts import { getUserName, type User } from \"./user\"; const user: User = { id: 1, name: \"Tom\", }; console.log(getUserName(user)); 和 Kotlin 按包名导入不同，TypeScript 默认更多是按文件路径导入。\"./user\" 表示同级目录下的 user.ts，通常可以省略 .ts 后缀。\n如果只引用类型，推荐使用 import type：\nimport type { User } from \"./user\"; 大型项目里也常见路径别名，例如 @/models/user，但这需要在 tsconfig.json 里配置 baseUrl 和 paths。\n泛型是什么 泛型可以简单理解成：把类型也作为参数传进去。\n它解决的核心问题是：代码逻辑可以复用，但类型信息不能丢。\nfunction wrap\u003cT\u003e(value: T): T[] { return [value]; } const names = wrap(\"hello\"); // string[] const ids = wrap(100); // number[] 如果不用泛型，很容易退回到 any：\nfunction wrap(value: any): any[] { return [value]; } 这段代码虽然能运行，但调用方拿不到准确类型提示。\n泛型最常见的使用场景是接口响应：\ntype ApiResponse\u003cT\u003e = { code: number; message: string; data: T; }; type User = { id: number; name: string; }; const response: ApiResponse\u003cUser\u003e = { code: 0, message: \"ok\", data: { id: 1, name: \"Tom\", }, }; 可以先记住一句话：泛型不是为了把类型写复杂，而是为了保留“输入、输出、数据结构之间的类型关系”。\n类型收窄 联合类型很常见，但使用联合类型时，不能直接访问某个类型独有的属性。需要先判断，再使用。\n1. typeof function formatId(id: string | number): string { if (typeof id === \"number\") { return id.toFixed(0); } return id.toUpperCase(); } 2. in 对象联合类型可以用 in 判断字段是否存在：\ntype User = { id: number; name: string; }; type Admin = { id: number; role: string; }; function printAccount(account: User | Admin) { if (\"role\" in account) { console.log(account.role); } else { console.log(account.name); } } 3. 判别字段 如果多个状态结构差异明显，更推荐增加固定字段：\ntype PageState = | { status: \"loading\" } | { status: \"success\"; data: string[] } | { status: \"error\"; message: string }; function render(state: PageState) { switch (state.status) { case \"loading\": return \"加载中\"; case \"success\": return state.data.join(\",\"); case \"error\": return state.message; } } 这种写法比到处判断字段是否存在更稳定，适合页面状态、任务状态、消息类型等场景。\n常用工具类型 TypeScript 内置了很多工具类型，但日常项目里不需要一次记完。先掌握下面几个就够用。\n1. Record Record 用来描述一组固定 key 对应同一种 value 的结构。\ntype Role = \"admin\" | \"user\" | \"guest\"; const roleNames: Record\u003cRole, string\u003e = { admin: \"管理员\", user: \"普通用户\", guest: \"访客\", }; 它适合做枚举值到文案、配置、处理函数的映射。如果少写一个 key，TypeScript 会提示错误。\n2. Partial Partial 会把字段都变成可选字段，常用于更新参数。\ntype User = { id: number; name: string; email: string; }; function updateUser(id: number, patch: Partial\u003cUser\u003e) { console.log(id, patch); } updateUser(1, { name: \"Jerry\", }); 3. Pick 和 Omit Pick 是从类型中挑字段，Omit 是从类型中排除字段。\ntype User = { id: number; name: string; email: string; password: string; }; type UserCard = Pick\u003cUser, \"id\" | \"name\"\u003e; type PublicUser = Omit\u003cUser, \"password\"\u003e; 它们适合从完整数据结构里拆出列表项、卡片、公开信息、表单参数等类型。\n4. Awaited Awaited 用来拿到 Promise 解析后的类型，异步代码里很实用。\nasync function getUser() { return { id: 1, name: \"Tom\", }; } type User = Awaited\u003cReturnType\u003ctypeof getUser\u003e\u003e; 这里 User 的类型就是 getUser() 真正返回的数据类型，而不是 Promise\u003c...\u003e。 其中 ReturnType 用来取函数返回值类型，Awaited 再把 Promise 包住的结果拆出来。\nas const 保留字面量类型 普通对象里的字符串值通常会被推断成 string，如果希望保留更精确的字面量类型，可以使用 as const。\nconst statusMap = { loading: \"加载中\", success: \"成功\", error: \"失败\", } as const; type Status = keyof typeof statusMap; 这里的 Status 是 \"loading\" | \"success\" | \"error\"，适合用在状态值、事件名、路由名、固定配置这类场景。\n异步常用技巧 TypeScript 的异步语法来自 JavaScript，核心还是 Promise、async、await。TypeScript 主要负责把异步结果的类型表达清楚。\n1. async 函数返回 Promise async function getName(): Promise\u003cstring\u003e { return \"Tom\"; } 即使函数里直接 return \"Tom\"，async 函数的返回值也会被包装成 Promise。\n调用时需要 await：\nconst name = await getName(); 2. 并发请求用 Promise.all 如果多个异步任务互不依赖，不要一个一个 await：\nconst user = await fetchUser(); const orders = await fetchOrders(); 这会串行执行。更常见的并发写法是：\nconst [user, orders] = await Promise.all([ fetchUser(), fetchOrders(), ]); Promise.all 适合“全部成功才继续”的场景。\n3. 部分失败可用 Promise.allSettled 如果不希望一个请求失败就中断全部任务，可以用 Promise.allSettled：\nconst results = await Promise.allSettled([ fetchUser(), fetchOrders(), ]); results.forEach((result) =\u003e { if (result.status === \"fulfilled\") { console.log(result.value); } else { console.log(result.reason); } }); 它返回的结果天然适合用判别字段 status 做类型收窄。\n4. 循环里的 await 要看场景 下面这种写法会按顺序执行：\nfor (const id of ids) { await fetchUser(id); } 如果每个请求必须依赖上一个结果，这样没问题。 如果它们互不依赖，可以改成并发：\nawait Promise.all(ids.map((id) =\u003e fetchUser(id))); 这里的关键不是“循环里不能写 await”，而是要分清任务是否真的需要串行。\n5. 异步错误要在边界处理 async function loadPage() { try { const user = await fetchUser(); return user; } catch (error) { if (error instanceof Error) { console.log(error.message); } throw error; } } catch 里的 error 不应该直接当成 Error 使用，先判断会更稳妥。\n断言要少用 类型断言 as 的意思是：“我确定它是这个类型”。它只影响编译期，不会改变运行时数据。\nconst input = document.getElementById(\"username\") as HTMLInputElement; console.log(input.value); 这种写法在 DOM 场景里常见，但不要把断言当成校验：\nconst user = JSON.parse(text) as User; 这只能让 TypeScript 相信 user 是 User，不能保证接口数据真的符合结构。关键数据仍然需要运行时判断。\n如果一个值来源不确定，优先用 unknown，再收窄：\nfunction parseName(value: unknown): string { if (typeof value === \"string\") { return value; } return \"unknown\"; } 常见坑点 1. 类型写得太宽 let status: string = \"loading\"; 如果状态只有几种，更推荐写成字面量联合类型：\nlet status: \"loading\" | \"success\" | \"error\" = \"loading\"; 2. 到处使用 any any 会让后续代码失去类型保护。接口边界、历史代码迁移时可以临时使用，但不要让它扩散到核心类型里。\n3. 混淆类型检查和运行时校验 type、interface、as 都不会生成运行时校验逻辑。接口数据、用户输入、配置文件这类外部数据，不能只靠 TypeScript 类型保证安全。\n小结 TypeScript 进阶不等于写复杂类型。真正实用的方向是：\n用 export 和 import 管理不同文件之间的引用 用泛型保留类型关系 用类型收窄安全处理联合类型 用 Record、Partial、Pick、Omit、Awaited 复用已有类型 用 as const 保留固定配置里的字面量类型 用 Promise.all、Promise.allSettled 管理异步任务 少用 any 和盲目断言，把不确定数据放在边界处理 类型写得清楚，比类型写得炫技更重要。先把接口响应、页面状态、异步结果和公共函数的类型边界整理好，就能减少很多低级错误。\n",
-  "wordCount" : "673",
+  "articleBody": "上一篇入门文章已经覆盖了基础类型、函数、对象、interface、type、联合类型和可空处理。继续往下学 TypeScript，重点不是记更多语法，而是学会把类型用在真实代码里：接口响应、状态结构、异步结果和公共函数都应该有清晰的类型边界。\n模块导入与文件引用 TypeScript 支持用 export 暴露变量、函数或类型，再用 import 在其他文件中引用：\n// user.ts export type User = { id: number; name: string; }; export function getUserName(user: User): string { return user.name; } // main.ts import { getUserName, type User } from \"./user\"; const user: User = { id: 1, name: \"Tom\", }; console.log(getUserName(user)); 和 Kotlin 按包名导入不同，TypeScript 默认更多是按文件路径导入。\"./user\" 表示同级目录下的 user.ts，通常可以省略 .ts 后缀。\n如果只引用类型，推荐使用 import type：\nimport type { User } from \"./user\"; 大型项目里也常见路径别名，例如 @/models/user，但这需要在 tsconfig.json 里配置 baseUrl 和 paths。\n泛型是什么 泛型可以简单理解成：把类型也作为参数传进去。\n它解决的核心问题是：代码逻辑可以复用，但类型信息不能丢。\nfunction wrap\u003cT\u003e(value: T): T[] { return [value]; } const names = wrap(\"hello\"); // string[] const ids = wrap(100); // number[] 如果不用泛型，很容易退回到 any：\nfunction wrap(value: any): any[] { return [value]; } 这段代码虽然能运行，但调用方拿不到准确类型提示。\n泛型最常见的使用场景是接口响应：\ntype ApiResponse\u003cT\u003e = { code: number; message: string; data: T; }; type User = { id: number; name: string; }; const response: ApiResponse\u003cUser\u003e = { code: 0, message: \"ok\", data: { id: 1, name: \"Tom\", }, }; 可以先记住一句话：泛型不是为了把类型写复杂，而是为了保留“输入、输出、数据结构之间的类型关系”。\n类型收窄 联合类型很常见，但使用联合类型时，不能直接访问某个类型独有的属性。需要先判断，再使用。\n1. typeof function formatId(id: string | number): string { if (typeof id === \"number\") { return id.toFixed(0); } return id.toUpperCase(); } 2. in 对象联合类型可以用 in 判断字段是否存在：\ntype User = { id: number; name: string; }; type Admin = { id: number; role: string; }; function printAccount(account: User | Admin) { if (\"role\" in account) { console.log(account.role); } else { console.log(account.name); } } 3. 判别字段 如果多个状态结构差异明显，更推荐增加固定字段：\ntype PageState = | { status: \"loading\" } | { status: \"success\"; data: string[] } | { status: \"error\"; message: string }; function render(state: PageState) { switch (state.status) { case \"loading\": return \"加载中\"; case \"success\": return state.data.join(\",\"); case \"error\": return state.message; } } 这种写法比到处判断字段是否存在更稳定，适合页面状态、任务状态、消息类型等场景。\n常用工具类型 TypeScript 内置了很多工具类型，但日常项目里不需要一次记完。先掌握下面几个就够用。\n1. Record Record 用来描述一组固定 key 对应同一种 value 的结构。\ntype Role = \"admin\" | \"user\" | \"guest\"; const roleNames: Record\u003cRole, string\u003e = { admin: \"管理员\", user: \"普通用户\", guest: \"访客\", }; 它适合做枚举值到文案、配置、处理函数的映射。如果少写一个 key，TypeScript 会提示错误。\n2. Partial Partial 会把字段都变成可选字段，常用于更新参数。\ntype User = { id: number; name: string; email: string; }; function updateUser(id: number, patch: Partial\u003cUser\u003e) { console.log(id, patch); } updateUser(1, { name: \"Jerry\", }); 3. Pick 和 Omit Pick 是从类型中挑字段，Omit 是从类型中排除字段。\ntype User = { id: number; name: string; email: string; password: string; }; type UserCard = Pick\u003cUser, \"id\" | \"name\"\u003e; type PublicUser = Omit\u003cUser, \"password\"\u003e; 它们适合从完整数据结构里拆出列表项、卡片、公开信息、表单参数等类型。\n4. Awaited Awaited 用来拿到 Promise 解析后的类型，异步代码里很实用。\nasync function getUser() { return { id: 1, name: \"Tom\", }; } type User = Awaited\u003cReturnType\u003ctypeof getUser\u003e\u003e; 这里 User 的类型就是 getUser() 真正返回的数据类型，而不是 Promise\u003c...\u003e。 其中 ReturnType 用来取函数返回值类型，Awaited 再把 Promise 包住的结果拆出来。\nas const 保留字面量类型 普通对象里的字符串值通常会被推断成 string，如果希望保留更精确的字面量类型，可以使用 as const。\nconst statusMap = { loading: \"加载中\", success: \"成功\", error: \"失败\", } as const; type Status = keyof typeof statusMap; 这里的 Status 是 \"loading\" | \"success\" | \"error\"，适合用在状态值、事件名、路由名、固定配置这类场景。\n异步常用技巧 TypeScript 的异步语法来自 JavaScript，核心还是 Promise、async、await。TypeScript 主要负责把异步结果的类型表达清楚。\n1. async 函数返回 Promise async function getName(): Promise\u003cstring\u003e { return \"Tom\"; } 即使函数里直接 return \"Tom\"，async 函数的返回值也会被包装成 Promise。\n调用时需要 await：\nconst name = await getName(); 2. 并发请求用 Promise.all 如果多个异步任务互不依赖，不要一个一个 await：\nconst user = await fetchUser(); const orders = await fetchOrders(); 这会串行执行。更常见的并发写法是：\nconst [user, orders] = await Promise.all([ fetchUser(), fetchOrders(), ]); Promise.all 适合“全部成功才继续”的场景。\n3. 部分失败可用 Promise.allSettled 如果不希望一个请求失败就中断全部任务，可以用 Promise.allSettled：\nconst results = await Promise.allSettled([ fetchUser(), fetchOrders(), ]); results.forEach((result) =\u003e { if (result.status === \"fulfilled\") { console.log(result.value); } else { console.log(result.reason); } }); 它返回的结果天然适合用判别字段 status 做类型收窄。\n4. 循环里的 await 要看场景 下面这种写法会按顺序执行：\nfor (const id of ids) { await fetchUser(id); } 如果每个请求必须依赖上一个结果，这样没问题。 如果它们互不依赖，可以改成并发：\nawait Promise.all(ids.map((id) =\u003e fetchUser(id))); 这里的关键不是“循环里不能写 await”，而是要分清任务是否真的需要串行。\n5. 异步错误要在边界处理 async function loadPage() { try { const user = await fetchUser(); return user; } catch (error) { if (error instanceof Error) { console.log(error.message); } throw error; } } catch 里的 error 不应该直接当成 Error 使用，先判断会更稳妥。\nany 和 unknown 的区别 any 和 unknown 都可以表示“不确定类型”，但它们对类型检查的约束完全不同。\nany 会绕开类型检查：\nfunction handle(value: any) { value.toUpperCase(); value.notExists(); } 这段代码 TypeScript 不会拦，即使运行时可能出错。\nunknown 会要求先判断类型：\nfunction handle(value: unknown) { if (typeof value === \"string\") { console.log(value.toUpperCase()); } } 实际项目里可以这样处理：\n迁移旧代码时，可以短期使用 any 接口返回、用户输入、配置文件这类外部数据，优先使用 unknown unknown 不是更麻烦，而是把类型判断留在边界处完成 断言要少用 类型断言 as 的意思是：“我确定它是这个类型”。它只影响编译期，不会改变运行时数据。\nconst input = document.getElementById(\"username\") as HTMLInputElement; console.log(input.value); 这种写法在 DOM 场景里常见，但不要把断言当成校验：\nconst user = JSON.parse(text) as User; 这只能让 TypeScript 相信 user 是 User，不能保证接口数据真的符合结构。关键数据仍然需要运行时判断。\n常见坑点 1. 类型写得太宽 let status: string = \"loading\"; 如果状态只有几种，更推荐写成字面量联合类型：\nlet status: \"loading\" | \"success\" | \"error\" = \"loading\"; 2. 到处使用 any any 会让后续代码失去类型保护。接口边界、历史代码迁移时可以临时使用，但不要让它扩散到核心类型里。\n3. 混淆类型检查和运行时校验 type、interface、as 都不会生成运行时校验逻辑。接口数据、用户输入、配置文件这类外部数据，不能只靠 TypeScript 类型保证安全。\n小结 TypeScript 进阶不等于写复杂类型。真正实用的方向是：\n用 export 和 import 管理不同文件之间的引用 用泛型保留类型关系 用类型收窄安全处理联合类型 用 Record、Partial、Pick、Omit、Awaited 复用已有类型 用 as const 保留固定配置里的字面量类型 用 Promise.all、Promise.allSettled 管理异步任务 用 unknown 处理外部数据，少让 any 扩散 少用 any 和盲目断言，把不确定数据放在边界处理 类型写得清楚，比类型写得炫技更重要。先把接口响应、页面状态、异步结果和公共函数的类型边界整理好，就能减少很多低级错误。\n",
+  "wordCount" : "701",
   "inLanguage": "en",
-  "datePublished": "2026-07-29T14:16:33+08:00",
-  "dateModified": "2026-07-29T14:16:33+08:00",
+  "datePublished": "2026-04-09T20:10:00+08:00",
+  "dateModified": "2026-04-09T20:10:00+08:00",
   "author":[{
     "@type": "Person",
     "name": "夏天的小西瓜"
@@ -380,7 +380,7 @@ const response: ApiResponse&lt;User&gt; = {
     <h1 class="post-title entry-hint-parent">
       TypeScript进阶用法
     </h1>
-    <div class="post-meta"><span title='2026-07-29 14:16:33 +0800 CST'>July 29, 2026</span>&nbsp;·&nbsp;4 min&nbsp;·&nbsp;673 words&nbsp;·&nbsp;夏天的小西瓜
+    <div class="post-meta"><span title='2026-04-09 20:10:00 +0800 CST'>April 9, 2026</span>&nbsp;·&nbsp;4 min&nbsp;·&nbsp;701 words&nbsp;·&nbsp;夏天的小西瓜
 
 </div>
   </header> <aside id="toc-container" class="toc-container wide">
@@ -433,6 +433,8 @@ const response: ApiResponse&lt;User&gt; = {
                     <li>
                         <a href="#5-%e5%bc%82%e6%ad%a5%e9%94%99%e8%af%af%e8%a6%81%e5%9c%a8%e8%be%b9%e7%95%8c%e5%a4%84%e7%90%86" aria-label="5. 异步错误要在边界处理">5. 异步错误要在边界处理</a></li></ul>
                     </li>
+                    <li>
+                        <a href="#any-%e5%92%8c-unknown-%e7%9a%84%e5%8c%ba%e5%88%ab" aria-label="any 和 unknown 的区别">any 和 unknown 的区别</a></li>
                     <li>
                         <a href="#%e6%96%ad%e8%a8%80%e8%a6%81%e5%b0%91%e7%94%a8" aria-label="断言要少用">断言要少用</a></li>
                     <li>
@@ -738,6 +740,26 @@ const response: ApiResponse&lt;User&gt; = {
 </span></span><span class="line"><span class="cl">  <span class="p">}</span>
 </span></span><span class="line"><span class="cl"><span class="p">}</span>
 </span></span></code></pre></div><p><code>catch</code> 里的 <code>error</code> 不应该直接当成 <code>Error</code> 使用，先判断会更稳妥。</p>
+<h2 id="any-和-unknown-的区别">any 和 unknown 的区别<a hidden class="anchor" aria-hidden="true" href="#any-和-unknown-的区别">#</a></h2>
+<p><code>any</code> 和 <code>unknown</code> 都可以表示“不确定类型”，但它们对类型检查的约束完全不同。</p>
+<p><code>any</code> 会绕开类型检查：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ts" data-lang="ts"><span class="line"><span class="cl"><span class="kd">function</span> <span class="nx">handle</span><span class="p">(</span><span class="nx">value</span>: <span class="kt">any</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nx">value</span><span class="p">.</span><span class="nx">toUpperCase</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">  <span class="nx">value</span><span class="p">.</span><span class="nx">notExists</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>这段代码 TypeScript 不会拦，即使运行时可能出错。</p>
+<p><code>unknown</code> 会要求先判断类型：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ts" data-lang="ts"><span class="line"><span class="cl"><span class="kd">function</span> <span class="nx">handle</span><span class="p">(</span><span class="nx">value</span>: <span class="kt">unknown</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="k">if</span> <span class="p">(</span><span class="k">typeof</span> <span class="nx">value</span> <span class="o">===</span> <span class="s2">&#34;string&#34;</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">value</span><span class="p">.</span><span class="nx">toUpperCase</span><span class="p">());</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>实际项目里可以这样处理：</p>
+<ul>
+<li>迁移旧代码时，可以短期使用 <code>any</code></li>
+<li>接口返回、用户输入、配置文件这类外部数据，优先使用 <code>unknown</code></li>
+<li><code>unknown</code> 不是更麻烦，而是把类型判断留在边界处完成</li>
+</ul>
 <h2 id="断言要少用">断言要少用<a hidden class="anchor" aria-hidden="true" href="#断言要少用">#</a></h2>
 <p>类型断言 <code>as</code> 的意思是：“我确定它是这个类型”。它只影响编译期，不会改变运行时数据。</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ts" data-lang="ts"><span class="line"><span class="cl"><span class="kr">const</span> <span class="nx">input</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">getElementById</span><span class="p">(</span><span class="s2">&#34;username&#34;</span><span class="p">)</span> <span class="kr">as</span> <span class="nx">HTMLInputElement</span><span class="p">;</span>
@@ -745,15 +767,7 @@ const response: ApiResponse&lt;User&gt; = {
 </span></span></code></pre></div><p>这种写法在 DOM 场景里常见，但不要把断言当成校验：</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ts" data-lang="ts"><span class="line"><span class="cl"><span class="kr">const</span> <span class="nx">user</span> <span class="o">=</span> <span class="nx">JSON</span><span class="p">.</span><span class="nx">parse</span><span class="p">(</span><span class="nx">text</span><span class="p">)</span> <span class="kr">as</span> <span class="nx">User</span><span class="p">;</span>
 </span></span></code></pre></div><p>这只能让 TypeScript 相信 <code>user</code> 是 <code>User</code>，不能保证接口数据真的符合结构。关键数据仍然需要运行时判断。</p>
-<p>如果一个值来源不确定，优先用 <code>unknown</code>，再收窄：</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ts" data-lang="ts"><span class="line"><span class="cl"><span class="kd">function</span> <span class="nx">parseName</span><span class="p">(</span><span class="nx">value</span>: <span class="kt">unknown</span><span class="p">)</span><span class="o">:</span> <span class="kt">string</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">  <span class="k">if</span> <span class="p">(</span><span class="k">typeof</span> <span class="nx">value</span> <span class="o">===</span> <span class="s2">&#34;string&#34;</span><span class="p">)</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="nx">value</span><span class="p">;</span>
-</span></span><span class="line"><span class="cl">  <span class="p">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">  <span class="k">return</span> <span class="s2">&#34;unknown&#34;</span><span class="p">;</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span></code></pre></div><h2 id="常见坑点">常见坑点<a hidden class="anchor" aria-hidden="true" href="#常见坑点">#</a></h2>
+<h2 id="常见坑点">常见坑点<a hidden class="anchor" aria-hidden="true" href="#常见坑点">#</a></h2>
 <h3 id="1-类型写得太宽">1. 类型写得太宽<a hidden class="anchor" aria-hidden="true" href="#1-类型写得太宽">#</a></h3>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ts" data-lang="ts"><span class="line"><span class="cl"><span class="kd">let</span> <span class="nx">status</span>: <span class="kt">string</span> <span class="o">=</span> <span class="s2">&#34;loading&#34;</span><span class="p">;</span>
 </span></span></code></pre></div><p>如果状态只有几种，更推荐写成字面量联合类型：</p>
@@ -771,6 +785,7 @@ const response: ApiResponse&lt;User&gt; = {
 <li>用 <code>Record</code>、<code>Partial</code>、<code>Pick</code>、<code>Omit</code>、<code>Awaited</code> 复用已有类型</li>
 <li>用 <code>as const</code> 保留固定配置里的字面量类型</li>
 <li>用 <code>Promise.all</code>、<code>Promise.allSettled</code> 管理异步任务</li>
+<li>用 <code>unknown</code> 处理外部数据，少让 <code>any</code> 扩散</li>
 <li>少用 <code>any</code> 和盲目断言，把不确定数据放在边界处理</li>
 </ul>
 <p>类型写得清楚，比类型写得炫技更重要。先把接口响应、页面状态、异步结果和公共函数的类型边界整理好，就能减少很多低级错误。</p>
@@ -786,10 +801,15 @@ const response: ApiResponse&lt;User&gt; = {
       <li><a href="/tags/%E5%BC%82%E6%AD%A5/">异步</a></li>
     </ul>
 <nav class="paginav">
-  <a class="next" href="/posts/ios/swiftui_list_navigation_basic/">
+  <a class="prev" href="/posts/database/mysql_basic/">
+    <span class="title">« Prev</span>
+    <br>
+    <span>MySQL 基础用法</span>
+  </a>
+  <a class="next" href="/posts/typescript/typescript_intro/">
     <span class="title">Next »</span>
     <br>
-    <span>SwiftUI列表与导航基础</span>
+    <span>TypeScript基础用法</span>
   </a>
 </nav>
 

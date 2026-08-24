@@ -1,0 +1,1857 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>Android开发者接手iOS存量项目：Objective-C快速入门 | 缥缈夏鸢</title>
+<meta name="keywords" content="Objective-C, UIKit, Android, Java, 存量项目">
+<meta name="description" content="对 Android 开发者来说，接手 Objective-C 存量项目的难点通常不是业务逻辑，而是三套陌生表达同时出现：
+
+Objective-C 的消息发送语法
+UIKit 的页面与事件模型
+Xcode 的工程、依赖和签名体系
+
+最有效的入门方式不是从 C 语言重新学起，而是先建立 Android 与 iOS 的概念映射，再用 Java 语法经验理解 Objective-C，最后通过一个可运行的 UIKit 小项目把知识串起来。
+本文的目标不是全面讲解 Objective-C，而是帮助 Android 开发者尽快做到：
+
+看懂常见 Objective-C 业务代码
+找到 iOS 应用入口和页面入口
+修改一个 UIKit 列表页面
+理解 delegate、Block 和 ARC
+避开接手老项目时的常见坑
+
+先建立平台映射
+Android 和 iOS 的框架不能完全等价，但下面的映射可以帮助建立第一印象。
+
+  
+      
+          Android
+          iOS存量项目
+          说明
+      
+  
+  
+      
+          Application
+          AppDelegate、SceneDelegate
+          应用和场景生命周期
+      
+      
+          Activity、Fragment
+          UIViewController
+          页面控制器，不能完全等价
+      
+      
+          View、ViewGroup
+          UIView
+          UI 基础对象
+      
+      
+          XML Layout
+          Storyboard、XIB
+          可视化页面文件
+      
+      
+          ConstraintLayout
+          Auto Layout
+          约束布局
+      
+      
+          RecyclerView
+          UITableView、UICollectionView
+          列表和网格
+      
+      
+          RecyclerView.Adapter
+          UITableViewDataSource
+          提供列表数据
+      
+      
+          OnClickListener
+          target-action、delegate、Block
+          事件回调
+      
+      
+          interface
+          protocol
+          能力约束
+      
+      
+          lambda
+          Block
+          可传递的代码块
+      
+      
+          AndroidManifest.xml
+          Info.plist、Entitlements
+          配置和权限声明
+      
+      
+          applicationId
+          Bundle Identifier
+          应用唯一标识
+      
+      
+          Gradle Module
+          Xcode Target
+          构建单元，语义并不完全相同
+      
+      
+          Handler主线程调度
+          Main Queue
+          主线程任务调度
+      
+  
+
+这些概念只适合粗略类比。例如 UIViewController 同时参与视图管理、页面生命周期和导航协作，不能简单看作另一个 Activity。">
+<meta name="author" content="夏天的小西瓜">
+<link rel="canonical" href="/posts/ios/objective_c_for_android_developers/">
+<meta name="google-site-verification" content="XYZabc">
+<meta name="msvalidate.01" content="XYZabc">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.44278f16c6e7e77192a15a0565fb5b0f220c56128442fcfa6937b4d84456ecf0.css" integrity="sha256-RCePFsbn53GSoVoFZftbDyIMVhKEQvz6aTe02ERW7PA=" rel="preload stylesheet" as="style">
+<link rel="icon" href="/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="mask-icon" href="/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="en" href="/posts/ios/objective_c_for_android_developers/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-track {
+                background: 0 0;
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-thumb {
+                border-color: var(--theme);
+            }
+        }
+
+    </style>
+</noscript><script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+<script>
+
+const config = {
+    startOnLoad: true,
+    theme: "base",
+    themeVariables: {
+        primaryColor: "#f8fafc",
+        primaryTextColor: "#111827",
+        primaryBorderColor: "#6b7280",
+        lineColor: "#6b7280",
+        secondaryColor: "#eef2ff",
+        secondaryTextColor: "#111827",
+        secondaryBorderColor: "#6b7280",
+        tertiaryColor: "#f1f5f9",
+        tertiaryTextColor: "#111827",
+        tertiaryBorderColor: "#6b7280",
+        edgeLabelBackground: "#f8fafc",
+        clusterBkg: "#f8fafc",
+        clusterBorder: "#6b7280",
+        noteBkgColor: "#fef3c7",
+        noteTextColor: "#111827",
+        noteBorderColor: "#6b7280"
+    },
+    flowchart: {
+        useMaxWidth: false,
+        htmlLabels: true
+    }
+};
+mermaid.initialize(config);
+
+
+window.onload = () => {
+    window.mermaid.init(undefined, document.querySelectorAll('.language-mermaid'));
+}
+</script>
+<meta property="og:url" content="/posts/ios/objective_c_for_android_developers/">
+  <meta property="og:site_name" content="缥缈夏鸢">
+  <meta property="og:title" content="Android开发者接手iOS存量项目：Objective-C快速入门">
+  <meta property="og:description" content="对 Android 开发者来说，接手 Objective-C 存量项目的难点通常不是业务逻辑，而是三套陌生表达同时出现：
+Objective-C 的消息发送语法 UIKit 的页面与事件模型 Xcode 的工程、依赖和签名体系 最有效的入门方式不是从 C 语言重新学起，而是先建立 Android 与 iOS 的概念映射，再用 Java 语法经验理解 Objective-C，最后通过一个可运行的 UIKit 小项目把知识串起来。
+本文的目标不是全面讲解 Objective-C，而是帮助 Android 开发者尽快做到：
+看懂常见 Objective-C 业务代码 找到 iOS 应用入口和页面入口 修改一个 UIKit 列表页面 理解 delegate、Block 和 ARC 避开接手老项目时的常见坑 先建立平台映射 Android 和 iOS 的框架不能完全等价，但下面的映射可以帮助建立第一印象。
+Android iOS存量项目 说明 Application AppDelegate、SceneDelegate 应用和场景生命周期 Activity、Fragment UIViewController 页面控制器，不能完全等价 View、ViewGroup UIView UI 基础对象 XML Layout Storyboard、XIB 可视化页面文件 ConstraintLayout Auto Layout 约束布局 RecyclerView UITableView、UICollectionView 列表和网格 RecyclerView.Adapter UITableViewDataSource 提供列表数据 OnClickListener target-action、delegate、Block 事件回调 interface protocol 能力约束 lambda Block 可传递的代码块 AndroidManifest.xml Info.plist、Entitlements 配置和权限声明 applicationId Bundle Identifier 应用唯一标识 Gradle Module Xcode Target 构建单元，语义并不完全相同 Handler主线程调度 Main Queue 主线程任务调度 这些概念只适合粗略类比。例如 UIViewController 同时参与视图管理、页面生命周期和导航协作，不能简单看作另一个 Activity。">
+  <meta property="og:locale" content="en-us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2026-08-24T17:38:24+08:00">
+    <meta property="article:modified_time" content="2026-08-24T17:38:24+08:00">
+    <meta property="article:tag" content="Objective-C">
+    <meta property="article:tag" content="UIKit">
+    <meta property="article:tag" content="Android">
+    <meta property="article:tag" content="Java">
+    <meta property="article:tag" content="存量项目">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Android开发者接手iOS存量项目：Objective-C快速入门">
+<meta name="twitter:description" content="对 Android 开发者来说，接手 Objective-C 存量项目的难点通常不是业务逻辑，而是三套陌生表达同时出现：
+
+Objective-C 的消息发送语法
+UIKit 的页面与事件模型
+Xcode 的工程、依赖和签名体系
+
+最有效的入门方式不是从 C 语言重新学起，而是先建立 Android 与 iOS 的概念映射，再用 Java 语法经验理解 Objective-C，最后通过一个可运行的 UIKit 小项目把知识串起来。
+本文的目标不是全面讲解 Objective-C，而是帮助 Android 开发者尽快做到：
+
+看懂常见 Objective-C 业务代码
+找到 iOS 应用入口和页面入口
+修改一个 UIKit 列表页面
+理解 delegate、Block 和 ARC
+避开接手老项目时的常见坑
+
+先建立平台映射
+Android 和 iOS 的框架不能完全等价，但下面的映射可以帮助建立第一印象。
+
+  
+      
+          Android
+          iOS存量项目
+          说明
+      
+  
+  
+      
+          Application
+          AppDelegate、SceneDelegate
+          应用和场景生命周期
+      
+      
+          Activity、Fragment
+          UIViewController
+          页面控制器，不能完全等价
+      
+      
+          View、ViewGroup
+          UIView
+          UI 基础对象
+      
+      
+          XML Layout
+          Storyboard、XIB
+          可视化页面文件
+      
+      
+          ConstraintLayout
+          Auto Layout
+          约束布局
+      
+      
+          RecyclerView
+          UITableView、UICollectionView
+          列表和网格
+      
+      
+          RecyclerView.Adapter
+          UITableViewDataSource
+          提供列表数据
+      
+      
+          OnClickListener
+          target-action、delegate、Block
+          事件回调
+      
+      
+          interface
+          protocol
+          能力约束
+      
+      
+          lambda
+          Block
+          可传递的代码块
+      
+      
+          AndroidManifest.xml
+          Info.plist、Entitlements
+          配置和权限声明
+      
+      
+          applicationId
+          Bundle Identifier
+          应用唯一标识
+      
+      
+          Gradle Module
+          Xcode Target
+          构建单元，语义并不完全相同
+      
+      
+          Handler主线程调度
+          Main Queue
+          主线程任务调度
+      
+  
+
+这些概念只适合粗略类比。例如 UIViewController 同时参与视图管理、页面生命周期和导航协作，不能简单看作另一个 Activity。">
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Posts",
+      "item": "/posts/"
+    }
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Android开发者接手iOS存量项目：Objective-C快速入门",
+      "item": "/posts/ios/objective_c_for_android_developers/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Android开发者接手iOS存量项目：Objective-C快速入门",
+  "name": "Android开发者接手iOS存量项目：Objective-C快速入门",
+  "description": "对 Android 开发者来说，接手 Objective-C 存量项目的难点通常不是业务逻辑，而是三套陌生表达同时出现：\nObjective-C 的消息发送语法 UIKit 的页面与事件模型 Xcode 的工程、依赖和签名体系 最有效的入门方式不是从 C 语言重新学起，而是先建立 Android 与 iOS 的概念映射，再用 Java 语法经验理解 Objective-C，最后通过一个可运行的 UIKit 小项目把知识串起来。\n本文的目标不是全面讲解 Objective-C，而是帮助 Android 开发者尽快做到：\n看懂常见 Objective-C 业务代码 找到 iOS 应用入口和页面入口 修改一个 UIKit 列表页面 理解 delegate、Block 和 ARC 避开接手老项目时的常见坑 先建立平台映射 Android 和 iOS 的框架不能完全等价，但下面的映射可以帮助建立第一印象。\nAndroid iOS存量项目 说明 Application AppDelegate、SceneDelegate 应用和场景生命周期 Activity、Fragment UIViewController 页面控制器，不能完全等价 View、ViewGroup UIView UI 基础对象 XML Layout Storyboard、XIB 可视化页面文件 ConstraintLayout Auto Layout 约束布局 RecyclerView UITableView、UICollectionView 列表和网格 RecyclerView.Adapter UITableViewDataSource 提供列表数据 OnClickListener target-action、delegate、Block 事件回调 interface protocol 能力约束 lambda Block 可传递的代码块 AndroidManifest.xml Info.plist、Entitlements 配置和权限声明 applicationId Bundle Identifier 应用唯一标识 Gradle Module Xcode Target 构建单元，语义并不完全相同 Handler主线程调度 Main Queue 主线程任务调度 这些概念只适合粗略类比。例如 UIViewController 同时参与视图管理、页面生命周期和导航协作，不能简单看作另一个 Activity。\n",
+  "keywords": [
+    "Objective-C", "UIKit", "Android", "Java", "存量项目"
+  ],
+  "articleBody": "对 Android 开发者来说，接手 Objective-C 存量项目的难点通常不是业务逻辑，而是三套陌生表达同时出现：\nObjective-C 的消息发送语法 UIKit 的页面与事件模型 Xcode 的工程、依赖和签名体系 最有效的入门方式不是从 C 语言重新学起，而是先建立 Android 与 iOS 的概念映射，再用 Java 语法经验理解 Objective-C，最后通过一个可运行的 UIKit 小项目把知识串起来。\n本文的目标不是全面讲解 Objective-C，而是帮助 Android 开发者尽快做到：\n看懂常见 Objective-C 业务代码 找到 iOS 应用入口和页面入口 修改一个 UIKit 列表页面 理解 delegate、Block 和 ARC 避开接手老项目时的常见坑 先建立平台映射 Android 和 iOS 的框架不能完全等价，但下面的映射可以帮助建立第一印象。\nAndroid iOS存量项目 说明 Application AppDelegate、SceneDelegate 应用和场景生命周期 Activity、Fragment UIViewController 页面控制器，不能完全等价 View、ViewGroup UIView UI 基础对象 XML Layout Storyboard、XIB 可视化页面文件 ConstraintLayout Auto Layout 约束布局 RecyclerView UITableView、UICollectionView 列表和网格 RecyclerView.Adapter UITableViewDataSource 提供列表数据 OnClickListener target-action、delegate、Block 事件回调 interface protocol 能力约束 lambda Block 可传递的代码块 AndroidManifest.xml Info.plist、Entitlements 配置和权限声明 applicationId Bundle Identifier 应用唯一标识 Gradle Module Xcode Target 构建单元，语义并不完全相同 Handler主线程调度 Main Queue 主线程任务调度 这些概念只适合粗略类比。例如 UIViewController 同时参与视图管理、页面生命周期和导航协作，不能简单看作另一个 Activity。\nJava与Objective-C语法对照 Objective-C 建立在 C 语言之上，并加入了对象、消息、协议和运行时机制。维护普通业务代码时，不需要先系统学习 C，可以优先掌握下面这些高频语法。\n1. 常用语法速查 Java Objective-C 说明 String NSString * 字符串对象 int NSInteger、int 整数 boolean BOOL 使用 YES、NO null nil 空对象引用 new User() [[User alloc] init] 创建并初始化对象 user.update() [user update] 调用实例方法 static 方法 + 类方法 类级别方法 普通成员方法 - 实例方法 对象方法 List NSArray * 不可变数组 ArrayList NSMutableArray * 可变数组 Map NSDictionary * 字典 interface protocol 能力约束 lambda Block 回调代码块 enum NS_ENUM 枚举 this self 当前对象 extends : 类继承 instanceof isKindOfClass: 类型判断 a == b a == b 比较对象引用 a.equals(b) [a isEqual:b] 比较对象内容 try/catch NSError、Block错误参数 普通错误处理方式不同 2. 变量与基础类型 Java：\nString name = \"Tom\"; int age = 18; boolean enabled = true; Objective-C：\nNSString *name = @\"Tom\"; NSInteger age = 18; BOOL enabled = YES; Objective-C 对象类型通常带有 *：\nNSString *title = @\"Objective-C\"; User *user = [[User alloc] init]; UIView *contentView = [[UIView alloc] init]; 基础类型不带 *：\nNSInteger count = 10; CGFloat width = 100.0; BOOL loading = NO; 需要把基础类型放进集合时，可以包装为 NSNumber：\nNSInteger count = 10; NSNumber *boxedCount = @(count); NSArray\u003cNSNumber *\u003e *numbers = @[@1, @2, @3]; 存量项目中经常使用下面的方式定义常量：\nstatic NSString * const UserNameKey = @\"user_name\"; static NSInteger const MaxRetryCount = 3; 它们接近 Java 中的 static final：\nprivate static final String USER_NAME_KEY = \"user_name\"; private static final int MAX_RETRY_COUNT = 3; 3. 消息发送与方法调用 Java 通过点语法调用方法：\nuser.updateName(\"Tom\"); Objective-C 的基本写法是向对象发送消息：\n[user updateName:@\"Tom\"]; 多个参数会成为方法名的一部分：\n[user updateName:@\"Tom\" age:18]; 方法声明如下：\n- (void)updateName:(NSString *)name age:(NSInteger)age; 其中：\n- 表示实例方法 + 表示类方法 (void) 是返回值类型 updateName: 和 age: 是参数标签 完整的方法名是 updateName:age:。搜索方法实现时，使用包含冒号的完整名称通常更容易找到目标。\nJava 方法：\npublic User findUser(String userId, boolean useCache) { // ... } Objective-C 声明：\n- (nullable User *)findUserWithID:(NSString *)userID useCache:(BOOL)useCache; 调用：\nUser *user = [service findUserWithID:@\"1001\" useCache:YES]; 4. 类方法与实例方法 Objective-C 使用 - 表示实例方法：\n- (void)reloadData; 调用：\n[viewController reloadData]; 使用 + 表示类方法，接近 Java 的 static 方法：\n+ (instancetype)service; 调用：\nUserService *service = [UserService service]; 5. 对象创建与初始化 Java：\nUser user = new User(\"Tom\", 18); Objective-C：\nUser *user = [[User alloc] initWithName:@\"Tom\" age:18]; 对象创建分为两个步骤：\nalloc：分配对象 init：初始化对象 自定义初始化方法：\n- (instancetype)initWithName:(NSString *)name age:(NSInteger)age { self = [super init]; if (self) { _name = [name copy]; _age = age; } return self; } 不要省略 self = [super init]。父类初始化方法可能返回另一个对象，也可能返回 nil。\n项目中也会经常看到工厂方法：\nUIColor *color = [UIColor redColor]; NSMutableArray *tasks = [NSMutableArray array]; 6. 属性与成员变量 Java：\npublic class User { private final String userId; private String name; } Objective-C：\n@interface User : NSObject @property (nonatomic, copy, readonly) NSString *userID; @property (nonatomic, copy) NSString *name; @end 读取和修改属性：\nNSString *userID = user.userID; user.name = @\"Jerry\"; 点语法本质上仍然是 getter 和 setter 调用：\nNSString *name = [user name]; [user setName:@\"Jerry\"]; 编译器通常会为属性生成以下划线开头的成员变量，例如 _name。初始化阶段经常直接访问成员变量：\n_name = [name copy]; 普通业务逻辑中通常通过属性访问：\nself.name = name; 7. 属性修饰符 存量项目中经常能看到：\n@property (nonatomic, strong) User *user; @property (nonatomic, copy) NSString *title; @property (nonatomic, weak) id\u003cUserDelegate\u003e delegate; @property (nonatomic, assign) NSInteger count; 常用规则如下：\n修饰符 常见用途 strong 普通对象的强引用 copy 字符串和Block weak delegate、避免循环引用 assign 整数、布尔值、枚举 nonatomic 常见的非原子属性访问 字符串通常使用 copy，避免外部传入的可变字符串影响对象内部状态。\n8. 字符串 Objective-C 字符串字面量需要带 @：\nNSString *name = @\"Tom\"; NSString *message = [NSString stringWithFormat:@\"Hello, %@\", name]; 常用格式占位符包括：\n类型 占位符 Objective-C对象 %@ NSInteger %ld BOOL %d double %f 示例：\nNSLog(@\"name=%@, age=%ld, enabled=%d\", name, (long)age, enabled); 判断字符串是否为空：\nif (name == nil || name.length == 0) { NSLog(@\"名称为空\"); } 字符串拼接：\nNSString *fullName = [NSString stringWithFormat:@\"%@ %@\", firstName, lastName]; 9. 相等性比较 Java 和 Objective-C 的对象相等性比较非常接近。\nJava：\nif (name1 == name2) { // 是否为同一个对象 } if (name1.equals(name2)) { // 字符串内容是否相同 } Objective-C：\nif (name1 == name2) { // 是否指向同一个对象 } if ([name1 isEqualToString:name2]) { // 字符串内容是否相同 } 普通对象通常使用 isEqual: 比较语义是否相等：\nif ([user1 isEqual:user2]) { NSLog(@\"两个对象相等\"); } 前提是对应类型正确实现了相等性逻辑。\n10. nil与判空 Java：\nString nickname = null; String displayName = nickname != null ? nickname : \"Guest\"; Objective-C：\nNSString *nickname = nil; NSString *displayName = nickname != nil ? nickname : @\"Guest\"; 项目中也可能看到简写：\nNSString *displayName = nickname ?: @\"Guest\"; Objective-C 可以通过 Nullability 标记说明某个对象能否为空：\nNS_ASSUME_NONNULL_BEGIN @interface UserService : NSObject - (nullable User *)findUserWithID:(NSString *)userID; @end NS_ASSUME_NONNULL_END 向 nil 发送普通消息通常不会像 Java 那样立即抛出空指针异常：\nUser *user = nil; NSString *name = [user name]; 此时 name 仍然是 nil。这能减少部分判空代码，但也可能让错误静默传播，最终表现为页面没有更新或业务流程没有执行。\n11. 条件、循环与枚举 Objective-C 的 if 和 for 与 Java 非常接近：\nif (age \u003e= 18 \u0026\u0026 enabled) { NSLog(@\"允许进入\"); } else { NSLog(@\"禁止进入\"); } for (Task *task in tasks) { NSLog(@\"%@\", task.title); } 带索引遍历：\nfor (NSInteger index = 0; index \u003c tasks.count; index++) { Task *task = tasks[index]; NSLog(@\"index=%ld, title=%@\", (long)index, task.title); } Objective-C 推荐通过 NS_ENUM 定义枚举：\ntypedef NS_ENUM(NSInteger, TaskState) { TaskStateTodo, TaskStateDoing, TaskStateDone }; 使用 switch：\nswitch (state) { case TaskStateTodo: NSLog(@\"待处理\"); break; case TaskStateDoing: NSLog(@\"处理中\"); break; case TaskStateDone: NSLog(@\"已完成\"); break; } 12. 数组与字典 Java：\nList\u003cString\u003e names = new ArrayList\u003c\u003e(); names.add(\"Tom\"); names.add(\"Jerry\"); Objective-C：\nNSMutableArray\u003cNSString *\u003e *names = [NSMutableArray array]; [names addObject:@\"Tom\"]; [names addObject:@\"Jerry\"]; 不可变数组可以使用字面量：\nNSArray\u003cNSString *\u003e *names = @[@\"Tom\", @\"Jerry\"]; NSString *firstName = names[0]; 老项目中可能看到等价写法：\nNSString *firstName = [names objectAtIndex:0]; 字典：\nNSDictionary\u003cNSString *, id\u003e *user = @{ @\"name\": @\"Tom\", @\"age\": @18 }; NSString *name = user[@\"name\"]; NSNumber *age = user[@\"age\"]; 集合不能直接保存 nil。需要表达空值时，可以使用 NSNull：\nNSArray *values = @[@\"A\", [NSNull null], @\"B\"]; if (values[1] == [NSNull null]) { NSLog(@\"空值占位\"); } 13. 继承与类型判断 Java：\npublic class DetailActivity extends Activity { @Override protected void onCreate(Bundle state) { super.onCreate(state); } } Objective-C：\n@interface DetailViewController : UIViewController @end @implementation DetailViewController - (void)viewDidLoad { [super viewDidLoad]; } @end Objective-C 没有必须书写的 override 关键字。重写方法时，需要确保方法名和参数完全正确。\n类型判断：\nif ([value isKindOfClass:[User class]]) { User *user = (User *)value; NSLog(@\"%@\", user.name); } isKindOfClass:：包含子类 isMemberOfClass:：必须是当前类本身 14. protocol与interface Java 接口：\npublic interface TaskEditorListener { void onTaskCreated(Task task); } Objective-C 协议：\n@protocol TaskEditorDelegate \u003cNSObject\u003e @required - (void)didCreateTask:(Task *)task; @optional - (void)didCancelEditing; @end 声明实现协议：\n@interface ViewController () \u003cTaskEditorDelegate\u003e @end 调用可选方法前，应先判断对象是否实现：\nif ([self.delegate respondsToSelector:@selector(didCancelEditing)]) { [self.delegate didCancelEditing]; } 15. Block与lambda Java lambda：\nservice.loadTasks((tasks, error) -\u003e { if (error != null) { return; } System.out.println(tasks.size()); }); Objective-C Block：\n[service loadTasksWithCompletion: ^(NSArray\u003cTask *\u003e *tasks, NSError *error) { if (error != nil) { return; } NSLog(@\"任务数量：%lu\", (unsigned long)tasks.count); }]; Block 类型本身比较难读：\nvoid (^completion)(NSArray\u003cTask *\u003e *tasks, NSError *error); 可以通过 typedef 简化：\ntypedef void (^TaskCompletion)( NSArray\u003cTask *\u003e *tasks, NSError *error ); @property (nonatomic, copy) TaskCompletion completion; Block 属性通常使用 copy。\n16. 错误处理 Java 经常使用异常传递失败：\ntry { String result = loadData(); } catch (Exception error) { error.printStackTrace(); } Objective-C 的普通可恢复错误通常通过 NSError 返回，而不是依赖异常：\nNSError *error = nil; NSData *data = [NSJSONSerialization dataWithJSONObject:object options:0 error:\u0026error]; if (data == nil) { NSLog(@\"序列化失败：%@\", error); return; } 异步操作通常把错误放进 Block 参数：\n[service loadUserWithCompletion: ^(User *user, NSError *error) { if (error != nil) { NSLog(@\"加载失败：%@\", error); return; } NSLog(@\"用户：%@\", user.name); }]; @try、@catch 确实存在，但通常用于处理程序异常，不应直接类比为 Java 业务错误处理的主要方式。\n17. Category与Selector Category 可以给已有类增加方法。文件名通常为 类名+分类名。\nNSString+Validation.h：\n@interface NSString (Validation) - (BOOL)isValidPhoneNumber; @end NSString+Validation.m：\n@implementation NSString (Validation) - (BOOL)isValidPhoneNumber { return self.length == 11; } @end 调用：\nBOOL valid = [phoneNumber isValidPhoneNumber]; UIKit 的 target-action 经常使用 Selector：\n[button addTarget:self action:@selector(onButtonClick:) forControlEvents:UIControlEventTouchUpInside]; 对应方法：\n- (void)onButtonClick:(UIButton *)sender { NSLog(@\"按钮被点击\"); } @selector(onButtonClick:) 表示带一个参数的方法，末尾的冒号不能省略。如果出现 unrecognized selector sent to instance，应检查方法名、冒号数量和目标对象的运行时类型。\n理解Objective-C文件 常见文件类型如下：\n文件 作用 .h 类、方法和属性声明 .m Objective-C 实现 .mm Objective-C++ 实现 .storyboard 多页面可视化 UI .xib 单个页面或组件 UI .plist 应用和模块配置 .xcworkspace 包含多个工程的工作区 Objective-C 类通常拆成 .h 和 .m 两个文件。\n以待办模型为例。\nTask.h：\n#import NS_ASSUME_NONNULL_BEGIN @interface Task : NSObject @property (nonatomic, copy) NSString *title; @property (nonatomic, assign, getter=isCompleted) BOOL completed; - (instancetype)initWithTitle:(NSString *)title; @end NS_ASSUME_NONNULL_END Task.m：\n#import \"Task.h\" @implementation Task - (instancetype)initWithTitle:(NSString *)title { self = [super init]; if (self) { _title = [title copy]; _completed = NO; } return self; } @end @interface 声明类及其公开能力，@implementation 编写具体实现。页面内部使用的属性和方法，通常放在 .m 文件中的匿名扩展里，不必全部暴露到 .h 文件。\nUIKit页面与Android页面 1. 页面生命周期 UIViewController 是 UIKit 项目中最常见的页面控制器。\nAndroid Activity / Fragment UIViewController onCreate、onViewCreated viewDidLoad onStart viewWillAppear: onResume viewDidAppear: onPause viewWillDisappear: onStop viewDidDisappear: 这只是便于理解的近似映射，生命周期触发条件并不完全相同。\n页面初始化通常写在：\n- (void)viewDidLoad { [super viewDidLoad]; self.view.backgroundColor = [UIColor systemBackgroundColor]; } viewDidLoad 适合执行视图初始化。每次页面显示都需要执行的逻辑，可以根据场景放到 viewWillAppear: 或 viewDidAppear:。\n2. 页面导航 Android 常通过 Intent 或 Navigation Component 跳转页面。UIKit 存量项目中常见两种方式。\n压入导航栈：\n[self.navigationController pushViewController:detailController animated:YES]; 模态展示：\n[self presentViewController:detailController animated:YES completion:nil]; 看到页面跳转代码时，先确认当前页面是否位于 UINavigationController 中。\n实战：实现一个待办列表 下面通过一个待办列表串联 Objective-C、UIKit 和列表事件，功能包括：\n展示待办列表 添加待办 点击切换完成状态 创建一个 UIKit + Objective-C 工程，并将初始 ViewController 嵌入 UINavigationController。项目需要下面几个文件：\nTask.h Task.m ViewController.h ViewController.m 1. 声明页面内部状态 ViewController.h 保持简单：\n#import @interface ViewController : UIViewController @end 在 ViewController.m 中声明内部属性：\n#import \"ViewController.h\" #import \"Task.h\" @interface ViewController () \u003cUITableViewDataSource, UITableViewDelegate\u003e @property (nonatomic, strong) UITableView *tableView; @property (nonatomic, strong) NSMutableArray\u003cTask *\u003e *tasks; @end 匿名扩展中的属性可以理解为页面的私有成员。UITableViewDataSource 接近 RecyclerView.Adapter 的数据提供职责，UITableViewDelegate 负责部分交互和展示行为。\n2. 初始化页面 @implementation ViewController - (void)viewDidLoad { [super viewDidLoad]; self.title = @\"待办事项\"; self.view.backgroundColor = [UIColor systemBackgroundColor]; self.tasks = [@[ [[Task alloc] initWithTitle:@\"运行现有工程\"], [[Task alloc] initWithTitle:@\"找到首页入口\"] ] mutableCopy]; self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAdd target:self action:@selector(addTask)]; [self setupTableView]; } target-action 可以类比 Android 的点击监听器：\ntarget:self action:@selector(addTask) 表示按钮点击后向 self 发送 addTask 消息。\n3. 创建UITableView - (void)setupTableView { UITableView *tableView = [[UITableView alloc] initWithFrame:CGRectZero style:UITableViewStylePlain]; tableView.translatesAutoresizingMaskIntoConstraints = NO; tableView.dataSource = self; tableView.delegate = self; [self.view addSubview:tableView]; [NSLayoutConstraint activateConstraints:@[ [tableView.topAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.topAnchor], [tableView.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor], [tableView.trailingAnchor constraintEqualToAnchor:self.view.trailingAnchor], [tableView.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor] ]]; self.tableView = tableView; } 这段代码接近 Android 中创建 View、设置 LayoutParams、添加到父容器并设置 Adapter。\n4. 提供列表数据 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section { return self.tasks.count; } - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath { static NSString *identifier = @\"TaskCell\"; UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:identifier]; if (cell == nil) { cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:identifier]; } Task *task = self.tasks[indexPath.row]; cell.textLabel.text = task.title; cell.accessoryType = task.isCompleted ? UITableViewCellAccessoryCheckmark : UITableViewCellAccessoryNone; return cell; } 可以粗略理解为：\nnumberOfRowsInSection：接近 Adapter 的 getItemCount cellForRowAtIndexPath：接近 onCreateViewHolder 与 onBindViewHolder 的组合 5. 处理点击事件 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath { Task *task = self.tasks[indexPath.row]; task.completed = !task.isCompleted; [tableView reloadRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationAutomatic]; [tableView deselectRowAtIndexPath:indexPath animated:YES]; } didSelectRowAtIndexPath 来自 UITableViewDelegate，接近列表项点击回调。\n6. 添加待办 - (void)addTask { UIAlertController *alert = [UIAlertController alertControllerWithTitle:@\"新建待办\" message:nil preferredStyle:UIAlertControllerStyleAlert]; [alert addTextFieldWithConfigurationHandler: ^(UITextField *textField) { textField.placeholder = @\"输入待办内容\"; }]; __weak typeof(self) weakSelf = self; __weak UIAlertController *weakAlert = alert; UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:@\"取消\" style:UIAlertActionStyleCancel handler:nil]; UIAlertAction *addAction = [UIAlertAction actionWithTitle:@\"添加\" style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) { __strong typeof(weakSelf) strongSelf = weakSelf; NSString *title = weakAlert.textFields.firstObject.text; if (strongSelf == nil || title.length == 0) { return; } Task *task = [[Task alloc] initWithTitle:title]; [strongSelf.tasks addObject:task]; [strongSelf.tableView reloadData]; }]; [alert addAction:cancelAction]; [alert addAction:addAction]; [self presentViewController:alert animated:YES completion:nil]; } @end 运行后，可以点击右上角的加号添加待办，点击列表项切换完成状态。这个小项目已经覆盖了对象创建、属性、集合、协议、Block、弱引用和 UIKit 生命周期。\nARC与内存管理 1. ARC不等于没有内存问题 Objective-C 项目通常通过 ARC 管理引用计数，但 ARC 不会自动解决循环引用。\n下面的代码可能形成循环引用：\nself.completion = ^{ [self finishLoading]; }; 引用关系为：\nself -\u003e completion Block -\u003e self 常见处理方式：\n__weak typeof(self) weakSelf = self; self.completion = ^{ __strong typeof(weakSelf) strongSelf = weakSelf; if (strongSelf == nil) { return; } [strongSelf finishLoading]; }; 并不是所有 Block 中的 self 都会导致泄漏。是否形成循环引用，取决于 Block 是否被 self 或其持有对象长期保存。\n2. 检查老项目是否启用ARC 如果老代码中出现下面的调用：\nretain release autorelease 不要直接删除。Objective-C 支持按文件关闭 ARC，一个工程中可能同时存在 ARC 文件和通过 -fno-objc-arc 管理的旧文件。\n应先检查 Target 的 Build Settings 和 Compile Sources 配置，再决定如何修改内存管理代码。\n接手存量工程的推荐顺序 1. 先跑通原始工程 在修改代码前先记录基线：\n使用哪个 Xcode 版本 打开 .xcworkspace 还是 .xcodeproj 使用哪个 Scheme 和 Target 依赖通过 CocoaPods、Swift Package Manager 还是其他方式管理 模拟器能否正常启动 原始工程是否已经存在编译警告或崩溃 如果项目使用 CocoaPods，通常应该打开 .xcworkspace。误开 .xcodeproj 是常见的依赖缺失原因。\n2. 找应用入口 优先查看：\nmain.m AppDelegate.m SceneDelegate.m 确认：\nUIWindow 在哪里创建 根控制器是什么 首页通过 Storyboard 还是代码加载 启动阶段初始化了哪些服务 3. 找页面入口 搜索目标页面的 UIViewController，然后确认：\n页面来自 Storyboard、XIB 还是纯代码 有哪些 IBOutlet 和 IBAction 页面在哪个生命周期方法加载数据 页面通过 push 还是 present 打开 Storyboard、XIB 中的连线失效时，运行阶段可能出现找不到 Key Value Coding 属性的崩溃。重命名属性后，需要同步检查可视化文件中的连接。\n4. 沿数据流阅读 一个列表页面可以沿下面的顺序阅读：\nviewDidLoad -\u003e 发起请求 -\u003e Block或delegate回调 -\u003e 更新Model -\u003e reloadData -\u003e cellForRowAtIndexPath 这和 Android 中沿着 ViewModel、Repository、Adapter 阅读数据流的思路类似。\n5. 第一次只做小改动 第一次修改尽量选择容易验证的内容：\n修改一段展示文案 增加一条日志 调整一个列表字段 修复一个明确的判空问题 增加一个简单按钮事件 先跑通编译、调试和提交流程，再处理架构改造或大范围重构。\nAndroid开发者常见误区 1. 把UIViewController完全当成Activity 两者只适合做粗略类比。导航、视图加载、页面复用和生命周期触发条件都有差异。\n修改生命周期代码前，应先通过断点确认实际调用顺序。\n2. 把UITableView当成RecyclerView直接套用 UITableViewDataSource 同时承担部分 Adapter 职责，但 Cell 注册、复用、代理回调和高度计算方式并不完全相同。\n先理解现有页面的 dataSource 和 delegate，再修改刷新逻辑。\n3. 把所有对象属性都声明为strong 普通对象可以使用 strong，但：\n字符串和 Block 通常使用 copy delegate 通常使用 weak 基础类型使用 assign 错误的引用关系可能造成页面退出后仍然无法释放。\n4. 认为向nil发送消息永远没有风险 向 nil 发送普通消息通常不会立即崩溃，但这可能让错误静默传播。\n另外，数组越界、访问已经释放的对象、错误的 Selector 和失效的 Storyboard 连线仍然会导致崩溃。\n5. 一开始就重构老项目 存量工程中可能同时存在：\nObjective-C 与 Swift 混编 ARC 与非 ARC 文件 Storyboard、XIB 和纯代码页面 Category、宏和 Method Swizzling 多个 Target 与不同编译配置 在没有跑通主要流程、测试和发布配置前，不适合大范围迁移或重构。\n小结 Android 开发者接手 Objective-C 存量项目时，可以先抓住四组映射：\nActivity / Fragment -\u003e UIViewController RecyclerView -\u003e UITableView / UICollectionView interface / listener -\u003e protocol / delegate lambda -\u003e Block 然后重点掌握：\nObjective-C 消息发送语法 .h 与 .m 的职责 UIKit 页面生命周期 dataSource、delegate 和 target-action ARC、strong、weak、copy Xcode Target、Scheme、Workspace 和依赖关系 入门阶段不需要立即深入 Objective-C Runtime。先让工程成功运行，从一个页面出发，沿着生命周期、数据请求、回调和列表刷新路径阅读代码。\n当你能够独立修改一个页面、处理一次回调并定位一次引用问题时，就已经具备维护普通 Objective-C 业务代码的基础。\n",
+  "wordCount" : "1922",
+  "inLanguage": "en",
+  "datePublished": "2026-08-24T17:38:24+08:00",
+  "dateModified": "2026-08-24T17:38:24+08:00",
+  "author":[{
+    "@type": "Person",
+    "name": "夏天的小西瓜"
+  }],
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "/posts/ios/objective_c_for_android_developers/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "缥缈夏鸢",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "/favicon.ico"
+    }
+  }
+}
+</script>
+</head>
+
+<body class="" id="top">
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.body.classList.add('dark');
+    } else if (localStorage.getItem("pref-theme") === "light") {
+        document.body.classList.remove('dark')
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.body.classList.add('dark');
+    }
+
+</script>
+
+<header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="/" accesskey="h" title="缥缈夏鸢 (Alt + H)">缥缈夏鸢</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" accesskey="t" title="(Alt + T)">
+                    <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu">
+            <li>
+                <a href="/" title="首页">
+                    <span>首页</span>
+                </a>
+            </li>
+            <li>
+                <a href="/posts/" title="文章">
+                    <span>文章</span>
+                </a>
+            </li>
+            <li>
+                <a href="/categories/" title="分类">
+                    <span>分类</span>
+                </a>
+            </li>
+            <li>
+                <a href="/tags/" title="标签">
+                    <span>标签</span>
+                </a>
+            </li>
+            <li>
+                <a href="/archives/" title="归档">
+                    <span>归档</span>
+                </a>
+            </li>
+            <li>
+                <a href="/search/" title="搜索">
+                    <span>搜索</span>
+                </a>
+            </li>
+            <li>
+                <a href="/about/" title="关于">
+                    <span>关于</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <div class="breadcrumbs"><a href="/">Home</a>&nbsp;»&nbsp;<a href="/posts/">Posts</a></div>
+    <h1 class="post-title entry-hint-parent">
+      Android开发者接手iOS存量项目：Objective-C快速入门
+    </h1>
+    <div class="post-meta"><span title='2026-08-24 17:38:24 +0800 CST'>August 24, 2026</span>&nbsp;·&nbsp;10 min&nbsp;·&nbsp;1922 words&nbsp;·&nbsp;夏天的小西瓜
+
+</div>
+  </header> <aside id="toc-container" class="toc-container wide">
+    <div class="toc">
+        <details  open>
+            <summary accesskey="c" title="(Alt + C)">
+                <span class="details">Table of Contents</span>
+            </summary>
+
+            <div class="inner"><ul>
+                    <li>
+                        <a href="#%e5%85%88%e5%bb%ba%e7%ab%8b%e5%b9%b3%e5%8f%b0%e6%98%a0%e5%b0%84" aria-label="先建立平台映射">先建立平台映射</a></li>
+                    <li>
+                        <a href="#java%e4%b8%8eobjective-c%e8%af%ad%e6%b3%95%e5%af%b9%e7%85%a7" aria-label="Java与Objective-C语法对照">Java与Objective-C语法对照</a><ul>
+                            
+                    <li>
+                        <a href="#1-%e5%b8%b8%e7%94%a8%e8%af%ad%e6%b3%95%e9%80%9f%e6%9f%a5" aria-label="1. 常用语法速查">1. 常用语法速查</a></li>
+                    <li>
+                        <a href="#2-%e5%8f%98%e9%87%8f%e4%b8%8e%e5%9f%ba%e7%a1%80%e7%b1%bb%e5%9e%8b" aria-label="2. 变量与基础类型">2. 变量与基础类型</a></li>
+                    <li>
+                        <a href="#3-%e6%b6%88%e6%81%af%e5%8f%91%e9%80%81%e4%b8%8e%e6%96%b9%e6%b3%95%e8%b0%83%e7%94%a8" aria-label="3. 消息发送与方法调用">3. 消息发送与方法调用</a></li>
+                    <li>
+                        <a href="#4-%e7%b1%bb%e6%96%b9%e6%b3%95%e4%b8%8e%e5%ae%9e%e4%be%8b%e6%96%b9%e6%b3%95" aria-label="4. 类方法与实例方法">4. 类方法与实例方法</a></li>
+                    <li>
+                        <a href="#5-%e5%af%b9%e8%b1%a1%e5%88%9b%e5%bb%ba%e4%b8%8e%e5%88%9d%e5%a7%8b%e5%8c%96" aria-label="5. 对象创建与初始化">5. 对象创建与初始化</a></li>
+                    <li>
+                        <a href="#6-%e5%b1%9e%e6%80%a7%e4%b8%8e%e6%88%90%e5%91%98%e5%8f%98%e9%87%8f" aria-label="6. 属性与成员变量">6. 属性与成员变量</a></li>
+                    <li>
+                        <a href="#7-%e5%b1%9e%e6%80%a7%e4%bf%ae%e9%a5%b0%e7%ac%a6" aria-label="7. 属性修饰符">7. 属性修饰符</a></li>
+                    <li>
+                        <a href="#8-%e5%ad%97%e7%ac%a6%e4%b8%b2" aria-label="8. 字符串">8. 字符串</a></li>
+                    <li>
+                        <a href="#9-%e7%9b%b8%e7%ad%89%e6%80%a7%e6%af%94%e8%be%83" aria-label="9. 相等性比较">9. 相等性比较</a></li>
+                    <li>
+                        <a href="#10-nil%e4%b8%8e%e5%88%a4%e7%a9%ba" aria-label="10. nil与判空">10. nil与判空</a></li>
+                    <li>
+                        <a href="#11-%e6%9d%a1%e4%bb%b6%e5%be%aa%e7%8e%af%e4%b8%8e%e6%9e%9a%e4%b8%be" aria-label="11. 条件、循环与枚举">11. 条件、循环与枚举</a></li>
+                    <li>
+                        <a href="#12-%e6%95%b0%e7%bb%84%e4%b8%8e%e5%ad%97%e5%85%b8" aria-label="12. 数组与字典">12. 数组与字典</a></li>
+                    <li>
+                        <a href="#13-%e7%bb%a7%e6%89%bf%e4%b8%8e%e7%b1%bb%e5%9e%8b%e5%88%a4%e6%96%ad" aria-label="13. 继承与类型判断">13. 继承与类型判断</a></li>
+                    <li>
+                        <a href="#14-protocol%e4%b8%8einterface" aria-label="14. protocol与interface">14. protocol与interface</a></li>
+                    <li>
+                        <a href="#15-block%e4%b8%8elambda" aria-label="15. Block与lambda">15. Block与lambda</a></li>
+                    <li>
+                        <a href="#16-%e9%94%99%e8%af%af%e5%a4%84%e7%90%86" aria-label="16. 错误处理">16. 错误处理</a></li>
+                    <li>
+                        <a href="#17-category%e4%b8%8eselector" aria-label="17. Category与Selector">17. Category与Selector</a></li></ul>
+                    </li>
+                    <li>
+                        <a href="#%e7%90%86%e8%a7%a3objective-c%e6%96%87%e4%bb%b6" aria-label="理解Objective-C文件">理解Objective-C文件</a></li>
+                    <li>
+                        <a href="#uikit%e9%a1%b5%e9%9d%a2%e4%b8%8eandroid%e9%a1%b5%e9%9d%a2" aria-label="UIKit页面与Android页面">UIKit页面与Android页面</a><ul>
+                            
+                    <li>
+                        <a href="#1-%e9%a1%b5%e9%9d%a2%e7%94%9f%e5%91%bd%e5%91%a8%e6%9c%9f" aria-label="1. 页面生命周期">1. 页面生命周期</a></li>
+                    <li>
+                        <a href="#2-%e9%a1%b5%e9%9d%a2%e5%af%bc%e8%88%aa" aria-label="2. 页面导航">2. 页面导航</a></li></ul>
+                    </li>
+                    <li>
+                        <a href="#%e5%ae%9e%e6%88%98%e5%ae%9e%e7%8e%b0%e4%b8%80%e4%b8%aa%e5%be%85%e5%8a%9e%e5%88%97%e8%a1%a8" aria-label="实战：实现一个待办列表">实战：实现一个待办列表</a><ul>
+                            
+                    <li>
+                        <a href="#1-%e5%a3%b0%e6%98%8e%e9%a1%b5%e9%9d%a2%e5%86%85%e9%83%a8%e7%8a%b6%e6%80%81" aria-label="1. 声明页面内部状态">1. 声明页面内部状态</a></li>
+                    <li>
+                        <a href="#2-%e5%88%9d%e5%a7%8b%e5%8c%96%e9%a1%b5%e9%9d%a2" aria-label="2. 初始化页面">2. 初始化页面</a></li>
+                    <li>
+                        <a href="#3-%e5%88%9b%e5%bb%bauitableview" aria-label="3. 创建UITableView">3. 创建UITableView</a></li>
+                    <li>
+                        <a href="#4-%e6%8f%90%e4%be%9b%e5%88%97%e8%a1%a8%e6%95%b0%e6%8d%ae" aria-label="4. 提供列表数据">4. 提供列表数据</a></li>
+                    <li>
+                        <a href="#5-%e5%a4%84%e7%90%86%e7%82%b9%e5%87%bb%e4%ba%8b%e4%bb%b6" aria-label="5. 处理点击事件">5. 处理点击事件</a></li>
+                    <li>
+                        <a href="#6-%e6%b7%bb%e5%8a%a0%e5%be%85%e5%8a%9e" aria-label="6. 添加待办">6. 添加待办</a></li></ul>
+                    </li>
+                    <li>
+                        <a href="#arc%e4%b8%8e%e5%86%85%e5%ad%98%e7%ae%a1%e7%90%86" aria-label="ARC与内存管理">ARC与内存管理</a><ul>
+                            
+                    <li>
+                        <a href="#1-arc%e4%b8%8d%e7%ad%89%e4%ba%8e%e6%b2%a1%e6%9c%89%e5%86%85%e5%ad%98%e9%97%ae%e9%a2%98" aria-label="1. ARC不等于没有内存问题">1. ARC不等于没有内存问题</a></li>
+                    <li>
+                        <a href="#2-%e6%a3%80%e6%9f%a5%e8%80%81%e9%a1%b9%e7%9b%ae%e6%98%af%e5%90%a6%e5%90%af%e7%94%a8arc" aria-label="2. 检查老项目是否启用ARC">2. 检查老项目是否启用ARC</a></li></ul>
+                    </li>
+                    <li>
+                        <a href="#%e6%8e%a5%e6%89%8b%e5%ad%98%e9%87%8f%e5%b7%a5%e7%a8%8b%e7%9a%84%e6%8e%a8%e8%8d%90%e9%a1%ba%e5%ba%8f" aria-label="接手存量工程的推荐顺序">接手存量工程的推荐顺序</a><ul>
+                            
+                    <li>
+                        <a href="#1-%e5%85%88%e8%b7%91%e9%80%9a%e5%8e%9f%e5%a7%8b%e5%b7%a5%e7%a8%8b" aria-label="1. 先跑通原始工程">1. 先跑通原始工程</a></li>
+                    <li>
+                        <a href="#2-%e6%89%be%e5%ba%94%e7%94%a8%e5%85%a5%e5%8f%a3" aria-label="2. 找应用入口">2. 找应用入口</a></li>
+                    <li>
+                        <a href="#3-%e6%89%be%e9%a1%b5%e9%9d%a2%e5%85%a5%e5%8f%a3" aria-label="3. 找页面入口">3. 找页面入口</a></li>
+                    <li>
+                        <a href="#4-%e6%b2%bf%e6%95%b0%e6%8d%ae%e6%b5%81%e9%98%85%e8%af%bb" aria-label="4. 沿数据流阅读">4. 沿数据流阅读</a></li>
+                    <li>
+                        <a href="#5-%e7%ac%ac%e4%b8%80%e6%ac%a1%e5%8f%aa%e5%81%9a%e5%b0%8f%e6%94%b9%e5%8a%a8" aria-label="5. 第一次只做小改动">5. 第一次只做小改动</a></li></ul>
+                    </li>
+                    <li>
+                        <a href="#android%e5%bc%80%e5%8f%91%e8%80%85%e5%b8%b8%e8%a7%81%e8%af%af%e5%8c%ba" aria-label="Android开发者常见误区">Android开发者常见误区</a><ul>
+                            
+                    <li>
+                        <a href="#1-%e6%8a%8auiviewcontroller%e5%ae%8c%e5%85%a8%e5%bd%93%e6%88%90activity" aria-label="1. 把UIViewController完全当成Activity">1. 把UIViewController完全当成Activity</a></li>
+                    <li>
+                        <a href="#2-%e6%8a%8auitableview%e5%bd%93%e6%88%90recyclerview%e7%9b%b4%e6%8e%a5%e5%a5%97%e7%94%a8" aria-label="2. 把UITableView当成RecyclerView直接套用">2. 把UITableView当成RecyclerView直接套用</a></li>
+                    <li>
+                        <a href="#3-%e6%8a%8a%e6%89%80%e6%9c%89%e5%af%b9%e8%b1%a1%e5%b1%9e%e6%80%a7%e9%83%bd%e5%a3%b0%e6%98%8e%e4%b8%bastrong" aria-label="3. 把所有对象属性都声明为strong">3. 把所有对象属性都声明为strong</a></li>
+                    <li>
+                        <a href="#4-%e8%ae%a4%e4%b8%ba%e5%90%91nil%e5%8f%91%e9%80%81%e6%b6%88%e6%81%af%e6%b0%b8%e8%bf%9c%e6%b2%a1%e6%9c%89%e9%a3%8e%e9%99%a9" aria-label="4. 认为向nil发送消息永远没有风险">4. 认为向nil发送消息永远没有风险</a></li>
+                    <li>
+                        <a href="#5-%e4%b8%80%e5%bc%80%e5%a7%8b%e5%b0%b1%e9%87%8d%e6%9e%84%e8%80%81%e9%a1%b9%e7%9b%ae" aria-label="5. 一开始就重构老项目">5. 一开始就重构老项目</a></li></ul>
+                    </li>
+                    <li>
+                        <a href="#%e5%b0%8f%e7%bb%93" aria-label="小结">小结</a>
+                    </li>
+                </ul>
+            </div>
+        </details>
+    </div>
+</aside>
+<script>
+    let activeElement;
+    let elements;
+    window.addEventListener('DOMContentLoaded', function (event) {
+        checkTocPosition();
+
+        elements = document.querySelectorAll('h1[id],h2[id],h3[id],h4[id],h5[id],h6[id]');
+         
+         activeElement = elements[0];
+         const id = encodeURI(activeElement.getAttribute('id')).toLowerCase();
+         document.querySelector(`.inner ul li a[href="#${id}"]`).classList.add('active');
+     }, false);
+
+    window.addEventListener('resize', function(event) {
+        checkTocPosition();
+    }, false);
+
+    window.addEventListener('scroll', () => {
+        
+        activeElement = Array.from(elements).find((element) => {
+            if ((getOffsetTop(element) - window.pageYOffset) > 0 && 
+                (getOffsetTop(element) - window.pageYOffset) < window.innerHeight/2) {
+                return element;
+            }
+        }) || activeElement
+
+        elements.forEach(element => {
+             const id = encodeURI(element.getAttribute('id')).toLowerCase();
+             if (element === activeElement){
+                 document.querySelector(`.inner ul li a[href="#${id}"]`).classList.add('active');
+             } else {
+                 document.querySelector(`.inner ul li a[href="#${id}"]`).classList.remove('active');
+             }
+         })
+     }, false);
+
+    const main = parseInt(getComputedStyle(document.body).getPropertyValue('--article-width'), 10);
+    const toc = parseInt(getComputedStyle(document.body).getPropertyValue('--toc-width'), 10);
+    const gap = parseInt(getComputedStyle(document.body).getPropertyValue('--gap'), 10);
+
+    function checkTocPosition() {
+        const width = document.body.scrollWidth;
+
+        if (width - main - (toc * 2) - (gap * 4) > 0) {
+            document.getElementById("toc-container").classList.add("wide");
+        } else {
+            document.getElementById("toc-container").classList.remove("wide");
+        }
+    }
+
+    function getOffsetTop(element) {
+        if (!element.getClientRects().length) {
+            return 0;
+        }
+        let rect = element.getBoundingClientRect();
+        let win = element.ownerDocument.defaultView;
+        return rect.top + win.pageYOffset;   
+    }
+</script>
+
+  <div class="post-content"><p>对 Android 开发者来说，接手 Objective-C 存量项目的难点通常不是业务逻辑，而是三套陌生表达同时出现：</p>
+<ul>
+<li>Objective-C 的消息发送语法</li>
+<li>UIKit 的页面与事件模型</li>
+<li>Xcode 的工程、依赖和签名体系</li>
+</ul>
+<p>最有效的入门方式不是从 C 语言重新学起，而是先建立 Android 与 iOS 的概念映射，再用 Java 语法经验理解 Objective-C，最后通过一个可运行的 UIKit 小项目把知识串起来。</p>
+<p>本文的目标不是全面讲解 Objective-C，而是帮助 Android 开发者尽快做到：</p>
+<ul>
+<li>看懂常见 Objective-C 业务代码</li>
+<li>找到 iOS 应用入口和页面入口</li>
+<li>修改一个 UIKit 列表页面</li>
+<li>理解 delegate、Block 和 ARC</li>
+<li>避开接手老项目时的常见坑</li>
+</ul>
+<h2 id="先建立平台映射">先建立平台映射<a hidden class="anchor" aria-hidden="true" href="#先建立平台映射">#</a></h2>
+<p>Android 和 iOS 的框架不能完全等价，但下面的映射可以帮助建立第一印象。</p>
+<table>
+  <thead>
+      <tr>
+          <th>Android</th>
+          <th>iOS存量项目</th>
+          <th>说明</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>Application</code></td>
+          <td><code>AppDelegate</code>、<code>SceneDelegate</code></td>
+          <td>应用和场景生命周期</td>
+      </tr>
+      <tr>
+          <td><code>Activity</code>、<code>Fragment</code></td>
+          <td><code>UIViewController</code></td>
+          <td>页面控制器，不能完全等价</td>
+      </tr>
+      <tr>
+          <td><code>View</code>、<code>ViewGroup</code></td>
+          <td><code>UIView</code></td>
+          <td>UI 基础对象</td>
+      </tr>
+      <tr>
+          <td>XML Layout</td>
+          <td>Storyboard、XIB</td>
+          <td>可视化页面文件</td>
+      </tr>
+      <tr>
+          <td>ConstraintLayout</td>
+          <td>Auto Layout</td>
+          <td>约束布局</td>
+      </tr>
+      <tr>
+          <td>RecyclerView</td>
+          <td><code>UITableView</code>、<code>UICollectionView</code></td>
+          <td>列表和网格</td>
+      </tr>
+      <tr>
+          <td>RecyclerView.Adapter</td>
+          <td><code>UITableViewDataSource</code></td>
+          <td>提供列表数据</td>
+      </tr>
+      <tr>
+          <td>OnClickListener</td>
+          <td>target-action、delegate、Block</td>
+          <td>事件回调</td>
+      </tr>
+      <tr>
+          <td>interface</td>
+          <td><code>protocol</code></td>
+          <td>能力约束</td>
+      </tr>
+      <tr>
+          <td>lambda</td>
+          <td>Block</td>
+          <td>可传递的代码块</td>
+      </tr>
+      <tr>
+          <td>AndroidManifest.xml</td>
+          <td>Info.plist、Entitlements</td>
+          <td>配置和权限声明</td>
+      </tr>
+      <tr>
+          <td>applicationId</td>
+          <td>Bundle Identifier</td>
+          <td>应用唯一标识</td>
+      </tr>
+      <tr>
+          <td>Gradle Module</td>
+          <td>Xcode Target</td>
+          <td>构建单元，语义并不完全相同</td>
+      </tr>
+      <tr>
+          <td>Handler主线程调度</td>
+          <td>Main Queue</td>
+          <td>主线程任务调度</td>
+      </tr>
+  </tbody>
+</table>
+<p>这些概念只适合粗略类比。例如 <code>UIViewController</code> 同时参与视图管理、页面生命周期和导航协作，不能简单看作另一个 <code>Activity</code>。</p>
+<h2 id="java与objective-c语法对照">Java与Objective-C语法对照<a hidden class="anchor" aria-hidden="true" href="#java与objective-c语法对照">#</a></h2>
+<p>Objective-C 建立在 C 语言之上，并加入了对象、消息、协议和运行时机制。维护普通业务代码时，不需要先系统学习 C，可以优先掌握下面这些高频语法。</p>
+<h3 id="1-常用语法速查">1. 常用语法速查<a hidden class="anchor" aria-hidden="true" href="#1-常用语法速查">#</a></h3>
+<table>
+  <thead>
+      <tr>
+          <th>Java</th>
+          <th>Objective-C</th>
+          <th>说明</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>String</code></td>
+          <td><code>NSString *</code></td>
+          <td>字符串对象</td>
+      </tr>
+      <tr>
+          <td><code>int</code></td>
+          <td><code>NSInteger</code>、<code>int</code></td>
+          <td>整数</td>
+      </tr>
+      <tr>
+          <td><code>boolean</code></td>
+          <td><code>BOOL</code></td>
+          <td>使用 <code>YES</code>、<code>NO</code></td>
+      </tr>
+      <tr>
+          <td><code>null</code></td>
+          <td><code>nil</code></td>
+          <td>空对象引用</td>
+      </tr>
+      <tr>
+          <td><code>new User()</code></td>
+          <td><code>[[User alloc] init]</code></td>
+          <td>创建并初始化对象</td>
+      </tr>
+      <tr>
+          <td><code>user.update()</code></td>
+          <td><code>[user update]</code></td>
+          <td>调用实例方法</td>
+      </tr>
+      <tr>
+          <td><code>static</code> 方法</td>
+          <td><code>+</code> 类方法</td>
+          <td>类级别方法</td>
+      </tr>
+      <tr>
+          <td>普通成员方法</td>
+          <td><code>-</code> 实例方法</td>
+          <td>对象方法</td>
+      </tr>
+      <tr>
+          <td><code>List&lt;T&gt;</code></td>
+          <td><code>NSArray&lt;T *&gt; *</code></td>
+          <td>不可变数组</td>
+      </tr>
+      <tr>
+          <td><code>ArrayList&lt;T&gt;</code></td>
+          <td><code>NSMutableArray&lt;T *&gt; *</code></td>
+          <td>可变数组</td>
+      </tr>
+      <tr>
+          <td><code>Map&lt;K, V&gt;</code></td>
+          <td><code>NSDictionary&lt;K, V&gt; *</code></td>
+          <td>字典</td>
+      </tr>
+      <tr>
+          <td><code>interface</code></td>
+          <td><code>protocol</code></td>
+          <td>能力约束</td>
+      </tr>
+      <tr>
+          <td>lambda</td>
+          <td>Block</td>
+          <td>回调代码块</td>
+      </tr>
+      <tr>
+          <td><code>enum</code></td>
+          <td><code>NS_ENUM</code></td>
+          <td>枚举</td>
+      </tr>
+      <tr>
+          <td><code>this</code></td>
+          <td><code>self</code></td>
+          <td>当前对象</td>
+      </tr>
+      <tr>
+          <td><code>extends</code></td>
+          <td><code>:</code></td>
+          <td>类继承</td>
+      </tr>
+      <tr>
+          <td><code>instanceof</code></td>
+          <td><code>isKindOfClass:</code></td>
+          <td>类型判断</td>
+      </tr>
+      <tr>
+          <td><code>a == b</code></td>
+          <td><code>a == b</code></td>
+          <td>比较对象引用</td>
+      </tr>
+      <tr>
+          <td><code>a.equals(b)</code></td>
+          <td><code>[a isEqual:b]</code></td>
+          <td>比较对象内容</td>
+      </tr>
+      <tr>
+          <td><code>try/catch</code></td>
+          <td><code>NSError</code>、Block错误参数</td>
+          <td>普通错误处理方式不同</td>
+      </tr>
+  </tbody>
+</table>
+<h3 id="2-变量与基础类型">2. 变量与基础类型<a hidden class="anchor" aria-hidden="true" href="#2-变量与基础类型">#</a></h3>
+<p>Java：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">String</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#34;Tom&#34;</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kt">int</span><span class="w"> </span><span class="n">age</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">18</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kt">boolean</span><span class="w"> </span><span class="n">enabled</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="p">;</span><span class="w">
+</span></span></span></code></pre></div><p>Objective-C：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-objc" data-lang="objc"><span class="line"><span class="cl"><span class="n">NSString</span> <span class="o">*</span><span class="n">name</span> <span class="o">=</span> <span class="s">@&#34;Tom&#34;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">NSInteger</span> <span class="n">age</span> <span class="o">=</span> <span class="mi">18</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="kt">BOOL</span> <span class="n">enabled</span> <span class="o">=</span> <span class="nb">YES</span><span class="p">;</span>
+</span></span></code></pre></div><p>Objective-C 对象类型通常带有 <code>*</code>：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-objc" data-lang="objc"><span class="line"><span class="cl"><span class="n">NSString</span> <span class="o">*</span><span class="n">title</span> <span class="o">=</span> <span class="s">@&#34;Objective-C&#34;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">User</span> <span class="o">*</span><span class="n">user</span> <span class="o">=</span> <span class="p">[[</span><span class="n">User</span> <span class="n">alloc</span><span class="p">]</span> <span class="n">init</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl"><span class="n">UIView</span> <span class="o">*</span><span class="n">contentView</span> <span class="o">=</span> <span class="p">[[</span><span class="n">UIView</span> <span class="n">alloc</span><span class="p">]</span> <span class="n">init</span><span class="p">];</span>
+</span></span></code></pre></div><p>基础类型不带 <code>*</code>：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-objc" data-lang="objc"><span class="line"><span class="cl"><span class="n">NSInteger</span> <span class="n">count</span> <span class="o">=</span> <span class="mi">10</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">CGFloat</span> <span class="n">width</span> <span class="o">=</span> <span class="mf">100.0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="kt">BOOL</span> <span class="n">loading</span> <span class="o">=</span> <span class="nb">NO</span><span class="p">;</span>
+</span></span></code></pre></div><p>需要把基础类型放进集合时，可以包装为 <code>NSNumber</code>：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-objc" data-lang="objc"><span class="line"><span class="cl"><span class="n">NSInteger</span> <span class="n">count</span> <span class="o">=</span> <span class="mi">10</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">NSNumber</span> <span class="o">*</span><span class="n">boxedCount</span> <span class="o">=</span> <span class="l">@(</span><span class="n">count</span><span class="l">)</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">NSArray</span><span class="o">&lt;</span><span class="n">NSNumber</span> <span class="o">*&gt;</span> <span class="o">*</span><span class="n">numbers</span> <span class="o">=</span> <span class="l">@[</span><span class="mi">@1</span><span class="p">,</span> <span class="mi">@2</span><span class="p">,</span> <span class="mi">@3</span><span class="l">]</span><span class="p">;</span>
+</span></span></code></pre></div><p>存量项目中经常使用下面的方式定义常量：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-objc" data-lang="objc"><span class="line"><span class="cl"><span class="k">static</span> <span class="n">NSString</span> <span class="o">*</span> <span class="k">const</span> <span class="n">UserNameKey</span> <span class="o">=</span> <span class="s">@&#34;user_name&#34;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="k">static</span> <span class="n">NSInteger</span> <span class="k">const</span> <span class="n">MaxRetryCount</span> <span class="o">=</span> <span class="mi">3</span><span class="p">;</span>
+</span></span></code></pre></div><p>它们接近 Java 中的 <code>static final</code>：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">private</span><span class="w"> </span><span class="kd">static</span><span class="w"> </span><span class="kd">final</span><span class="w"> </span><span class="n">String</span><span class="w"> </span><span class="n">USER_NAME_KEY</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#34;user_name&#34;</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">private</span><span class="w"> </span><span class="kd">static</span><span class="w"> </span><span class="kd">final</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">MAX_RETRY_COUNT</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">3</span><span class="p">;</span><span class="w">
+</span></span></span></code></pre></div><h3 id="3-消息发送与方法调用">3. 消息发送与方法调用<a hidden class="anchor" aria-hidden="true" href="#3-消息发送与方法调用">#</a></h3>
+<p>Java 通过点语法调用方法：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">user</span><span class="p">.</span><span class="na">updateName</span><span class="p">(</span><span class="s">&#34;Tom&#34;</span><span class="p">);</span><span class="w">
+</span></span></span></code></pre></div><p>Objective-C 的基本写法是向对象发送消息：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-objc" data-lang="objc"><span class="line"><span class="cl"><span class="p">[</span><span class="n">user</span> <span class="nl">updateName</span><span class="p">:</span><span class="s">@&#34;Tom&#34;</span><span class="p">];</span>
+</span></span></code></pre></div><p>多个参数会成为方法名的一部分：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-objc" data-lang="objc"><span class="line"><span class="cl"><span class="p">[</span><span class="n">user</span> <span class="nl">updateName</span><span class="p">:</span><span class="s">@&#34;Tom&#34;</span> <span class="nl">age</span><span class="p">:</span><span class="mi">18</span><span class="p">];</span>
+</span></span></code></pre></div><p>方法声明如下：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-objc" data-lang="objc"><span class="line"><span class="cl"><span class="p">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">updateName:</span><span class="p">(</span><span class="n">NSString</span> <span class="o">*</span><span class="p">)</span><span class="nv">name</span> <span class="nf">age:</span><span class="p">(</span><span class="n">NSInteger</span><span class="p">)</span><span class="nv">age</span><span class="p">;</span>
+</span></span></code></pre></div><p>其中：</p>
+<ul>
+<li><code>-</code> 表示实例方法</li>
+<li><code>+</code> 表示类方法</li>
+<li><code>(void)</code> 是返回值类型</li>
+<li><code>updateName:</code> 和 <code>age:</code> 是参数标签</li>
+</ul>
+<p>完整的方法名是 <code>updateName:age:</code>。搜索方法实现时，使用包含冒号的完整名称通常更容易找到目标。</p>
+<p>Java 方法：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">public</span><span class="w"> </span><span class="n">User</span><span class="w"> </span><span class="nf">findUser</span><span class="p">(</span><span class="n">String</span><span class="w"> </span><span class="n">userId</span><span class="p">,</span><span class="w"> </span><span class="kt">boolean</span><span class="w"> </span><span class="n">useCache</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">// ...</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></div><p>Objective-C 声明：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-objc" data-lang="objc"><span class="line"><span class="cl"><span class="p">-</span> <span class="p">(</span><span class="n">nullable</span> <span class="n">User</span> <span class="o">*</span><span class="p">)</span><span class="nf">findUserWithID:</span><span class="p">(</span><span class="n">NSString</span> <span class="o">*</span><span class="p">)</span><span class="nv">userID</span>
+</span></span><span class="line"><span class="cl">                         <span class="nf">useCache:</span><span class="p">(</span><span class="kt">BOOL</span><span class="p">)</span><span class="nv">useCache</span><span class="p">;</span>
+</span></span></code></pre></div><p>调用：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-objc" data-lang="objc"><span class="line"><span class="cl"><span class="n">User</span> <span class="o">*</span><span class="n">user</span> <span class="o">=</span>
+</span></span><span class="line"><span class="cl">    <span class="p">[</span><span class="n">service</span> <span class="nl">findUserWithID</span><span class="p">:</span><span class="s">@&#34;1001&#34;</span>
+</span></span><span class="line"><span class="cl">                   <span class="nl">useCache</span><span class="p">:</span><span class="nb">YES</span><span class="p">];</span>
+</span></span></code></pre></div><h3 id="4-类方法与实例方法">4. 类方法与实例方法<a hidden class="anchor" aria-hidden="true" href="#4-类方法与实例方法">#</a></h3>
+<p>Objective-C 使用 <code>-</code> 表示实例方法：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-objc" data-lang="objc"><span class="line"><span class="cl"><span class="p">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">reloadData</span><span class="p">;</span>
+</span></span></code></pre></div><p>调用：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-objc" data-lang="objc"><span class="line"><span class="cl"><span class="p">[</span><span class="n">viewController</span> <span class="n">reloadData</span><span class="p">];</span>
+</span></span></code></pre></div><p>使用 <code>+</code> 表示类方法，接近 Java 的 <code>static</code> 方法：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-objc" data-lang="objc"><span class="line"><span class="cl"><span class="p">+</span> <span class="p">(</span><span class="kt">instancetype</span><span class="p">)</span><span class="nf">service</span><span class="p">;</span>
+</span></span></code></pre></div><p>调用：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-objc" data-lang="objc"><span class="line"><span class="cl"><span class="n">UserService</span> <span class="o">*</span><span class="n">service</span> <span class="o">=</span> <span class="p">[</span><span class="n">UserService</span> <span class="n">service</span><span class="p">];</span>
+</span></span></code></pre></div><h3 id="5-对象创建与初始化">5. 对象创建与初始化<a hidden class="anchor" aria-hidden="true" href="#5-对象创建与初始化">#</a></h3>
+<p>Java：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">User</span><span class="w"> </span><span class="n">user</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">User</span><span class="p">(</span><span class="s">&#34;Tom&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">18</span><span class="p">);</span><span class="w">
+</span></span></span></code></pre></div><p>Objective-C：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-objc" data-lang="objc"><span class="line"><span class="cl"><span class="n">User</span> <span class="o">*</span><span class="n">user</span> <span class="o">=</span>
+</span></span><span class="line"><span class="cl">    <span class="p">[[</span><span class="n">User</span> <span class="n">alloc</span><span class="p">]</span> <span class="nl">initWithName</span><span class="p">:</span><span class="s">@&#34;Tom&#34;</span> <span class="nl">age</span><span class="p">:</span><span class="mi">18</span><span class="p">];</span>
+</span></span></code></pre></div><p>对象创建分为两个步骤：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="cl">alloc：分配对象
+</span></span><span class="line"><span class="cl">init：初始化对象
+</span></span></code></pre></div><p>自定义初始化方法：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-objc" data-lang="objc"><span class="line"><span class="cl"><span class="p">-</span> <span class="p">(</span><span class="kt">instancetype</span><span class="p">)</span><span class="nf">initWithName:</span><span class="p">(</span><span class="n">NSString</span> <span class="o">*</span><span class="p">)</span><span class="nv">name</span>
+</span></span><span class="line"><span class="cl">                         <span class="nf">age:</span><span class="p">(</span><span class="n">NSInteger</span><span class="p">)</span><span class="nv">age</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nb">self</span> <span class="o">=</span> <span class="p">[</span><span class="nb">super</span> <span class="n">init</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="nb">self</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">_name</span> <span class="o">=</span> <span class="p">[</span><span class="n">name</span> <span class="k">copy</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">        <span class="n">_age</span> <span class="o">=</span> <span class="n">age</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="nb">self</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>不要省略 <code>self = [super init]</code>。父类初始化方法可能返回另一个对象，也可能返回 <code>nil</code>。</p>
+<p>项目中也会经常看到工厂方法：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-objc" data-lang="objc"><span class="line"><span class="cl"><span class="n">UIColor</span> <span class="o">*</span><span class="n">color</span> <span class="o">=</span> <span class="p">[</span><span class="n">UIColor</span> <span class="n">redColor</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl"><span class="n">NSMutableArray</span> <span class="o">*</span><span class="n">tasks</span> <span class="o">=</span> <span class="p">[</span><span class="n">NSMutableArray</span> <span class="n">array</span><span class="p">];</span>
+</span></span></code></pre></div><h3 id="6-属性与成员变量">6. 属性与成员变量<a hidden class="anchor" aria-hidden="true" href="#6-属性与成员变量">#</a></h3>
+<p>Java：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">User</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">private</span><span class="w"> </span><span class="kd">final</span><span class="w"> </span><span class="n">String</span><span class="w"> </span><span class="n">userId</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">private</span><span class="w"> </span><span class="n">String</span><span class="w"> </span><span class="n">name</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></div><p>Objective-C：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-objc" data-lang="objc"><span class="line"><span class="cl"><span class="k">@interface</span> <span class="nc">User</span> : <span class="nc">NSObject</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">@property</span> <span class="p">(</span><span class="k">nonatomic</span><span class="p">,</span> <span class="k">copy</span><span class="p">,</span> <span class="k">readonly</span><span class="p">)</span> <span class="n">NSString</span> <span class="o">*</span><span class="n">userID</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="k">@property</span> <span class="p">(</span><span class="k">nonatomic</span><span class="p">,</span> <span class="k">copy</span><span class="p">)</span> <span class="n">NSString</span> <span class="o">*</span><span class="n">name</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">@end</span>
+</span></span></code></pre></div><p>读取和修改属性：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-objc" data-lang="objc"><span class="line"><span class="cl"><span class="n">NSString</span> <span class="o">*</span><span class="n">userID</span> <span class="o">=</span> <span class="n">user</span><span class="p">.</span><span class="n">userID</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">user</span><span class="p">.</span><span class="n">name</span> <span class="o">=</span> <span class="s">@&#34;Jerry&#34;</span><span class="p">;</span>
+</span></span></code></pre></div><p>点语法本质上仍然是 getter 和 setter 调用：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-objc" data-lang="objc"><span class="line"><span class="cl"><span class="n">NSString</span> <span class="o">*</span><span class="n">name</span> <span class="o">=</span> <span class="p">[</span><span class="n">user</span> <span class="n">name</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl"><span class="p">[</span><span class="n">user</span> <span class="nl">setName</span><span class="p">:</span><span class="s">@&#34;Jerry&#34;</span><span class="p">];</span>
+</span></span></code></pre></div><p>编译器通常会为属性生成以下划线开头的成员变量，例如 <code>_name</code>。初始化阶段经常直接访问成员变量：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-objc" data-lang="objc"><span class="line"><span class="cl"><span class="n">_name</span> <span class="o">=</span> <span class="p">[</span><span class="n">name</span> <span class="k">copy</span><span class="p">];</span>
+</span></span></code></pre></div><p>普通业务逻辑中通常通过属性访问：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-objc" data-lang="objc"><span class="line"><span class="cl"><span class="nb">self</span><span class="p">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span><span class="p">;</span>
+</span></span></code></pre></div><h3 id="7-属性修饰符">7. 属性修饰符<a hidden class="anchor" aria-hidden="true" href="#7-属性修饰符">#</a></h3>
+<p>存量项目中经常能看到：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-objc" data-lang="objc"><span class="line"><span class="cl"><span class="k">@property</span> <span class="p">(</span><span class="k">nonatomic</span><span class="p">,</span> <span class="k">strong</span><span class="p">)</span> <span class="n">User</span> <span class="o">*</span><span class="n">user</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="k">@property</span> <span class="p">(</span><span class="k">nonatomic</span><span class="p">,</span> <span class="k">copy</span><span class="p">)</span> <span class="n">NSString</span> <span class="o">*</span><span class="n">title</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="k">@property</span> <span class="p">(</span><span class="k">nonatomic</span><span class="p">,</span> <span class="k">weak</span><span class="p">)</span> <span class="kt">id</span><span class="o">&lt;</span><span class="n">UserDelegate</span><span class="o">&gt;</span> <span class="n">delegate</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="k">@property</span> <span class="p">(</span><span class="k">nonatomic</span><span class="p">,</span> <span class="k">assign</span><span class="p">)</span> <span class="n">NSInteger</span> <span class="n">count</span><span class="p">;</span>
+</span></span></code></pre></div><p>常用规则如下：</p>
+<table>
+  <thead>
+      <tr>
+          <th>修饰符</th>
+          <th>常见用途</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>strong</code></td>
+          <td>普通对象的强引用</td>
+      </tr>
+      <tr>
+          <td><code>copy</code></td>
+          <td>字符串和Block</td>
+      </tr>
+      <tr>
+          <td><code>weak</code></td>
+          <td>delegate、避免循环引用</td>
+      </tr>
+      <tr>
+          <td><code>assign</code></td>
+          <td>整数、布尔值、枚举</td>
+      </tr>
+      <tr>
+          <td><code>nonatomic</code></td>
+          <td>常见的非原子属性访问</td>
+      </tr>
+  </tbody>
+</table>
+<p>字符串通常使用 <code>copy</code>，避免外部传入的可变字符串影响对象内部状态。</p>
+<h3 id="8-字符串">8. 字符串<a hidden class="anchor" aria-hidden="true" href="#8-字符串">#</a></h3>
+<p>Objective-C 字符串字面量需要带 <code>@</code>：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-objc" data-lang="objc"><span class="line"><span class="cl"><span class="n">NSString</span> <span class="o">*</span><span class="n">name</span> <span class="o">=</span> <span class="s">@&#34;Tom&#34;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">NSString</span> <span class="o">*</span><span class="n">message</span> <span class="o">=</span>
+</span></span><span class="line"><span class="cl">    <span class="p">[</span><span class="n">NSString</span> <span class="nl">stringWithFormat</span><span class="p">:</span><span class="s">@&#34;Hello, %@&#34;</span><span class="p">,</span> <span class="n">name</span><span class="p">];</span>
+</span></span></code></pre></div><p>常用格式占位符包括：</p>
+<table>
+  <thead>
+      <tr>
+          <th>类型</th>
+          <th>占位符</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>Objective-C对象</td>
+          <td><code>%@</code></td>
+      </tr>
+      <tr>
+          <td><code>NSInteger</code></td>
+          <td><code>%ld</code></td>
+      </tr>
+      <tr>
+          <td><code>BOOL</code></td>
+          <td><code>%d</code></td>
+      </tr>
+      <tr>
+          <td><code>double</code></td>
+          <td><code>%f</code></td>
+      </tr>
+  </tbody>
+</table>
+<p>示例：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-objc" data-lang="objc"><span class="line"><span class="cl"><span class="n">NSLog</span><span class="p">(</span><span class="s">@&#34;name=%@, age=%ld, enabled=%d&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="n">name</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="p">(</span><span class="kt">long</span><span class="p">)</span><span class="n">age</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="n">enabled</span><span class="p">);</span>
+</span></span></code></pre></div><p>判断字符串是否为空：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-objc" data-lang="objc"><span class="line"><span class="cl"><span class="k">if</span> <span class="p">(</span><span class="n">name</span> <span class="o">==</span> <span class="nb">nil</span> <span class="o">||</span> <span class="n">name</span><span class="p">.</span><span class="n">length</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">NSLog</span><span class="p">(</span><span class="s">@&#34;名称为空&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>字符串拼接：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-objc" data-lang="objc"><span class="line"><span class="cl"><span class="n">NSString</span> <span class="o">*</span><span class="n">fullName</span> <span class="o">=</span>
+</span></span><span class="line"><span class="cl">    <span class="p">[</span><span class="n">NSString</span> <span class="nl">stringWithFormat</span><span class="p">:</span><span class="s">@&#34;%@ %@&#34;</span><span class="p">,</span> <span class="n">firstName</span><span class="p">,</span> <span class="n">lastName</span><span class="p">];</span>
+</span></span></code></pre></div><h3 id="9-相等性比较">9. 相等性比较<a hidden class="anchor" aria-hidden="true" href="#9-相等性比较">#</a></h3>
+<p>Java 和 Objective-C 的对象相等性比较非常接近。</p>
+<p>Java：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">name1</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">name2</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">// 是否为同一个对象</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">name1</span><span class="p">.</span><span class="na">equals</span><span class="p">(</span><span class="n">name2</span><span class="p">))</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">// 字符串内容是否相同</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></div><p>Objective-C：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-objc" data-lang="objc"><span class="line"><span class="cl"><span class="k">if</span> <span class="p">(</span><span class="n">name1</span> <span class="o">==</span> <span class="n">name2</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 是否指向同一个对象
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">if</span> <span class="p">([</span><span class="n">name1</span> <span class="nl">isEqualToString</span><span class="p">:</span><span class="n">name2</span><span class="p">])</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 字符串内容是否相同
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="p">}</span>
+</span></span></code></pre></div><p>普通对象通常使用 <code>isEqual:</code> 比较语义是否相等：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-objc" data-lang="objc"><span class="line"><span class="cl"><span class="k">if</span> <span class="p">([</span><span class="n">user1</span> <span class="nl">isEqual</span><span class="p">:</span><span class="n">user2</span><span class="p">])</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">NSLog</span><span class="p">(</span><span class="s">@&#34;两个对象相等&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>前提是对应类型正确实现了相等性逻辑。</p>
+<h3 id="10-nil与判空">10. nil与判空<a hidden class="anchor" aria-hidden="true" href="#10-nil与判空">#</a></h3>
+<p>Java：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">String</span><span class="w"> </span><span class="n">nickname</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">null</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">String</span><span class="w"> </span><span class="n">displayName</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">nickname</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="kc">null</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="n">nickname</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s">&#34;Guest&#34;</span><span class="p">;</span><span class="w">
+</span></span></span></code></pre></div><p>Objective-C：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-objc" data-lang="objc"><span class="line"><span class="cl"><span class="n">NSString</span> <span class="o">*</span><span class="n">nickname</span> <span class="o">=</span> <span class="nb">nil</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">NSString</span> <span class="o">*</span><span class="n">displayName</span> <span class="o">=</span>
+</span></span><span class="line"><span class="cl">    <span class="n">nickname</span> <span class="o">!=</span> <span class="nb">nil</span> <span class="o">?</span> <span class="nl">nickname</span> <span class="p">:</span> <span class="s">@&#34;Guest&#34;</span><span class="p">;</span>
+</span></span></code></pre></div><p>项目中也可能看到简写：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-objc" data-lang="objc"><span class="line"><span class="cl"><span class="n">NSString</span> <span class="o">*</span><span class="n">displayName</span> <span class="o">=</span> <span class="n">nickname</span> <span class="o">?:</span> <span class="s">@&#34;Guest&#34;</span><span class="p">;</span>
+</span></span></code></pre></div><p>Objective-C 可以通过 Nullability 标记说明某个对象能否为空：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-objc" data-lang="objc"><span class="line"><span class="cl"><span class="n">NS_ASSUME_NONNULL_BEGIN</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">@interface</span> <span class="nc">UserService</span> : <span class="nc">NSObject</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="p">-</span> <span class="p">(</span><span class="n">nullable</span> <span class="n">User</span> <span class="o">*</span><span class="p">)</span><span class="nf">findUserWithID:</span><span class="p">(</span><span class="n">NSString</span> <span class="o">*</span><span class="p">)</span><span class="nv">userID</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">@end</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">NS_ASSUME_NONNULL_END</span>
+</span></span></code></pre></div><p>向 <code>nil</code> 发送普通消息通常不会像 Java 那样立即抛出空指针异常：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-objc" data-lang="objc"><span class="line"><span class="cl"><span class="n">User</span> <span class="o">*</span><span class="n">user</span> <span class="o">=</span> <span class="nb">nil</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">NSString</span> <span class="o">*</span><span class="n">name</span> <span class="o">=</span> <span class="p">[</span><span class="n">user</span> <span class="n">name</span><span class="p">];</span>
+</span></span></code></pre></div><p>此时 <code>name</code> 仍然是 <code>nil</code>。这能减少部分判空代码，但也可能让错误静默传播，最终表现为页面没有更新或业务流程没有执行。</p>
+<h3 id="11-条件循环与枚举">11. 条件、循环与枚举<a hidden class="anchor" aria-hidden="true" href="#11-条件循环与枚举">#</a></h3>
+<p>Objective-C 的 <code>if</code> 和 <code>for</code> 与 Java 非常接近：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-objc" data-lang="objc"><span class="line"><span class="cl"><span class="k">if</span> <span class="p">(</span><span class="n">age</span> <span class="o">&gt;=</span> <span class="mi">18</span> <span class="o">&amp;&amp;</span> <span class="n">enabled</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">NSLog</span><span class="p">(</span><span class="s">@&#34;允许进入&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">NSLog</span><span class="p">(</span><span class="s">@&#34;禁止进入&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">for</span> <span class="p">(</span><span class="n">Task</span> <span class="o">*</span><span class="n">task</span> <span class="k">in</span> <span class="n">tasks</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">NSLog</span><span class="p">(</span><span class="s">@&#34;%@&#34;</span><span class="p">,</span> <span class="n">task</span><span class="p">.</span><span class="n">title</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>带索引遍历：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-objc" data-lang="objc"><span class="line"><span class="cl"><span class="k">for</span> <span class="p">(</span><span class="n">NSInteger</span> <span class="n">index</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">index</span> <span class="o">&lt;</span> <span class="n">tasks</span><span class="p">.</span><span class="n">count</span><span class="p">;</span> <span class="n">index</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">Task</span> <span class="o">*</span><span class="n">task</span> <span class="o">=</span> <span class="n">tasks</span><span class="p">[</span><span class="n">index</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">    <span class="n">NSLog</span><span class="p">(</span><span class="s">@&#34;index=%ld, title=%@&#34;</span><span class="p">,</span> <span class="p">(</span><span class="kt">long</span><span class="p">)</span><span class="n">index</span><span class="p">,</span> <span class="n">task</span><span class="p">.</span><span class="n">title</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>Objective-C 推荐通过 <code>NS_ENUM</code> 定义枚举：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-objc" data-lang="objc"><span class="line"><span class="cl"><span class="k">typedef</span> <span class="nf">NS_ENUM</span><span class="p">(</span><span class="n">NSInteger</span><span class="p">,</span> <span class="n">TaskState</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">TaskStateTodo</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">TaskStateDoing</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">TaskStateDone</span>
+</span></span><span class="line"><span class="cl"><span class="p">};</span>
+</span></span></code></pre></div><p>使用 <code>switch</code>：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-objc" data-lang="objc"><span class="line"><span class="cl"><span class="k">switch</span> <span class="p">(</span><span class="n">state</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">case</span> <span class="nl">TaskStateTodo</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">        <span class="n">NSLog</span><span class="p">(</span><span class="s">@&#34;待处理&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="k">break</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">case</span> <span class="nl">TaskStateDoing</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">        <span class="n">NSLog</span><span class="p">(</span><span class="s">@&#34;处理中&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="k">break</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">case</span> <span class="nl">TaskStateDone</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">        <span class="n">NSLog</span><span class="p">(</span><span class="s">@&#34;已完成&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="k">break</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><h3 id="12-数组与字典">12. 数组与字典<a hidden class="anchor" aria-hidden="true" href="#12-数组与字典">#</a></h3>
+<p>Java：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">List</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span><span class="w"> </span><span class="n">names</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">ArrayList</span><span class="o">&lt;&gt;</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">names</span><span class="p">.</span><span class="na">add</span><span class="p">(</span><span class="s">&#34;Tom&#34;</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">names</span><span class="p">.</span><span class="na">add</span><span class="p">(</span><span class="s">&#34;Jerry&#34;</span><span class="p">);</span><span class="w">
+</span></span></span></code></pre></div><p>Objective-C：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-objc" data-lang="objc"><span class="line"><span class="cl"><span class="n">NSMutableArray</span><span class="o">&lt;</span><span class="n">NSString</span> <span class="o">*&gt;</span> <span class="o">*</span><span class="n">names</span> <span class="o">=</span>
+</span></span><span class="line"><span class="cl">    <span class="p">[</span><span class="n">NSMutableArray</span> <span class="n">array</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="p">[</span><span class="n">names</span> <span class="nl">addObject</span><span class="p">:</span><span class="s">@&#34;Tom&#34;</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl"><span class="p">[</span><span class="n">names</span> <span class="nl">addObject</span><span class="p">:</span><span class="s">@&#34;Jerry&#34;</span><span class="p">];</span>
+</span></span></code></pre></div><p>不可变数组可以使用字面量：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-objc" data-lang="objc"><span class="line"><span class="cl"><span class="n">NSArray</span><span class="o">&lt;</span><span class="n">NSString</span> <span class="o">*&gt;</span> <span class="o">*</span><span class="n">names</span> <span class="o">=</span> <span class="l">@[</span><span class="s">@&#34;Tom&#34;</span><span class="p">,</span> <span class="s">@&#34;Jerry&#34;</span><span class="l">]</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">NSString</span> <span class="o">*</span><span class="n">firstName</span> <span class="o">=</span> <span class="n">names</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+</span></span></code></pre></div><p>老项目中可能看到等价写法：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-objc" data-lang="objc"><span class="line"><span class="cl"><span class="n">NSString</span> <span class="o">*</span><span class="n">firstName</span> <span class="o">=</span> <span class="p">[</span><span class="n">names</span> <span class="nl">objectAtIndex</span><span class="p">:</span><span class="mi">0</span><span class="p">];</span>
+</span></span></code></pre></div><p>字典：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-objc" data-lang="objc"><span class="line"><span class="cl"><span class="n">NSDictionary</span><span class="o">&lt;</span><span class="n">NSString</span> <span class="o">*</span><span class="p">,</span> <span class="kt">id</span><span class="o">&gt;</span> <span class="o">*</span><span class="n">user</span> <span class="o">=</span> <span class="l">@{</span>
+</span></span><span class="line"><span class="cl">    <span class="s">@&#34;name&#34;</span><span class="o">:</span> <span class="s">@&#34;Tom&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="s">@&#34;age&#34;</span><span class="o">:</span> <span class="mi">@18</span>
+</span></span><span class="line"><span class="cl"><span class="l">}</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">NSString</span> <span class="o">*</span><span class="n">name</span> <span class="o">=</span> <span class="n">user</span><span class="p">[</span><span class="s">@&#34;name&#34;</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl"><span class="n">NSNumber</span> <span class="o">*</span><span class="n">age</span> <span class="o">=</span> <span class="n">user</span><span class="p">[</span><span class="s">@&#34;age&#34;</span><span class="p">];</span>
+</span></span></code></pre></div><p>集合不能直接保存 <code>nil</code>。需要表达空值时，可以使用 <code>NSNull</code>：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-objc" data-lang="objc"><span class="line"><span class="cl"><span class="n">NSArray</span> <span class="o">*</span><span class="n">values</span> <span class="o">=</span> <span class="l">@[</span><span class="s">@&#34;A&#34;</span><span class="p">,</span> <span class="p">[</span><span class="n">NSNull</span> <span class="n">null</span><span class="p">],</span> <span class="s">@&#34;B&#34;</span><span class="l">]</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">if</span> <span class="p">(</span><span class="n">values</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="p">[</span><span class="n">NSNull</span> <span class="n">null</span><span class="p">])</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">NSLog</span><span class="p">(</span><span class="s">@&#34;空值占位&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><h3 id="13-继承与类型判断">13. 继承与类型判断<a hidden class="anchor" aria-hidden="true" href="#13-继承与类型判断">#</a></h3>
+<p>Java：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">DetailActivity</span><span class="w"> </span><span class="kd">extends</span><span class="w"> </span><span class="n">Activity</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nd">@Override</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">protected</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">onCreate</span><span class="p">(</span><span class="n">Bundle</span><span class="w"> </span><span class="n">state</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="kd">super</span><span class="p">.</span><span class="na">onCreate</span><span class="p">(</span><span class="n">state</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></div><p>Objective-C：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-objc" data-lang="objc"><span class="line"><span class="cl"><span class="k">@interface</span> <span class="nc">DetailViewController</span> : <span class="nc">UIViewController</span>
+</span></span><span class="line"><span class="cl"><span class="k">@end</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">@implementation</span> <span class="nc">DetailViewController</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="p">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">viewDidLoad</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="p">[</span><span class="nb">super</span> <span class="n">viewDidLoad</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">@end</span>
+</span></span></code></pre></div><p>Objective-C 没有必须书写的 <code>override</code> 关键字。重写方法时，需要确保方法名和参数完全正确。</p>
+<p>类型判断：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-objc" data-lang="objc"><span class="line"><span class="cl"><span class="k">if</span> <span class="p">([</span><span class="n">value</span> <span class="nl">isKindOfClass</span><span class="p">:[</span><span class="n">User</span> <span class="k">class</span><span class="p">]])</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">User</span> <span class="o">*</span><span class="n">user</span> <span class="o">=</span> <span class="p">(</span><span class="n">User</span> <span class="o">*</span><span class="p">)</span><span class="n">value</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">NSLog</span><span class="p">(</span><span class="s">@&#34;%@&#34;</span><span class="p">,</span> <span class="n">user</span><span class="p">.</span><span class="n">name</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><ul>
+<li><code>isKindOfClass:</code>：包含子类</li>
+<li><code>isMemberOfClass:</code>：必须是当前类本身</li>
+</ul>
+<h3 id="14-protocol与interface">14. protocol与interface<a hidden class="anchor" aria-hidden="true" href="#14-protocol与interface">#</a></h3>
+<p>Java 接口：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">public</span><span class="w"> </span><span class="kd">interface</span> <span class="nc">TaskEditorListener</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kt">void</span><span class="w"> </span><span class="nf">onTaskCreated</span><span class="p">(</span><span class="n">Task</span><span class="w"> </span><span class="n">task</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></div><p>Objective-C 协议：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-objc" data-lang="objc"><span class="line"><span class="cl"><span class="k">@protocol</span> <span class="nc">TaskEditorDelegate</span> <span class="o">&lt;</span><span class="n">NSObject</span><span class="o">&gt;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">@required</span>
+</span></span><span class="line"><span class="cl"><span class="o">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nl">didCreateTask</span><span class="p">:(</span><span class="n">Task</span> <span class="o">*</span><span class="p">)</span><span class="n">task</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">@optional</span>
+</span></span><span class="line"><span class="cl"><span class="o">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="n">didCancelEditing</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">@end</span>
+</span></span></code></pre></div><p>声明实现协议：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-objc" data-lang="objc"><span class="line"><span class="cl"><span class="k">@interface</span> <span class="nc">ViewController</span> <span class="p">()</span> <span class="o">&lt;</span><span class="n">TaskEditorDelegate</span><span class="o">&gt;</span>
+</span></span><span class="line"><span class="cl"><span class="k">@end</span>
+</span></span></code></pre></div><p>调用可选方法前，应先判断对象是否实现：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-objc" data-lang="objc"><span class="line"><span class="cl"><span class="k">if</span> <span class="p">([</span><span class="nb">self</span><span class="p">.</span><span class="n">delegate</span> <span class="nl">respondsToSelector</span><span class="p">:</span><span class="k">@selector</span><span class="p">(</span><span class="n">didCancelEditing</span><span class="p">)])</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="p">[</span><span class="nb">self</span><span class="p">.</span><span class="n">delegate</span> <span class="n">didCancelEditing</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><h3 id="15-block与lambda">15. Block与lambda<a hidden class="anchor" aria-hidden="true" href="#15-block与lambda">#</a></h3>
+<p>Java lambda：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">service</span><span class="p">.</span><span class="na">loadTasks</span><span class="p">((</span><span class="n">tasks</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">error</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="kc">null</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">return</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="n">tasks</span><span class="p">.</span><span class="na">size</span><span class="p">());</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">});</span><span class="w">
+</span></span></span></code></pre></div><p>Objective-C Block：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-objc" data-lang="objc"><span class="line"><span class="cl"><span class="p">[</span><span class="n">service</span> <span class="nl">loadTasksWithCompletion</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">    <span class="o">^</span><span class="p">(</span><span class="n">NSArray</span><span class="o">&lt;</span><span class="n">Task</span> <span class="o">*&gt;</span> <span class="o">*</span><span class="n">tasks</span><span class="p">,</span> <span class="n">NSError</span> <span class="o">*</span><span class="n">error</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="p">(</span><span class="n">error</span> <span class="o">!=</span> <span class="nb">nil</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="k">return</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="n">NSLog</span><span class="p">(</span><span class="s">@&#34;任务数量：%lu&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">              <span class="p">(</span><span class="kt">unsigned</span> <span class="kt">long</span><span class="p">)</span><span class="n">tasks</span><span class="p">.</span><span class="n">count</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}];</span>
+</span></span></code></pre></div><p>Block 类型本身比较难读：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-objc" data-lang="objc"><span class="line"><span class="cl"><span class="kt">void</span> <span class="p">(</span><span class="o">^</span><span class="n">completion</span><span class="p">)(</span><span class="n">NSArray</span><span class="o">&lt;</span><span class="n">Task</span> <span class="o">*&gt;</span> <span class="o">*</span><span class="n">tasks</span><span class="p">,</span> <span class="n">NSError</span> <span class="o">*</span><span class="n">error</span><span class="p">);</span>
+</span></span></code></pre></div><p>可以通过 <code>typedef</code> 简化：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-objc" data-lang="objc"><span class="line"><span class="cl"><span class="k">typedef</span> <span class="nf">void</span> <span class="p">(</span><span class="o">^</span><span class="n">TaskCompletion</span><span class="p">)(</span>
+</span></span><span class="line"><span class="cl">    <span class="n">NSArray</span><span class="o">&lt;</span><span class="n">Task</span> <span class="o">*&gt;</span> <span class="o">*</span><span class="n">tasks</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">NSError</span> <span class="o">*</span><span class="n">error</span>
+</span></span><span class="line"><span class="cl"><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">@property</span> <span class="p">(</span><span class="k">nonatomic</span><span class="p">,</span> <span class="k">copy</span><span class="p">)</span> <span class="n">TaskCompletion</span> <span class="n">completion</span><span class="p">;</span>
+</span></span></code></pre></div><p>Block 属性通常使用 <code>copy</code>。</p>
+<h3 id="16-错误处理">16. 错误处理<a hidden class="anchor" aria-hidden="true" href="#16-错误处理">#</a></h3>
+<p>Java 经常使用异常传递失败：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="k">try</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">String</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">loadData</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w"> </span><span class="k">catch</span><span class="w"> </span><span class="p">(</span><span class="n">Exception</span><span class="w"> </span><span class="n">error</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">error</span><span class="p">.</span><span class="na">printStackTrace</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></div><p>Objective-C 的普通可恢复错误通常通过 <code>NSError</code> 返回，而不是依赖异常：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-objc" data-lang="objc"><span class="line"><span class="cl"><span class="n">NSError</span> <span class="o">*</span><span class="n">error</span> <span class="o">=</span> <span class="nb">nil</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">NSData</span> <span class="o">*</span><span class="n">data</span> <span class="o">=</span>
+</span></span><span class="line"><span class="cl">    <span class="p">[</span><span class="n">NSJSONSerialization</span> <span class="nl">dataWithJSONObject</span><span class="p">:</span><span class="n">object</span>
+</span></span><span class="line"><span class="cl">                                    <span class="nl">options</span><span class="p">:</span><span class="mi">0</span>
+</span></span><span class="line"><span class="cl">                                      <span class="nl">error</span><span class="p">:</span><span class="o">&amp;</span><span class="n">error</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">if</span> <span class="p">(</span><span class="n">data</span> <span class="o">==</span> <span class="nb">nil</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">NSLog</span><span class="p">(</span><span class="s">@&#34;序列化失败：%@&#34;</span><span class="p">,</span> <span class="n">error</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>异步操作通常把错误放进 Block 参数：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-objc" data-lang="objc"><span class="line"><span class="cl"><span class="p">[</span><span class="n">service</span> <span class="nl">loadUserWithCompletion</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">    <span class="o">^</span><span class="p">(</span><span class="n">User</span> <span class="o">*</span><span class="n">user</span><span class="p">,</span> <span class="n">NSError</span> <span class="o">*</span><span class="n">error</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="p">(</span><span class="n">error</span> <span class="o">!=</span> <span class="nb">nil</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">NSLog</span><span class="p">(</span><span class="s">@&#34;加载失败：%@&#34;</span><span class="p">,</span> <span class="n">error</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">            <span class="k">return</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="n">NSLog</span><span class="p">(</span><span class="s">@&#34;用户：%@&#34;</span><span class="p">,</span> <span class="n">user</span><span class="p">.</span><span class="n">name</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}];</span>
+</span></span></code></pre></div><p><code>@try</code>、<code>@catch</code> 确实存在，但通常用于处理程序异常，不应直接类比为 Java 业务错误处理的主要方式。</p>
+<h3 id="17-category与selector">17. Category与Selector<a hidden class="anchor" aria-hidden="true" href="#17-category与selector">#</a></h3>
+<p>Category 可以给已有类增加方法。文件名通常为 <code>类名+分类名</code>。</p>
+<p><code>NSString+Validation.h</code>：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-objc" data-lang="objc"><span class="line"><span class="cl"><span class="k">@interface</span> <span class="nc">NSString</span> <span class="nl">(Validation)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="p">-</span> <span class="p">(</span><span class="kt">BOOL</span><span class="p">)</span><span class="nf">isValidPhoneNumber</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">@end</span>
+</span></span></code></pre></div><p><code>NSString+Validation.m</code>：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-objc" data-lang="objc"><span class="line"><span class="cl"><span class="k">@implementation</span> <span class="nc">NSString</span> <span class="nl">(Validation)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="p">-</span> <span class="p">(</span><span class="kt">BOOL</span><span class="p">)</span><span class="nf">isValidPhoneNumber</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="nb">self</span><span class="p">.</span><span class="n">length</span> <span class="o">==</span> <span class="mi">11</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">@end</span>
+</span></span></code></pre></div><p>调用：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-objc" data-lang="objc"><span class="line"><span class="cl"><span class="kt">BOOL</span> <span class="n">valid</span> <span class="o">=</span> <span class="p">[</span><span class="n">phoneNumber</span> <span class="n">isValidPhoneNumber</span><span class="p">];</span>
+</span></span></code></pre></div><p>UIKit 的 target-action 经常使用 Selector：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-objc" data-lang="objc"><span class="line"><span class="cl"><span class="p">[</span><span class="n">button</span> <span class="nl">addTarget</span><span class="p">:</span><span class="nb">self</span>
+</span></span><span class="line"><span class="cl">           <span class="nl">action</span><span class="p">:</span><span class="k">@selector</span><span class="p">(</span><span class="nl">onButtonClick</span><span class="p">:)</span>
+</span></span><span class="line"><span class="cl"> <span class="nl">forControlEvents</span><span class="p">:</span><span class="n">UIControlEventTouchUpInside</span><span class="p">];</span>
+</span></span></code></pre></div><p>对应方法：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-objc" data-lang="objc"><span class="line"><span class="cl"><span class="p">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">onButtonClick:</span><span class="p">(</span><span class="n">UIButton</span> <span class="o">*</span><span class="p">)</span><span class="nv">sender</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">NSLog</span><span class="p">(</span><span class="s">@&#34;按钮被点击&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p><code>@selector(onButtonClick:)</code> 表示带一个参数的方法，末尾的冒号不能省略。如果出现 <code>unrecognized selector sent to instance</code>，应检查方法名、冒号数量和目标对象的运行时类型。</p>
+<h2 id="理解objective-c文件">理解Objective-C文件<a hidden class="anchor" aria-hidden="true" href="#理解objective-c文件">#</a></h2>
+<p>常见文件类型如下：</p>
+<table>
+  <thead>
+      <tr>
+          <th>文件</th>
+          <th>作用</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>.h</code></td>
+          <td>类、方法和属性声明</td>
+      </tr>
+      <tr>
+          <td><code>.m</code></td>
+          <td>Objective-C 实现</td>
+      </tr>
+      <tr>
+          <td><code>.mm</code></td>
+          <td>Objective-C++ 实现</td>
+      </tr>
+      <tr>
+          <td><code>.storyboard</code></td>
+          <td>多页面可视化 UI</td>
+      </tr>
+      <tr>
+          <td><code>.xib</code></td>
+          <td>单个页面或组件 UI</td>
+      </tr>
+      <tr>
+          <td><code>.plist</code></td>
+          <td>应用和模块配置</td>
+      </tr>
+      <tr>
+          <td><code>.xcworkspace</code></td>
+          <td>包含多个工程的工作区</td>
+      </tr>
+  </tbody>
+</table>
+<p>Objective-C 类通常拆成 <code>.h</code> 和 <code>.m</code> 两个文件。</p>
+<p>以待办模型为例。</p>
+<p><code>Task.h</code>：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-objc" data-lang="objc"><span class="line"><span class="cl"><span class="cp">#import &lt;Foundation/Foundation.h&gt;
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="n">NS_ASSUME_NONNULL_BEGIN</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">@interface</span> <span class="nc">Task</span> : <span class="nc">NSObject</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">@property</span> <span class="p">(</span><span class="k">nonatomic</span><span class="p">,</span> <span class="k">copy</span><span class="p">)</span> <span class="n">NSString</span> <span class="o">*</span><span class="n">title</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="k">@property</span> <span class="p">(</span><span class="k">nonatomic</span><span class="p">,</span> <span class="k">assign</span><span class="p">,</span> <span class="k">getter</span><span class="o">=</span><span class="n">isCompleted</span><span class="p">)</span> <span class="kt">BOOL</span> <span class="n">completed</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="p">-</span> <span class="p">(</span><span class="kt">instancetype</span><span class="p">)</span><span class="nf">initWithTitle:</span><span class="p">(</span><span class="n">NSString</span> <span class="o">*</span><span class="p">)</span><span class="nv">title</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">@end</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">NS_ASSUME_NONNULL_END</span>
+</span></span></code></pre></div><p><code>Task.m</code>：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-objc" data-lang="objc"><span class="line"><span class="cl"><span class="cp">#import &#34;Task.h&#34;
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="k">@implementation</span> <span class="nc">Task</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="p">-</span> <span class="p">(</span><span class="kt">instancetype</span><span class="p">)</span><span class="nf">initWithTitle:</span><span class="p">(</span><span class="n">NSString</span> <span class="o">*</span><span class="p">)</span><span class="nv">title</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nb">self</span> <span class="o">=</span> <span class="p">[</span><span class="nb">super</span> <span class="n">init</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="nb">self</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">_title</span> <span class="o">=</span> <span class="p">[</span><span class="n">title</span> <span class="k">copy</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">        <span class="n">_completed</span> <span class="o">=</span> <span class="nb">NO</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="nb">self</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">@end</span>
+</span></span></code></pre></div><p><code>@interface</code> 声明类及其公开能力，<code>@implementation</code> 编写具体实现。页面内部使用的属性和方法，通常放在 <code>.m</code> 文件中的匿名扩展里，不必全部暴露到 <code>.h</code> 文件。</p>
+<h2 id="uikit页面与android页面">UIKit页面与Android页面<a hidden class="anchor" aria-hidden="true" href="#uikit页面与android页面">#</a></h2>
+<h3 id="1-页面生命周期">1. 页面生命周期<a hidden class="anchor" aria-hidden="true" href="#1-页面生命周期">#</a></h3>
+<p><code>UIViewController</code> 是 UIKit 项目中最常见的页面控制器。</p>
+<table>
+  <thead>
+      <tr>
+          <th>Android Activity / Fragment</th>
+          <th>UIViewController</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>onCreate</code>、<code>onViewCreated</code></td>
+          <td><code>viewDidLoad</code></td>
+      </tr>
+      <tr>
+          <td><code>onStart</code></td>
+          <td><code>viewWillAppear:</code></td>
+      </tr>
+      <tr>
+          <td><code>onResume</code></td>
+          <td><code>viewDidAppear:</code></td>
+      </tr>
+      <tr>
+          <td><code>onPause</code></td>
+          <td><code>viewWillDisappear:</code></td>
+      </tr>
+      <tr>
+          <td><code>onStop</code></td>
+          <td><code>viewDidDisappear:</code></td>
+      </tr>
+  </tbody>
+</table>
+<p>这只是便于理解的近似映射，生命周期触发条件并不完全相同。</p>
+<p>页面初始化通常写在：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-objc" data-lang="objc"><span class="line"><span class="cl"><span class="p">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">viewDidLoad</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="p">[</span><span class="nb">super</span> <span class="n">viewDidLoad</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">    <span class="nb">self</span><span class="p">.</span><span class="n">view</span><span class="p">.</span><span class="n">backgroundColor</span> <span class="o">=</span> <span class="p">[</span><span class="n">UIColor</span> <span class="n">systemBackgroundColor</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p><code>viewDidLoad</code> 适合执行视图初始化。每次页面显示都需要执行的逻辑，可以根据场景放到 <code>viewWillAppear:</code> 或 <code>viewDidAppear:</code>。</p>
+<h3 id="2-页面导航">2. 页面导航<a hidden class="anchor" aria-hidden="true" href="#2-页面导航">#</a></h3>
+<p>Android 常通过 <code>Intent</code> 或 Navigation Component 跳转页面。UIKit 存量项目中常见两种方式。</p>
+<p>压入导航栈：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-objc" data-lang="objc"><span class="line"><span class="cl"><span class="p">[</span><span class="nb">self</span><span class="p">.</span><span class="n">navigationController</span> <span class="nl">pushViewController</span><span class="p">:</span><span class="n">detailController</span>
+</span></span><span class="line"><span class="cl">                                     <span class="nl">animated</span><span class="p">:</span><span class="nb">YES</span><span class="p">];</span>
+</span></span></code></pre></div><p>模态展示：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-objc" data-lang="objc"><span class="line"><span class="cl"><span class="p">[</span><span class="nb">self</span> <span class="nl">presentViewController</span><span class="p">:</span><span class="n">detailController</span>
+</span></span><span class="line"><span class="cl">                   <span class="nl">animated</span><span class="p">:</span><span class="nb">YES</span>
+</span></span><span class="line"><span class="cl">                 <span class="nl">completion</span><span class="p">:</span><span class="nb">nil</span><span class="p">];</span>
+</span></span></code></pre></div><p>看到页面跳转代码时，先确认当前页面是否位于 <code>UINavigationController</code> 中。</p>
+<h2 id="实战实现一个待办列表">实战：实现一个待办列表<a hidden class="anchor" aria-hidden="true" href="#实战实现一个待办列表">#</a></h2>
+<p>下面通过一个待办列表串联 Objective-C、UIKit 和列表事件，功能包括：</p>
+<ul>
+<li>展示待办列表</li>
+<li>添加待办</li>
+<li>点击切换完成状态</li>
+</ul>
+<p>创建一个 UIKit + Objective-C 工程，并将初始 <code>ViewController</code> 嵌入 <code>UINavigationController</code>。项目需要下面几个文件：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="cl">Task.h
+</span></span><span class="line"><span class="cl">Task.m
+</span></span><span class="line"><span class="cl">ViewController.h
+</span></span><span class="line"><span class="cl">ViewController.m
+</span></span></code></pre></div><h3 id="1-声明页面内部状态">1. 声明页面内部状态<a hidden class="anchor" aria-hidden="true" href="#1-声明页面内部状态">#</a></h3>
+<p><code>ViewController.h</code> 保持简单：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-objc" data-lang="objc"><span class="line"><span class="cl"><span class="cp">#import &lt;UIKit/UIKit.h&gt;
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="k">@interface</span> <span class="nc">ViewController</span> : <span class="nc">UIViewController</span>
+</span></span><span class="line"><span class="cl"><span class="k">@end</span>
+</span></span></code></pre></div><p>在 <code>ViewController.m</code> 中声明内部属性：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-objc" data-lang="objc"><span class="line"><span class="cl"><span class="cp">#import &#34;ViewController.h&#34;
+</span></span></span><span class="line"><span class="cl"><span class="cp">#import &#34;Task.h&#34;
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="k">@interface</span> <span class="nc">ViewController</span> <span class="p">()</span> <span class="o">&lt;</span><span class="n">UITableViewDataSource</span><span class="p">,</span> <span class="n">UITableViewDelegate</span><span class="o">&gt;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">@property</span> <span class="p">(</span><span class="k">nonatomic</span><span class="p">,</span> <span class="k">strong</span><span class="p">)</span> <span class="n">UITableView</span> <span class="o">*</span><span class="n">tableView</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="k">@property</span> <span class="p">(</span><span class="k">nonatomic</span><span class="p">,</span> <span class="k">strong</span><span class="p">)</span> <span class="n">NSMutableArray</span><span class="o">&lt;</span><span class="n">Task</span> <span class="o">*&gt;</span> <span class="o">*</span><span class="n">tasks</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">@end</span>
+</span></span></code></pre></div><p>匿名扩展中的属性可以理解为页面的私有成员。<code>UITableViewDataSource</code> 接近 <code>RecyclerView.Adapter</code> 的数据提供职责，<code>UITableViewDelegate</code> 负责部分交互和展示行为。</p>
+<h3 id="2-初始化页面">2. 初始化页面<a hidden class="anchor" aria-hidden="true" href="#2-初始化页面">#</a></h3>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-objc" data-lang="objc"><span class="line"><span class="cl"><span class="k">@implementation</span> <span class="nc">ViewController</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="p">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">viewDidLoad</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="p">[</span><span class="nb">super</span> <span class="n">viewDidLoad</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="nb">self</span><span class="p">.</span><span class="n">title</span> <span class="o">=</span> <span class="s">@&#34;待办事项&#34;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="nb">self</span><span class="p">.</span><span class="n">view</span><span class="p">.</span><span class="n">backgroundColor</span> <span class="o">=</span> <span class="p">[</span><span class="n">UIColor</span> <span class="n">systemBackgroundColor</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="nb">self</span><span class="p">.</span><span class="n">tasks</span> <span class="o">=</span> <span class="p">[</span><span class="l">@[</span>
+</span></span><span class="line"><span class="cl">        <span class="p">[[</span><span class="n">Task</span> <span class="n">alloc</span><span class="p">]</span> <span class="nl">initWithTitle</span><span class="p">:</span><span class="s">@&#34;运行现有工程&#34;</span><span class="p">],</span>
+</span></span><span class="line"><span class="cl">        <span class="p">[[</span><span class="n">Task</span> <span class="n">alloc</span><span class="p">]</span> <span class="nl">initWithTitle</span><span class="p">:</span><span class="s">@&#34;找到首页入口&#34;</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl">    <span class="l">]</span> <span class="n">mutableCopy</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="nb">self</span><span class="p">.</span><span class="n">navigationItem</span><span class="p">.</span><span class="n">rightBarButtonItem</span> <span class="o">=</span>
+</span></span><span class="line"><span class="cl">        <span class="p">[[</span><span class="n">UIBarButtonItem</span> <span class="n">alloc</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl">            <span class="nl">initWithBarButtonSystemItem</span><span class="p">:</span><span class="n">UIBarButtonSystemItemAdd</span>
+</span></span><span class="line"><span class="cl">            <span class="nl">target</span><span class="p">:</span><span class="nb">self</span>
+</span></span><span class="line"><span class="cl">            <span class="nl">action</span><span class="p">:</span><span class="k">@selector</span><span class="p">(</span><span class="n">addTask</span><span class="p">)];</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="p">[</span><span class="nb">self</span> <span class="n">setupTableView</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p><code>target-action</code> 可以类比 Android 的点击监听器：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-objc" data-lang="objc"><span class="line"><span class="cl"><span class="nl">target</span><span class="p">:</span><span class="nb">self</span>
+</span></span><span class="line"><span class="cl"><span class="nl">action</span><span class="p">:</span><span class="k">@selector</span><span class="p">(</span><span class="n">addTask</span><span class="p">)</span>
+</span></span></code></pre></div><p>表示按钮点击后向 <code>self</code> 发送 <code>addTask</code> 消息。</p>
+<h3 id="3-创建uitableview">3. 创建UITableView<a hidden class="anchor" aria-hidden="true" href="#3-创建uitableview">#</a></h3>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-objc" data-lang="objc"><span class="line"><span class="cl"><span class="p">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">setupTableView</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">UITableView</span> <span class="o">*</span><span class="n">tableView</span> <span class="o">=</span>
+</span></span><span class="line"><span class="cl">        <span class="p">[[</span><span class="n">UITableView</span> <span class="n">alloc</span><span class="p">]</span> <span class="nl">initWithFrame</span><span class="p">:</span><span class="n">CGRectZero</span>
+</span></span><span class="line"><span class="cl">                                     <span class="nl">style</span><span class="p">:</span><span class="n">UITableViewStylePlain</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">tableView</span><span class="p">.</span><span class="n">translatesAutoresizingMaskIntoConstraints</span> <span class="o">=</span> <span class="nb">NO</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">tableView</span><span class="p">.</span><span class="n">dataSource</span> <span class="o">=</span> <span class="nb">self</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">tableView</span><span class="p">.</span><span class="n">delegate</span> <span class="o">=</span> <span class="nb">self</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="p">[</span><span class="nb">self</span><span class="p">.</span><span class="n">view</span> <span class="nl">addSubview</span><span class="p">:</span><span class="n">tableView</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="p">[</span><span class="n">NSLayoutConstraint</span> <span class="nl">activateConstraints</span><span class="p">:</span><span class="l">@[</span>
+</span></span><span class="line"><span class="cl">        <span class="p">[</span><span class="n">tableView</span><span class="p">.</span><span class="n">topAnchor</span>
+</span></span><span class="line"><span class="cl">            <span class="nl">constraintEqualToAnchor</span><span class="p">:</span><span class="nb">self</span><span class="p">.</span><span class="n">view</span><span class="p">.</span><span class="n">safeAreaLayoutGuide</span><span class="p">.</span><span class="n">topAnchor</span><span class="p">],</span>
+</span></span><span class="line"><span class="cl">        <span class="p">[</span><span class="n">tableView</span><span class="p">.</span><span class="n">leadingAnchor</span>
+</span></span><span class="line"><span class="cl">            <span class="nl">constraintEqualToAnchor</span><span class="p">:</span><span class="nb">self</span><span class="p">.</span><span class="n">view</span><span class="p">.</span><span class="n">leadingAnchor</span><span class="p">],</span>
+</span></span><span class="line"><span class="cl">        <span class="p">[</span><span class="n">tableView</span><span class="p">.</span><span class="n">trailingAnchor</span>
+</span></span><span class="line"><span class="cl">            <span class="nl">constraintEqualToAnchor</span><span class="p">:</span><span class="nb">self</span><span class="p">.</span><span class="n">view</span><span class="p">.</span><span class="n">trailingAnchor</span><span class="p">],</span>
+</span></span><span class="line"><span class="cl">        <span class="p">[</span><span class="n">tableView</span><span class="p">.</span><span class="n">bottomAnchor</span>
+</span></span><span class="line"><span class="cl">            <span class="nl">constraintEqualToAnchor</span><span class="p">:</span><span class="nb">self</span><span class="p">.</span><span class="n">view</span><span class="p">.</span><span class="n">bottomAnchor</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl">    <span class="l">]</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="nb">self</span><span class="p">.</span><span class="n">tableView</span> <span class="o">=</span> <span class="n">tableView</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>这段代码接近 Android 中创建 View、设置 LayoutParams、添加到父容器并设置 Adapter。</p>
+<h3 id="4-提供列表数据">4. 提供列表数据<a hidden class="anchor" aria-hidden="true" href="#4-提供列表数据">#</a></h3>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-objc" data-lang="objc"><span class="line"><span class="cl"><span class="p">-</span> <span class="p">(</span><span class="n">NSInteger</span><span class="p">)</span><span class="nf">tableView:</span><span class="p">(</span><span class="n">UITableView</span> <span class="o">*</span><span class="p">)</span><span class="nv">tableView</span>
+</span></span><span class="line"><span class="cl"> <span class="nf">numberOfRowsInSection:</span><span class="p">(</span><span class="n">NSInteger</span><span class="p">)</span><span class="nv">section</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="nb">self</span><span class="p">.</span><span class="n">tasks</span><span class="p">.</span><span class="n">count</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="p">-</span> <span class="p">(</span><span class="n">UITableViewCell</span> <span class="o">*</span><span class="p">)</span><span class="nf">tableView:</span><span class="p">(</span><span class="n">UITableView</span> <span class="o">*</span><span class="p">)</span><span class="nv">tableView</span>
+</span></span><span class="line"><span class="cl">         <span class="nf">cellForRowAtIndexPath:</span><span class="p">(</span><span class="n">NSIndexPath</span> <span class="o">*</span><span class="p">)</span><span class="nv">indexPath</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">static</span> <span class="n">NSString</span> <span class="o">*</span><span class="n">identifier</span> <span class="o">=</span> <span class="s">@&#34;TaskCell&#34;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">UITableViewCell</span> <span class="o">*</span><span class="n">cell</span> <span class="o">=</span>
+</span></span><span class="line"><span class="cl">        <span class="p">[</span><span class="n">tableView</span> <span class="nl">dequeueReusableCellWithIdentifier</span><span class="p">:</span><span class="n">identifier</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="n">cell</span> <span class="o">==</span> <span class="nb">nil</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">cell</span> <span class="o">=</span> <span class="p">[[</span><span class="n">UITableViewCell</span> <span class="n">alloc</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl">            <span class="nl">initWithStyle</span><span class="p">:</span><span class="n">UITableViewCellStyleDefault</span>
+</span></span><span class="line"><span class="cl">          <span class="nl">reuseIdentifier</span><span class="p">:</span><span class="n">identifier</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">Task</span> <span class="o">*</span><span class="n">task</span> <span class="o">=</span> <span class="nb">self</span><span class="p">.</span><span class="n">tasks</span><span class="p">[</span><span class="n">indexPath</span><span class="p">.</span><span class="n">row</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">cell</span><span class="p">.</span><span class="n">textLabel</span><span class="p">.</span><span class="n">text</span> <span class="o">=</span> <span class="n">task</span><span class="p">.</span><span class="n">title</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">cell</span><span class="p">.</span><span class="n">accessoryType</span> <span class="o">=</span> <span class="n">task</span><span class="p">.</span><span class="n">isCompleted</span>
+</span></span><span class="line"><span class="cl">        <span class="o">?</span> <span class="nl">UITableViewCellAccessoryCheckmark</span>
+</span></span><span class="line"><span class="cl">        <span class="p">:</span> <span class="n">UITableViewCellAccessoryNone</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="n">cell</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>可以粗略理解为：</p>
+<ul>
+<li><code>numberOfRowsInSection</code>：接近 Adapter 的 <code>getItemCount</code></li>
+<li><code>cellForRowAtIndexPath</code>：接近 <code>onCreateViewHolder</code> 与 <code>onBindViewHolder</code> 的组合</li>
+</ul>
+<h3 id="5-处理点击事件">5. 处理点击事件<a hidden class="anchor" aria-hidden="true" href="#5-处理点击事件">#</a></h3>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-objc" data-lang="objc"><span class="line"><span class="cl"><span class="p">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">tableView:</span><span class="p">(</span><span class="n">UITableView</span> <span class="o">*</span><span class="p">)</span><span class="nv">tableView</span>
+</span></span><span class="line"><span class="cl"> <span class="nf">didSelectRowAtIndexPath:</span><span class="p">(</span><span class="n">NSIndexPath</span> <span class="o">*</span><span class="p">)</span><span class="nv">indexPath</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">Task</span> <span class="o">*</span><span class="n">task</span> <span class="o">=</span> <span class="nb">self</span><span class="p">.</span><span class="n">tasks</span><span class="p">[</span><span class="n">indexPath</span><span class="p">.</span><span class="n">row</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">    <span class="n">task</span><span class="p">.</span><span class="n">completed</span> <span class="o">=</span> <span class="o">!</span><span class="n">task</span><span class="p">.</span><span class="n">isCompleted</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="p">[</span><span class="n">tableView</span> <span class="nl">reloadRowsAtIndexPaths</span><span class="p">:</span><span class="l">@[</span><span class="n">indexPath</span><span class="l">]</span>
+</span></span><span class="line"><span class="cl">                     <span class="nl">withRowAnimation</span><span class="p">:</span><span class="n">UITableViewRowAnimationAutomatic</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="p">[</span><span class="n">tableView</span> <span class="nl">deselectRowAtIndexPath</span><span class="p">:</span><span class="n">indexPath</span> <span class="nl">animated</span><span class="p">:</span><span class="nb">YES</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p><code>didSelectRowAtIndexPath</code> 来自 <code>UITableViewDelegate</code>，接近列表项点击回调。</p>
+<h3 id="6-添加待办">6. 添加待办<a hidden class="anchor" aria-hidden="true" href="#6-添加待办">#</a></h3>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-objc" data-lang="objc"><span class="line"><span class="cl"><span class="p">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">addTask</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">UIAlertController</span> <span class="o">*</span><span class="n">alert</span> <span class="o">=</span>
+</span></span><span class="line"><span class="cl">        <span class="p">[</span><span class="n">UIAlertController</span> <span class="nl">alertControllerWithTitle</span><span class="p">:</span><span class="s">@&#34;新建待办&#34;</span>
+</span></span><span class="line"><span class="cl">                                            <span class="nl">message</span><span class="p">:</span><span class="nb">nil</span>
+</span></span><span class="line"><span class="cl">                                     <span class="nl">preferredStyle</span><span class="p">:</span><span class="n">UIAlertControllerStyleAlert</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="p">[</span><span class="n">alert</span> <span class="nl">addTextFieldWithConfigurationHandler</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">        <span class="o">^</span><span class="p">(</span><span class="n">UITextField</span> <span class="o">*</span><span class="n">textField</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">textField</span><span class="p">.</span><span class="n">placeholder</span> <span class="o">=</span> <span class="s">@&#34;输入待办内容&#34;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}];</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">__weak</span> <span class="k">typeof</span><span class="p">(</span><span class="nb">self</span><span class="p">)</span> <span class="n">weakSelf</span> <span class="o">=</span> <span class="nb">self</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">__weak</span> <span class="n">UIAlertController</span> <span class="o">*</span><span class="n">weakAlert</span> <span class="o">=</span> <span class="n">alert</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">UIAlertAction</span> <span class="o">*</span><span class="n">cancelAction</span> <span class="o">=</span>
+</span></span><span class="line"><span class="cl">        <span class="p">[</span><span class="n">UIAlertAction</span> <span class="nl">actionWithTitle</span><span class="p">:</span><span class="s">@&#34;取消&#34;</span>
+</span></span><span class="line"><span class="cl">                                 <span class="nl">style</span><span class="p">:</span><span class="n">UIAlertActionStyleCancel</span>
+</span></span><span class="line"><span class="cl">                               <span class="nl">handler</span><span class="p">:</span><span class="nb">nil</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">UIAlertAction</span> <span class="o">*</span><span class="n">addAction</span> <span class="o">=</span>
+</span></span><span class="line"><span class="cl">        <span class="p">[</span><span class="n">UIAlertAction</span> <span class="nl">actionWithTitle</span><span class="p">:</span><span class="s">@&#34;添加&#34;</span>
+</span></span><span class="line"><span class="cl">                                 <span class="nl">style</span><span class="p">:</span><span class="n">UIAlertActionStyleDefault</span>
+</span></span><span class="line"><span class="cl">                               <span class="nl">handler</span><span class="p">:</span><span class="o">^</span><span class="p">(</span><span class="n">UIAlertAction</span> <span class="o">*</span><span class="n">action</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="k">__strong</span> <span class="k">typeof</span><span class="p">(</span><span class="n">weakSelf</span><span class="p">)</span> <span class="n">strongSelf</span> <span class="o">=</span> <span class="n">weakSelf</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">            <span class="n">NSString</span> <span class="o">*</span><span class="n">title</span> <span class="o">=</span> <span class="n">weakAlert</span><span class="p">.</span><span class="n">textFields</span><span class="p">.</span><span class="n">firstObject</span><span class="p">.</span><span class="n">text</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">            <span class="k">if</span> <span class="p">(</span><span class="n">strongSelf</span> <span class="o">==</span> <span class="nb">nil</span> <span class="o">||</span> <span class="n">title</span><span class="p">.</span><span class="n">length</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                <span class="k">return</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">            <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">            <span class="n">Task</span> <span class="o">*</span><span class="n">task</span> <span class="o">=</span> <span class="p">[[</span><span class="n">Task</span> <span class="n">alloc</span><span class="p">]</span> <span class="nl">initWithTitle</span><span class="p">:</span><span class="n">title</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">            <span class="p">[</span><span class="n">strongSelf</span><span class="p">.</span><span class="n">tasks</span> <span class="nl">addObject</span><span class="p">:</span><span class="n">task</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">            <span class="p">[</span><span class="n">strongSelf</span><span class="p">.</span><span class="n">tableView</span> <span class="n">reloadData</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}];</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="p">[</span><span class="n">alert</span> <span class="nl">addAction</span><span class="p">:</span><span class="n">cancelAction</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">    <span class="p">[</span><span class="n">alert</span> <span class="nl">addAction</span><span class="p">:</span><span class="n">addAction</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="p">[</span><span class="nb">self</span> <span class="nl">presentViewController</span><span class="p">:</span><span class="n">alert</span> <span class="nl">animated</span><span class="p">:</span><span class="nb">YES</span> <span class="nl">completion</span><span class="p">:</span><span class="nb">nil</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">@end</span>
+</span></span></code></pre></div><p>运行后，可以点击右上角的加号添加待办，点击列表项切换完成状态。这个小项目已经覆盖了对象创建、属性、集合、协议、Block、弱引用和 UIKit 生命周期。</p>
+<h2 id="arc与内存管理">ARC与内存管理<a hidden class="anchor" aria-hidden="true" href="#arc与内存管理">#</a></h2>
+<h3 id="1-arc不等于没有内存问题">1. ARC不等于没有内存问题<a hidden class="anchor" aria-hidden="true" href="#1-arc不等于没有内存问题">#</a></h3>
+<p>Objective-C 项目通常通过 ARC 管理引用计数，但 ARC 不会自动解决循环引用。</p>
+<p>下面的代码可能形成循环引用：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-objc" data-lang="objc"><span class="line"><span class="cl"><span class="nb">self</span><span class="p">.</span><span class="n">completion</span> <span class="o">=</span> <span class="o">^</span><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="p">[</span><span class="nb">self</span> <span class="n">finishLoading</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl"><span class="p">};</span>
+</span></span></code></pre></div><p>引用关系为：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="cl">self -&gt; completion Block -&gt; self
+</span></span></code></pre></div><p>常见处理方式：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-objc" data-lang="objc"><span class="line"><span class="cl"><span class="k">__weak</span> <span class="nf">typeof</span><span class="p">(</span><span class="nb">self</span><span class="p">)</span> <span class="n">weakSelf</span> <span class="o">=</span> <span class="nb">self</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="nb">self</span><span class="p">.</span><span class="n">completion</span> <span class="o">=</span> <span class="o">^</span><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">__strong</span> <span class="k">typeof</span><span class="p">(</span><span class="n">weakSelf</span><span class="p">)</span> <span class="n">strongSelf</span> <span class="o">=</span> <span class="n">weakSelf</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="n">strongSelf</span> <span class="o">==</span> <span class="nb">nil</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="p">[</span><span class="n">strongSelf</span> <span class="n">finishLoading</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl"><span class="p">};</span>
+</span></span></code></pre></div><p>并不是所有 Block 中的 <code>self</code> 都会导致泄漏。是否形成循环引用，取决于 Block 是否被 <code>self</code> 或其持有对象长期保存。</p>
+<h3 id="2-检查老项目是否启用arc">2. 检查老项目是否启用ARC<a hidden class="anchor" aria-hidden="true" href="#2-检查老项目是否启用arc">#</a></h3>
+<p>如果老代码中出现下面的调用：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-objc" data-lang="objc"><span class="line"><span class="cl"><span class="k">retain</span>
+</span></span><span class="line"><span class="cl"><span class="k">release</span>
+</span></span><span class="line"><span class="cl"><span class="n">autorelease</span>
+</span></span></code></pre></div><p>不要直接删除。Objective-C 支持按文件关闭 ARC，一个工程中可能同时存在 ARC 文件和通过 <code>-fno-objc-arc</code> 管理的旧文件。</p>
+<p>应先检查 Target 的 Build Settings 和 Compile Sources 配置，再决定如何修改内存管理代码。</p>
+<h2 id="接手存量工程的推荐顺序">接手存量工程的推荐顺序<a hidden class="anchor" aria-hidden="true" href="#接手存量工程的推荐顺序">#</a></h2>
+<h3 id="1-先跑通原始工程">1. 先跑通原始工程<a hidden class="anchor" aria-hidden="true" href="#1-先跑通原始工程">#</a></h3>
+<p>在修改代码前先记录基线：</p>
+<ul>
+<li>使用哪个 Xcode 版本</li>
+<li>打开 <code>.xcworkspace</code> 还是 <code>.xcodeproj</code></li>
+<li>使用哪个 Scheme 和 Target</li>
+<li>依赖通过 CocoaPods、Swift Package Manager 还是其他方式管理</li>
+<li>模拟器能否正常启动</li>
+<li>原始工程是否已经存在编译警告或崩溃</li>
+</ul>
+<p>如果项目使用 CocoaPods，通常应该打开 <code>.xcworkspace</code>。误开 <code>.xcodeproj</code> 是常见的依赖缺失原因。</p>
+<h3 id="2-找应用入口">2. 找应用入口<a hidden class="anchor" aria-hidden="true" href="#2-找应用入口">#</a></h3>
+<p>优先查看：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="cl">main.m
+</span></span><span class="line"><span class="cl">AppDelegate.m
+</span></span><span class="line"><span class="cl">SceneDelegate.m
+</span></span></code></pre></div><p>确认：</p>
+<ul>
+<li><code>UIWindow</code> 在哪里创建</li>
+<li>根控制器是什么</li>
+<li>首页通过 Storyboard 还是代码加载</li>
+<li>启动阶段初始化了哪些服务</li>
+</ul>
+<h3 id="3-找页面入口">3. 找页面入口<a hidden class="anchor" aria-hidden="true" href="#3-找页面入口">#</a></h3>
+<p>搜索目标页面的 <code>UIViewController</code>，然后确认：</p>
+<ul>
+<li>页面来自 Storyboard、XIB 还是纯代码</li>
+<li>有哪些 <code>IBOutlet</code> 和 <code>IBAction</code></li>
+<li>页面在哪个生命周期方法加载数据</li>
+<li>页面通过 push 还是 present 打开</li>
+</ul>
+<p>Storyboard、XIB 中的连线失效时，运行阶段可能出现找不到 Key Value Coding 属性的崩溃。重命名属性后，需要同步检查可视化文件中的连接。</p>
+<h3 id="4-沿数据流阅读">4. 沿数据流阅读<a hidden class="anchor" aria-hidden="true" href="#4-沿数据流阅读">#</a></h3>
+<p>一个列表页面可以沿下面的顺序阅读：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="cl">viewDidLoad
+</span></span><span class="line"><span class="cl">-&gt; 发起请求
+</span></span><span class="line"><span class="cl">-&gt; Block或delegate回调
+</span></span><span class="line"><span class="cl">-&gt; 更新Model
+</span></span><span class="line"><span class="cl">-&gt; reloadData
+</span></span><span class="line"><span class="cl">-&gt; cellForRowAtIndexPath
+</span></span></code></pre></div><p>这和 Android 中沿着 ViewModel、Repository、Adapter 阅读数据流的思路类似。</p>
+<h3 id="5-第一次只做小改动">5. 第一次只做小改动<a hidden class="anchor" aria-hidden="true" href="#5-第一次只做小改动">#</a></h3>
+<p>第一次修改尽量选择容易验证的内容：</p>
+<ul>
+<li>修改一段展示文案</li>
+<li>增加一条日志</li>
+<li>调整一个列表字段</li>
+<li>修复一个明确的判空问题</li>
+<li>增加一个简单按钮事件</li>
+</ul>
+<p>先跑通编译、调试和提交流程，再处理架构改造或大范围重构。</p>
+<h2 id="android开发者常见误区">Android开发者常见误区<a hidden class="anchor" aria-hidden="true" href="#android开发者常见误区">#</a></h2>
+<h3 id="1-把uiviewcontroller完全当成activity">1. 把UIViewController完全当成Activity<a hidden class="anchor" aria-hidden="true" href="#1-把uiviewcontroller完全当成activity">#</a></h3>
+<p>两者只适合做粗略类比。导航、视图加载、页面复用和生命周期触发条件都有差异。</p>
+<p>修改生命周期代码前，应先通过断点确认实际调用顺序。</p>
+<h3 id="2-把uitableview当成recyclerview直接套用">2. 把UITableView当成RecyclerView直接套用<a hidden class="anchor" aria-hidden="true" href="#2-把uitableview当成recyclerview直接套用">#</a></h3>
+<p><code>UITableViewDataSource</code> 同时承担部分 Adapter 职责，但 Cell 注册、复用、代理回调和高度计算方式并不完全相同。</p>
+<p>先理解现有页面的 dataSource 和 delegate，再修改刷新逻辑。</p>
+<h3 id="3-把所有对象属性都声明为strong">3. 把所有对象属性都声明为strong<a hidden class="anchor" aria-hidden="true" href="#3-把所有对象属性都声明为strong">#</a></h3>
+<p>普通对象可以使用 <code>strong</code>，但：</p>
+<ul>
+<li>字符串和 Block 通常使用 <code>copy</code></li>
+<li>delegate 通常使用 <code>weak</code></li>
+<li>基础类型使用 <code>assign</code></li>
+</ul>
+<p>错误的引用关系可能造成页面退出后仍然无法释放。</p>
+<h3 id="4-认为向nil发送消息永远没有风险">4. 认为向nil发送消息永远没有风险<a hidden class="anchor" aria-hidden="true" href="#4-认为向nil发送消息永远没有风险">#</a></h3>
+<p>向 <code>nil</code> 发送普通消息通常不会立即崩溃，但这可能让错误静默传播。</p>
+<p>另外，数组越界、访问已经释放的对象、错误的 Selector 和失效的 Storyboard 连线仍然会导致崩溃。</p>
+<h3 id="5-一开始就重构老项目">5. 一开始就重构老项目<a hidden class="anchor" aria-hidden="true" href="#5-一开始就重构老项目">#</a></h3>
+<p>存量工程中可能同时存在：</p>
+<ul>
+<li>Objective-C 与 Swift 混编</li>
+<li>ARC 与非 ARC 文件</li>
+<li>Storyboard、XIB 和纯代码页面</li>
+<li>Category、宏和 Method Swizzling</li>
+<li>多个 Target 与不同编译配置</li>
+</ul>
+<p>在没有跑通主要流程、测试和发布配置前，不适合大范围迁移或重构。</p>
+<h2 id="小结">小结<a hidden class="anchor" aria-hidden="true" href="#小结">#</a></h2>
+<p>Android 开发者接手 Objective-C 存量项目时，可以先抓住四组映射：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="cl">Activity / Fragment -&gt; UIViewController
+</span></span><span class="line"><span class="cl">RecyclerView -&gt; UITableView / UICollectionView
+</span></span><span class="line"><span class="cl">interface / listener -&gt; protocol / delegate
+</span></span><span class="line"><span class="cl">lambda -&gt; Block
+</span></span></code></pre></div><p>然后重点掌握：</p>
+<ul>
+<li>Objective-C 消息发送语法</li>
+<li><code>.h</code> 与 <code>.m</code> 的职责</li>
+<li>UIKit 页面生命周期</li>
+<li>dataSource、delegate 和 target-action</li>
+<li>ARC、strong、weak、copy</li>
+<li>Xcode Target、Scheme、Workspace 和依赖关系</li>
+</ul>
+<p>入门阶段不需要立即深入 Objective-C Runtime。先让工程成功运行，从一个页面出发，沿着生命周期、数据请求、回调和列表刷新路径阅读代码。</p>
+<p>当你能够独立修改一个页面、处理一次回调并定位一次引用问题时，就已经具备维护普通 Objective-C 业务代码的基础。</p>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="/tags/objective-c/">Objective-C</a></li>
+      <li><a href="/tags/uikit/">UIKit</a></li>
+      <li><a href="/tags/android/">Android</a></li>
+      <li><a href="/tags/java/">Java</a></li>
+      <li><a href="/tags/%E5%AD%98%E9%87%8F%E9%A1%B9%E7%9B%AE/">存量项目</a></li>
+    </ul>
+<nav class="paginav">
+  <a class="next" href="/posts/ios/swiftui_list_navigation_basic/">
+    <span class="title">Next »</span>
+    <br>
+    <span>SwiftUI列表与导航基础</span>
+  </a>
+</nav>
+
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2026 <a href="/">缥缈夏鸢</a></span> · 
+
+    <span>
+        Powered by
+        <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+        <path d="M12 6H0l6-6z" />
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu')
+    if (menu) {
+        menu.scrollLeft = localStorage.getItem("menu-scroll-position");
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        if (document.body.className.includes("dark")) {
+            document.body.classList.remove('dark');
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            document.body.classList.add('dark');
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerHTML = 'copy';
+
+        function copyingDone() {
+            copybutton.innerHTML = 'copied!';
+            setTimeout(() => {
+                copybutton.innerHTML = 'copy';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+</body>
+
+</html>

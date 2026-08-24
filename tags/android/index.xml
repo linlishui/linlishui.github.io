@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>Android on 缥缈夏鸢</title>
+    <link>/tags/android/</link>
+    <description>Recent content in Android on 缥缈夏鸢</description>
+    <generator>Hugo -- 0.138.0</generator>
+    <language>en-us</language>
+    <lastBuildDate>Mon, 24 Aug 2026 17:38:24 +0800</lastBuildDate>
+    <atom:link href="/tags/android/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Android开发者接手iOS存量项目：Objective-C快速入门</title>
+      <link>/posts/ios/objective_c_for_android_developers/</link>
+      <pubDate>Mon, 24 Aug 2026 17:38:24 +0800</pubDate>
+      <guid>/posts/ios/objective_c_for_android_developers/</guid>
+      <description>&lt;p&gt;对 Android 开发者来说，接手 Objective-C 存量项目的难点通常不是业务逻辑，而是三套陌生表达同时出现：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Objective-C 的消息发送语法&lt;/li&gt;
+&lt;li&gt;UIKit 的页面与事件模型&lt;/li&gt;
+&lt;li&gt;Xcode 的工程、依赖和签名体系&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;最有效的入门方式不是从 C 语言重新学起，而是先建立 Android 与 iOS 的概念映射，再用 Java 语法经验理解 Objective-C，最后通过一个可运行的 UIKit 小项目把知识串起来。&lt;/p&gt;
+&lt;p&gt;本文的目标不是全面讲解 Objective-C，而是帮助 Android 开发者尽快做到：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;看懂常见 Objective-C 业务代码&lt;/li&gt;
+&lt;li&gt;找到 iOS 应用入口和页面入口&lt;/li&gt;
+&lt;li&gt;修改一个 UIKit 列表页面&lt;/li&gt;
+&lt;li&gt;理解 delegate、Block 和 ARC&lt;/li&gt;
+&lt;li&gt;避开接手老项目时的常见坑&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;先建立平台映射&#34;&gt;先建立平台映射&lt;/h2&gt;
+&lt;p&gt;Android 和 iOS 的框架不能完全等价，但下面的映射可以帮助建立第一印象。&lt;/p&gt;
+&lt;table&gt;
+  &lt;thead&gt;
+      &lt;tr&gt;
+          &lt;th&gt;Android&lt;/th&gt;
+          &lt;th&gt;iOS存量项目&lt;/th&gt;
+          &lt;th&gt;说明&lt;/th&gt;
+      &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;Application&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;&lt;code&gt;AppDelegate&lt;/code&gt;、&lt;code&gt;SceneDelegate&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;应用和场景生命周期&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;Activity&lt;/code&gt;、&lt;code&gt;Fragment&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;&lt;code&gt;UIViewController&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;页面控制器，不能完全等价&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;View&lt;/code&gt;、&lt;code&gt;ViewGroup&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;&lt;code&gt;UIView&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;UI 基础对象&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;XML Layout&lt;/td&gt;
+          &lt;td&gt;Storyboard、XIB&lt;/td&gt;
+          &lt;td&gt;可视化页面文件&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;ConstraintLayout&lt;/td&gt;
+          &lt;td&gt;Auto Layout&lt;/td&gt;
+          &lt;td&gt;约束布局&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;RecyclerView&lt;/td&gt;
+          &lt;td&gt;&lt;code&gt;UITableView&lt;/code&gt;、&lt;code&gt;UICollectionView&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;列表和网格&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;RecyclerView.Adapter&lt;/td&gt;
+          &lt;td&gt;&lt;code&gt;UITableViewDataSource&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;提供列表数据&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;OnClickListener&lt;/td&gt;
+          &lt;td&gt;target-action、delegate、Block&lt;/td&gt;
+          &lt;td&gt;事件回调&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;interface&lt;/td&gt;
+          &lt;td&gt;&lt;code&gt;protocol&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;能力约束&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;lambda&lt;/td&gt;
+          &lt;td&gt;Block&lt;/td&gt;
+          &lt;td&gt;可传递的代码块&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;AndroidManifest.xml&lt;/td&gt;
+          &lt;td&gt;Info.plist、Entitlements&lt;/td&gt;
+          &lt;td&gt;配置和权限声明&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;applicationId&lt;/td&gt;
+          &lt;td&gt;Bundle Identifier&lt;/td&gt;
+          &lt;td&gt;应用唯一标识&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;Gradle Module&lt;/td&gt;
+          &lt;td&gt;Xcode Target&lt;/td&gt;
+          &lt;td&gt;构建单元，语义并不完全相同&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;Handler主线程调度&lt;/td&gt;
+          &lt;td&gt;Main Queue&lt;/td&gt;
+          &lt;td&gt;主线程任务调度&lt;/td&gt;
+      &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;这些概念只适合粗略类比。例如 &lt;code&gt;UIViewController&lt;/code&gt; 同时参与视图管理、页面生命周期和导航协作，不能简单看作另一个 &lt;code&gt;Activity&lt;/code&gt;。&lt;/p&gt;</description>
+    </item>
+  </channel>
+</rss>

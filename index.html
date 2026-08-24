@@ -233,25 +233,19 @@ window.onload = () => {
 
 <article class="post-entry"> 
   <header class="entry-header">
-    <h2 class="entry-hint-parent">TypeScript进阶用法
+    <h2 class="entry-hint-parent">Android开发者接手iOS存量项目：Objective-C快速入门
     </h2>
   </header>
   <div class="entry-content">
-    <p>上一篇入门文章已经覆盖了基础类型、函数、对象、interface、type、联合类型和可空处理。继续往下学 TypeScript，重点不是记更多语法，而是学会把类型用在真实代码里：接口响应、状态结构、异步结果和公共函数都应该有清晰的类型边界。
-模块导入与文件引用 TypeScript 支持用 export 暴露变量、函数或类型，再用 import 在其他文件中引用：
-// user.ts export type User = { id: number; name: string; }; export function getUserName(user: User): string { return user.name; } // main.ts import { getUserName, type User } from &#34;./user&#34;; const user: User = { id: 1, name: &#34;Tom&#34;, }; console.log(getUserName(user)); 和 Kotlin 按包名导入不同，TypeScript 默认更多是按文件路径导入。&#34;./user&#34; 表示同级目录下的 user.ts，通常可以省略 .ts 后缀。
-如果只引用类型，推荐使用 import type：
-import type { User } from &#34;./user&#34;; 大型项目里也常见路径别名，例如 @/models/user，但这需要在 tsconfig.json 里配置 baseUrl 和 paths。
-泛型是什么 泛型可以简单理解成：把类型也作为参数传进去。
-它解决的核心问题是：代码逻辑可以复用，但类型信息不能丢。
-function wrap&lt;T&gt;(value: T): T[] { return [value]; } const names = wrap(&#34;hello&#34;); // string[] const ids = wrap(100); // number[] 如果不用泛型，很容易退回到 any：
-function wrap(value: any): any[] { return [value]; } 这段代码虽然能运行，但调用方拿不到准确类型提示。
-泛型最常见的使用场景是接口响应：
-type ApiResponse&lt;T&gt; = { code: number; message: string; data: T; }; type User = { id: number; name: string; }; const response: ApiResponse&lt;User&gt; = { code: 0, message: &#34;ok&#34;, data: { id: 1, name: &#34;Tom&#34;, }, }; 可以先记住一句话：泛型不是为了把类型写复杂，而是为了保留“输入、输出、数据结构之间的类型关系”。
+    <p>对 Android 开发者来说，接手 Objective-C 存量项目的难点通常不是业务逻辑，而是三套陌生表达同时出现：
+Objective-C 的消息发送语法 UIKit 的页面与事件模型 Xcode 的工程、依赖和签名体系 最有效的入门方式不是从 C 语言重新学起，而是先建立 Android 与 iOS 的概念映射，再用 Java 语法经验理解 Objective-C，最后通过一个可运行的 UIKit 小项目把知识串起来。
+本文的目标不是全面讲解 Objective-C，而是帮助 Android 开发者尽快做到：
+看懂常见 Objective-C 业务代码 找到 iOS 应用入口和页面入口 修改一个 UIKit 列表页面 理解 delegate、Block 和 ARC 避开接手老项目时的常见坑 先建立平台映射 Android 和 iOS 的框架不能完全等价，但下面的映射可以帮助建立第一印象。
+Android iOS存量项目 说明 Application AppDelegate、SceneDelegate 应用和场景生命周期 Activity、Fragment UIViewController 页面控制器，不能完全等价 View、ViewGroup UIView UI 基础对象 XML Layout Storyboard、XIB 可视化页面文件 ConstraintLayout Auto Layout 约束布局 RecyclerView UITableView、UICollectionView 列表和网格 RecyclerView.Adapter UITableViewDataSource 提供列表数据 OnClickListener target-action、delegate、Block 事件回调 interface protocol 能力约束 lambda Block 可传递的代码块 AndroidManifest.xml Info.plist、Entitlements 配置和权限声明 applicationId Bundle Identifier 应用唯一标识 Gradle Module Xcode Target 构建单元，语义并不完全相同 Handler主线程调度 Main Queue 主线程任务调度 这些概念只适合粗略类比。例如 UIViewController 同时参与视图管理、页面生命周期和导航协作，不能简单看作另一个 Activity。
 ...</p>
   </div>
-  <footer class="entry-footer"><span title='2026-07-29 14:16:33 +0800 CST'>July 29, 2026</span>&nbsp;·&nbsp;4 min&nbsp;·&nbsp;673 words&nbsp;·&nbsp;夏天的小西瓜</footer>
-  <a class="entry-link" aria-label="post link to TypeScript进阶用法" href="/posts/typescript/typescript_advanced/"></a>
+  <footer class="entry-footer"><span title='2026-08-24 17:38:24 +0800 CST'>August 24, 2026</span>&nbsp;·&nbsp;10 min&nbsp;·&nbsp;1922 words&nbsp;·&nbsp;夏天的小西瓜</footer>
+  <a class="entry-link" aria-label="post link to Android开发者接手iOS存量项目：Objective-C快速入门" href="/posts/ios/objective_c_for_android_developers/"></a>
 </article>
 
 <article class="post-entry"> 

@@ -6,12 +6,12 @@
     <description>Recent content in 异步 on 缥缈夏鸢</description>
     <generator>Hugo -- 0.138.0</generator>
     <language>en-us</language>
-    <lastBuildDate>Wed, 29 Jul 2026 14:16:33 +0800</lastBuildDate>
+    <lastBuildDate>Thu, 09 Apr 2026 20:10:00 +0800</lastBuildDate>
     <atom:link href="/tags/%E5%BC%82%E6%AD%A5/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>TypeScript进阶用法</title>
       <link>/posts/typescript/typescript_advanced/</link>
-      <pubDate>Wed, 29 Jul 2026 14:16:33 +0800</pubDate>
+      <pubDate>Thu, 09 Apr 2026 20:10:00 +0800</pubDate>
       <guid>/posts/typescript/typescript_advanced/</guid>
       <description>&lt;p&gt;上一篇入门文章已经覆盖了基础类型、函数、对象、&lt;code&gt;interface&lt;/code&gt;、&lt;code&gt;type&lt;/code&gt;、联合类型和可空处理。继续往下学 TypeScript，重点不是记更多语法，而是学会把类型用在真实代码里：接口响应、状态结构、异步结果和公共函数都应该有清晰的类型边界。&lt;/p&gt;
 &lt;h2 id=&#34;模块导入与文件引用&#34;&gt;模块导入与文件引用&lt;/h2&gt;
